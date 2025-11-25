@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Kids Learning Games Collection 🎮</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            animation: backgroundShift 15s ease infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: slideDown 1s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            color: white;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .subtitle {
+            color: white;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .game-card:nth-child(1) { animation-delay: 0.1s; }
+        .game-card:nth-child(2) { animation-delay: 0.2s; }
+        .game-card:nth-child(3) { animation-delay: 0.3s; }
+        .game-card:nth-child(4) { animation-delay: 0.4s; }
+        .game-card:nth-child(5) { animation-delay: 0.5s; }
+        .game-card:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            display: block;
+            animation: rotate 3s ease-in-out infinite;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .game-title {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .game-description {
+            color: #666;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .game-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .game-features li {
+            color: #764ba2;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .game-features li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+        }
+
+        .play-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            z-index: 1;
+        }
+
+        .play-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .play-button:active {
+            transform: translateY(0);
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: white;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .stats h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.3rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .game-card {
+                padding: 20px;
+            }
+
+            .game-icon {
+                font-size: 4rem;
+            }
+
+            .game-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Kids Learning Games 🎮</h1>
+            <p class="subtitle">Fun and Educational Games Collection!</p>
+        </header>
+
+        <div class="stats">
+            <h2>📊 Collection Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">8</span>
+                    <span class="stat-label">Total Games</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">Learning Games</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">3D/4D Games</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">1</span>
+                    <span class="stat-label">Utility App</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="games-grid">
+            <!-- Game 1: ABC Song with Bouncing Balls -->
+            <div class="game-card" onclick="window.location.href='abc-bouncing-balls.html'">
+                <span class="category-badge">👶 For Babies</span>
+                <div class="game-icon">🎵</div>
+                <h2 class="game-title">ABC Song with Bouncing Balls!</h2>
+                <p class="game-description">
+                    Watch colorful balls bounce to the ABC song! Tap to create more balls!
+                </p>
+                <ul class="game-features">
+                    <li>Full ABC song with music & voice</li>
+                    <li>Balls bounce with physics</li>
+                    <li>3 speed modes: slow, normal, fast</li>
+                    <li>Interactive - tap to add balls!</li>
+                </ul>
+                <a href="abc-bouncing-balls.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 2: Baby's 4D Wonder World -->
+            <div class="game-card" onclick="window.location.href='4d-baby-animation.html'">
+                <span class="category-badge">👶 For Babies</span>
+                <div class="game-icon">🎈</div>
+                <h2 class="game-title">Baby's 4D Wonder World</h2>
+                <p class="game-description">
+                    Tap anywhere! Cute animals and objects appear BIG and zoom away with sounds!
+                </p>
+                <ul class="game-features">
+                    <li>Tap to create cute animations</li>
+                    <li>Happy sounds for each tap</li>
+                    <li>Auto-spawning balloons & rainbows</li>
+                    <li>Perfect for 2-year-olds!</li>
+                </ul>
+                <a href="4d-baby-animation.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 3: Alphabet Typing -->
+            <div class="game-card" onclick="window.location.href='alphabet-typing.html'">
+                <span class="category-badge">📚 Learning</span>
+                <div class="game-icon">🔤</div>
+                <h2 class="game-title">Alphabet Typing A→Z</h2>
+                <p class="game-description">
+                    Learn to type all 26 letters of the alphabet with fun words and emojis!
+                </p>
+                <ul class="game-features">
+                    <li>3 modes: Uppercase, Lowercase, Both</li>
+                    <li>Voice pronunciation for each letter</li>
+                    <li>Progress tracking from A to Z</li>
+                    <li>Fun emojis and words</li>
+                </ul>
+                <a href="alphabet-typing.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 2: Alphabet Adventure -->
+            <div class="game-card" onclick="window.location.href='alphabet-adventure.html'">
+                <span class="category-badge">📚 Learning</span>
+                <div class="game-icon">⌨️</div>
+                <h2 class="game-title">Type & Learn ABC!</h2>
+                <p class="game-description">
+                    Interactive keyboard typing game with quiz mode and animations!
+                </p>
+                <ul class="game-features">
+                    <li>Quiz mode & Explore mode</li>
+                    <li>Fireworks and celebrations</li>
+                    <li>Streak counter system</li>
+                    <li>Beautiful animations</li>
+                </ul>
+                <a href="alphabet-adventure.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 3: Number Typing -->
+            <div class="game-card" onclick="window.location.href='number-typing.html'">
+                <span class="category-badge">📚 Learning</span>
+                <div class="game-icon">🔢</div>
+                <h2 class="game-title">Number Typing Game</h2>
+                <p class="game-description">
+                    Count and type numbers from 0-100 or 101-200 with cute animals!
+                </p>
+                <ul class="game-features">
+                    <li>Two modes: 0-100 and 101-200</li>
+                    <li>Visual counting with emojis</li>
+                    <li>No time limit - learn at your pace</li>
+                    <li>Navigate forward and backward</li>
+                </ul>
+                <a href="number-typing.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 4: 3D Number Typing -->
+            <div class="game-card" onclick="window.location.href='3d-number-typing.html'">
+                <span class="category-badge">🎮 3D Game</span>
+                <div class="game-icon">🚀</div>
+                <h2 class="game-title">3D Number Typing Adventure</h2>
+                <p class="game-description">
+                    Immersive 3D number learning experience in space!
+                </p>
+                <ul class="game-features">
+                    <li>Full 3D graphics with Three.js</li>
+                    <li>Floating numbers in space</li>
+                    <li>Collectible animations</li>
+                    <li>Fireworks celebrations</li>
+                </ul>
+                <a href="3d-number-typing.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 6: 4D Number Journey -->
+            <div class="game-card" onclick="window.location.href='4d-number-rush.html'">
+                <span class="category-badge">🎮 4D Game</span>
+                <div class="game-icon">⚡</div>
+                <h2 class="game-title">4D Number Journey</h2>
+                <p class="game-description">
+                    Numbers fly towards you from the distance! Practice typing at your own pace!
+                </p>
+                <ul class="game-features">
+                    <li>Relaxed gameplay - no pressure</li>
+                    <li>4 difficulty levels</li>
+                    <li>Combo multiplier system</li>
+                    <li>Stunning tunnel effects</li>
+                </ul>
+                <a href="4d-number-rush.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 7: Baby Countdown Timer -->
+            <div class="game-card" onclick="window.location.href='baby-countdown-timer.html'">
+                <span class="category-badge">⏰ Utility</span>
+                <div class="game-icon">🎈</div>
+                <h2 class="game-title">Baby Countdown Timer</h2>
+                <p class="game-description">
+                    Fun countdown timer for tracking special moments and events!
+                </p>
+                <ul class="game-features">
+                    <li>Set custom deadlines</li>
+                    <li>Quick preset buttons</li>
+                    <li>Colorful animations</li>
+                    <li>Celebration when time's up</li>
+                </ul>
+                <a href="baby-countdown-timer.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Try It!
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>✨ Made with love for young learners! ✨</p>
+            <p style="margin-top: 10px; font-size: 1rem;">All games are browser-based and require no installation!</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add subtle particle effect
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '10px';
+            particle.style.height = '10px';
+            particle.style.background = 'white';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.opacity = '0.6';
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = '-10px';
+            particle.style.zIndex = '0';
+            
+            document.body.appendChild(particle);
+            
+            const duration = Math.random() * 3 + 2;
+            const drift = (Math.random() - 0.5) * 100;
+            
+            particle.animate([
+                { transform: 'translateY(0) translateX(0)', opacity: 0.6 },
+                { transform: `translateY(${window.innerHeight}px) translateX(${drift}px)`, opacity: 0 }
+            ], {
+                duration: duration * 1000,
+                easing: 'linear'
+            });
+            
+            setTimeout(() => particle.remove(), duration * 1000);
+        }
+        
+        // Create particles periodically
+        setInterval(createParticle, 500);
+
+        // Add click sound effect (optional)
+        document.querySelectorAll('.play-button, .game-card').forEach(element => {
+            element.addEventListener('click', () => {
+                // You can add sound effects here if needed
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 ABC Song with Bouncing Balls! 🎵</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #FFB6C1 50%, #FFD700 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+
+        h1 {
+            color: white;
+            font-size: 4rem;
+            text-align: center;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+            animation: rainbow 3s infinite;
+        }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        .ball-canvas {
+            width: 100%;
+            max-width: 1200px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            border: 5px solid white;
+        }
+
+        .ball {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.1s ease-out;
+        }
+
+        .lyrics-display {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .current-letter {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #FF6B9D;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .lyrics-text {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 25px 50px;
+            font-size: 2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            color: white;
+            font-family: inherit;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        .play-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.5);
+        }
+
+        .stop-btn {
+            background: linear-gradient(135deg, #ff6b9d 0%, #f5576c 100%);
+        }
+
+        .stop-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5);
+        }
+
+        .speed-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 40px;
+            font-size: 1.5rem;
+        }
+
+        .speed-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .instruction {
+            color: white;
+            font-size: 1.8rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .ball { font-size: 2rem !important; }
+            .current-letter { font-size: 5rem; }
+            .lyrics-text { font-size: 1.8rem; }
+            .btn { font-size: 1.5rem; padding: 20px 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 ABC Song with Bouncing Balls! 🎵</h1>
+
+        <div class="ball-canvas" id="ballCanvas"></div>
+
+        <div class="lyrics-display">
+            <div class="current-letter" id="currentLetter">🎵</div>
+            <div class="lyrics-text" id="lyricsText">Press Play to Start!</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn play-btn" id="playBtn" onclick="playSong()">▶️ Play ABC Song!</button>
+            <button class="btn stop-btn" id="stopBtn" onclick="stopSong()" style="display: none;">⏹️ Stop</button>
+            <button class="btn speed-btn" id="speedBtn" onclick="toggleSpeed()">🐢 Normal Speed</button>
+        </div>
+
+        <p class="instruction">
+            🎈 Watch the balls bounce to the ABC song! 🎈<br>
+            Tap the canvas to create more bouncing balls!
+        </p>
+    </div>
+
+    <script>
+        // ABC Song notes (frequency in Hz for each syllable)
+        const abcSongNotes = [
+            // A B C D E F G
+            { letter: 'A', note: 261.63, duration: 0.4 },
+            { letter: 'B', note: 261.63, duration: 0.4 },
+            { letter: 'C', note: 392.00, duration: 0.4 },
+            { letter: 'D', note: 392.00, duration: 0.4 },
+            { letter: 'E', note: 440.00, duration: 0.4 },
+            { letter: 'F', note: 440.00, duration: 0.4 },
+            { letter: 'G', note: 392.00, duration: 0.8 },
+            
+            // H I J K L M N O P
+            { letter: 'H', note: 349.23, duration: 0.4 },
+            { letter: 'I', note: 349.23, duration: 0.4 },
+            { letter: 'J', note: 329.63, duration: 0.4 },
+            { letter: 'K', note: 329.63, duration: 0.4 },
+            { letter: 'L', note: 293.66, duration: 0.4 },
+            { letter: 'M', note: 293.66, duration: 0.4 },
+            { letter: 'N', note: 261.63, duration: 0.4 },
+            { letter: 'O', note: 261.63, duration: 0.4 },
+            { letter: 'P', note: 293.66, duration: 0.8 },
+            
+            // Q R S, T U V
+            { letter: 'Q', note: 392.00, duration: 0.4 },
+            { letter: 'R', note: 392.00, duration: 0.4 },
+            { letter: 'S', note: 349.23, duration: 0.8 },
+            { letter: 'T', note: 329.63, duration: 0.4 },
+            { letter: 'U', note: 329.63, duration: 0.4 },
+            { letter: 'V', note: 293.66, duration: 0.8 },
+            
+            // W X Y and Z
+            { letter: 'W', note: 261.63, duration: 0.4 },
+            { letter: 'X', note: 293.66, duration: 0.4 },
+            { letter: 'Y', note: 329.63, duration: 0.4 },
+            { letter: 'and', note: 349.23, duration: 0.4 },
+            { letter: 'Z', note: 392.00, duration: 1.2 },
+            
+            // Now I know my ABCs
+            { letter: 'Now', note: 261.63, duration: 0.4 },
+            { letter: 'I', note: 261.63, duration: 0.4 },
+            { letter: 'know', note: 392.00, duration: 0.4 },
+            { letter: 'my', note: 392.00, duration: 0.4 },
+            { letter: 'A', note: 440.00, duration: 0.4 },
+            { letter: 'B', note: 440.00, duration: 0.4 },
+            { letter: 'Cs', note: 392.00, duration: 0.8 },
+            
+            // Next time won't you sing with me
+            { letter: 'Next', note: 349.23, duration: 0.4 },
+            { letter: 'time', note: 349.23, duration: 0.4 },
+            { letter: "won't", note: 329.63, duration: 0.4 },
+            { letter: 'you', note: 329.63, duration: 0.4 },
+            { letter: 'sing', note: 293.66, duration: 0.4 },
+            { letter: 'with', note: 293.66, duration: 0.4 },
+            { letter: 'me!', note: 261.63, duration: 1.2 }
+        ];
+
+        let isPlaying = false;
+        let currentNoteIndex = 0;
+        let balls = [];
+        let audioContext;
+        let playbackSpeed = 1; // 1 = normal, 1.5 = fast
+
+        const ballCanvas = document.getElementById('ballCanvas');
+        const currentLetterEl = document.getElementById('currentLetter');
+        const lyricsTextEl = document.getElementById('lyricsText');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const speedBtn = document.getElementById('speedBtn');
+
+        // Ball colors
+        const ballColors = [
+            '#FF6B9D', '#FFA06B', '#FFD93D', '#4CAF50', 
+            '#4D96FF', '#9B59B6', '#FF5722', '#00BCD4'
+        ];
+
+        // Create bouncing ball
+        function createBall(letter, color, bounce = true) {
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            ball.textContent = letter;
+            ball.style.background = `linear-gradient(135deg, ${color} 0%, ${adjustColor(color)} 100%)`;
+            ball.style.width = '80px';
+            ball.style.height = '80px';
+            ball.style.fontSize = '2.5rem';
+            
+            const x = Math.random() * (ballCanvas.offsetWidth - 80);
+            ball.style.left = x + 'px';
+            ball.style.bottom = '0px';
+            
+            ballCanvas.appendChild(ball);
+            
+            if (bounce) {
+                const ballData = {
+                    element: ball,
+                    x: x,
+                    y: 0,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: 15 + Math.random() * 5,
+                    color: color,
+                    letter: letter
+                };
+                balls.push(ballData);
+            }
+            
+            return ball;
+        }
+
+        // Adjust color brightness
+        function adjustColor(color) {
+            const r = parseInt(color.substr(1, 2), 16);
+            const g = parseInt(color.substr(3, 2), 16);
+            const b = parseInt(color.substr(5, 2), 16);
+            return `rgb(${Math.min(255, r + 50)}, ${Math.min(255, g + 50)}, ${Math.min(255, b + 50)})`;
+        }
+
+        // Play note
+        function playNote(frequency, duration) {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+            
+            // Add harmony
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(frequency * 1.5, audioContext.currentTime);
+            
+            gain2.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            osc2.start(audioContext.currentTime);
+            osc2.stop(audioContext.currentTime + duration);
+        }
+
+        // Speak letter
+        function speakLetter(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = playbackSpeed;
+            utterance.pitch = 1.2;
+            utterance.volume = 0.8;
+            
+            const voices = window.speechSynthesis.getVoices();
+            const childVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && 
+                (voice.name.includes('Female') || voice.name.includes('Samantha'))
+            );
+            if (childVoice) {
+                utterance.voice = childVoice;
+            }
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Play ABC song
+        function playSong() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            currentNoteIndex = 0;
+            playBtn.style.display = 'none';
+            stopBtn.style.display = 'block';
+            
+            // Clear existing balls
+            balls.forEach(b => b.element.remove());
+            balls = [];
+            
+            playNextNote();
+        }
+
+        // Play next note in sequence
+        function playNextNote() {
+            if (!isPlaying || currentNoteIndex >= abcSongNotes.length) {
+                if (currentNoteIndex >= abcSongNotes.length) {
+                    // Song finished
+                    setTimeout(() => {
+                        currentLetterEl.textContent = '🎉';
+                        lyricsTextEl.textContent = 'Great Job! Play Again?';
+                        playBtn.style.display = 'block';
+                        stopBtn.style.display = 'none';
+                        isPlaying = false;
+                        
+                        // Celebration
+                        createConfetti();
+                    }, 500);
+                }
+                return;
+            }
+            
+            const noteData = abcSongNotes[currentNoteIndex];
+            
+            // Display letter
+            currentLetterEl.textContent = noteData.letter;
+            currentLetterEl.style.animation = 'none';
+            setTimeout(() => {
+                currentLetterEl.style.animation = 'pulse 0.5s ease-in-out';
+            }, 10);
+            
+            // Update lyrics
+            if (currentNoteIndex < 26) {
+                lyricsTextEl.textContent = 'Learning the Alphabet!';
+            } else if (currentNoteIndex < 33) {
+                lyricsTextEl.textContent = 'Now I know my ABCs!';
+            } else {
+                lyricsTextEl.textContent = "Next time won't you sing with me!";
+            }
+            
+            // Play note
+            playNote(noteData.note, noteData.duration / playbackSpeed);
+            
+            // Speak letter (only for A-Z)
+            if (noteData.letter.length === 1 && noteData.letter >= 'A' && noteData.letter <= 'Z') {
+                speakLetter(noteData.letter);
+            }
+            
+            // Create bouncing ball
+            const color = ballColors[currentNoteIndex % ballColors.length];
+            createBall(noteData.letter, color, true);
+            
+            currentNoteIndex++;
+            
+            // Schedule next note
+            setTimeout(playNextNote, (noteData.duration * 1000) / playbackSpeed);
+        }
+
+        // Stop song
+        function stopSong() {
+            isPlaying = false;
+            window.speechSynthesis.cancel();
+            playBtn.style.display = 'block';
+            stopBtn.style.display = 'none';
+            currentLetterEl.textContent = '🎵';
+            lyricsTextEl.textContent = 'Press Play to Start!';
+        }
+
+        // Toggle speed
+        function toggleSpeed() {
+            if (playbackSpeed === 1) {
+                playbackSpeed = 0.7; // Slower
+                speedBtn.textContent = '🐢 Slow Speed';
+            } else if (playbackSpeed === 0.7) {
+                playbackSpeed = 1.5; // Faster
+                speedBtn.textContent = '🐇 Fast Speed';
+            } else {
+                playbackSpeed = 1; // Normal
+                speedBtn.textContent = '🐢 Normal Speed';
+            }
+        }
+
+        // Animate balls
+        function animateBalls() {
+            const canvasHeight = ballCanvas.offsetHeight;
+            const canvasWidth = ballCanvas.offsetWidth;
+            const gravity = 0.5;
+            const bounce = 0.7;
+            
+            balls.forEach((ball, index) => {
+                // Apply gravity
+                ball.vy -= gravity;
+                ball.y += ball.vy;
+                ball.x += ball.vx;
+                
+                // Bounce off bottom
+                if (ball.y <= 0) {
+                    ball.y = 0;
+                    ball.vy = -ball.vy * bounce;
+                    
+                    // Play bounce sound
+                    if (Math.abs(ball.vy) > 1) {
+                        playBounceSound();
+                    }
+                    
+                    // Stop if velocity too low
+                    if (Math.abs(ball.vy) < 0.5) {
+                        ball.vy = 0;
+                    }
+                }
+                
+                // Bounce off walls
+                if (ball.x <= 0 || ball.x >= canvasWidth - 80) {
+                    ball.vx *= -1;
+                    ball.x = Math.max(0, Math.min(canvasWidth - 80, ball.x));
+                }
+                
+                // Update DOM
+                ball.element.style.left = ball.x + 'px';
+                ball.element.style.bottom = ball.y + 'px';
+                
+                // Add rotation
+                ball.element.style.transform = `rotate(${ball.x * 2}deg)`;
+            });
+            
+            requestAnimationFrame(animateBalls);
+        }
+
+        // Play bounce sound
+        function playBounceSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Create confetti
+        function createConfetti() {
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'celebration';
+                    confetti.textContent = ['🎉', '🎊', '⭐', '🌟', '✨', '🎈'][Math.floor(Math.random() * 6)];
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.top = Math.random() * window.innerHeight + 'px';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 2000);
+                }, i * 50);
+            }
+        }
+
+        // Tap to create ball
+        ballCanvas.addEventListener('click', (e) => {
+            const rect = ballCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            
+            const emoji = ['🎈', '⭐', '💖', '🌈', '🎨', '🦋'][Math.floor(Math.random() * 6)];
+            const color = ballColors[Math.floor(Math.random() * ballColors.length)];
+            
+            const ball = createBall(emoji, color, false);
+            ball.style.left = (x - 40) + 'px';
+            ball.style.bottom = '0px';
+            
+            const ballData = {
+                element: ball,
+                x: x - 40,
+                y: 0,
+                vx: (Math.random() - 0.5) * 4,
+                vy: 18 + Math.random() * 5,
+                color: color,
+                letter: emoji
+            };
+            balls.push(ballData);
+            
+            // Play fun sound
+            playNote(440 + Math.random() * 440, 0.3);
+        });
+
+        // Touch support
+        ballCanvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = ballCanvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            
+            const emoji = ['🎈', '⭐', '💖', '🌈', '🎨', '🦋'][Math.floor(Math.random() * 6)];
+            const color = ballColors[Math.floor(Math.random() * ballColors.length)];
+            
+            const ball = createBall(emoji, color, false);
+            ball.style.left = (x - 40) + 'px';
+            ball.style.bottom = '0px';
+            
+            const ballData = {
+                element: ball,
+                x: x - 40,
+                y: 0,
+                vx: (Math.random() - 0.5) * 4,
+                vy: 18 + Math.random() * 5,
+                color: color,
+                letter: emoji
+            };
+            balls.push(ballData);
+            
+            playNote(440 + Math.random() * 440, 0.3);
+        });
+
+        // Load voices
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+
+        // Start animation
+        animateBalls();
+        
+        // Auto-start after 2 seconds
+        setTimeout(() => {
+            document.getElementById('tapMessage').classList.add('hide');
+        }, 3000);
+    </script>
+</body>
+</html>
+
+

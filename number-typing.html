@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Typing Game 🔢</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Arial Unicode MS', sans-serif;
+            background: linear-gradient(135deg, #FFD93D 0%, #6BCB77 50%, #4D96FF 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            animation: backgroundShift 10s ease infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            grid-template-rows: auto 1fr auto;
+            gap: 25px;
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #FF6B6B;
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #FFD93D 0%, #FFA726 100%);
+            color: #333;
+            padding: 20px 25px;
+            border-radius: 20px;
+            text-align: center;
+            border: 4px solid #FF6B6B;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .stat-label {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .number-display {
+            background: linear-gradient(135deg, #FFE5E5 0%, #E5F5FF 100%);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid #FF6B6B;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .animal-display {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .target-number {
+            font-size: 6em;
+            font-weight: bold;
+            color: #FF6B6B;
+            letter-spacing: 10px;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.2);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .animal-name {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4D96FF;
+            margin-top: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .input-area {
+            width: 100%;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 25px;
+            font-size: 5em;
+            text-align: center;
+            border: 5px solid #4D96FF;
+            border-radius: 20px;
+            outline: none;
+            transition: all 0.3s;
+            letter-spacing: 0px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        #userInput:focus {
+            border-color: #FF6B6B;
+            box-shadow: 0 0 0 6px rgba(255, 107, 107, 0.3);
+            transform: scale(1.02);
+        }
+
+        #userInput.correct {
+            border-color: #6BCB77;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            animation: bounce 0.5s;
+        }
+
+        #userInput.incorrect {
+            border-color: #FF6B6B;
+            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-15px) rotate(-5deg); }
+            75% { transform: translateX(15px) rotate(5deg); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(-20px); }
+            50% { transform: translateY(-10px); }
+            75% { transform: translateY(-15px); }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .jump-controls {
+            background: linear-gradient(135deg, #FFE5E5 0%, #E5F5FF 100%);
+            padding: 20px;
+            border-radius: 20px;
+            border: 4px solid #FF6B6B;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .jump-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .jump-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .jump-btn {
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4D96FF 0%, #6BCB77 100%);
+            color: white;
+            border: 3px solid #333;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .jump-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(77, 150, 255, 0.5);
+        }
+
+        .jump-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #jumpInput {
+            padding: 12px;
+            font-size: 1.3em;
+            text-align: center;
+            border: 3px solid #4D96FF;
+            border-radius: 15px;
+            font-weight: bold;
+            outline: none;
+        }
+
+        #jumpInput:focus {
+            border-color: #FF6B6B;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+        }
+
+        #jumpInput:disabled {
+            opacity: 0.5;
+            background: #f0f0f0;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border: 4px solid #333;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #6BCB77 0%, #4D96FF 100%);
+            color: white;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(107, 203, 119, 0.5);
+        }
+
+        .start-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .repeat-btn {
+            background: linear-gradient(135deg, #9B59B6 0%, #E74C3C 100%);
+            color: white;
+        }
+
+        .repeat-btn:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(155, 89, 182, 0.5);
+        }
+
+        .repeat-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #FFD93D 0%, #FFA726 100%);
+            color: #333;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(255, 217, 61, 0.5);
+        }
+
+        .reset-btn:active {
+            transform: scale(0.98);
+        }
+
+        .settings {
+            background: linear-gradient(135deg, #E5F5FF 0%, #FFE5E5 100%);
+            padding: 25px;
+            border-radius: 20px;
+            border: 4px solid #4D96FF;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .setting-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        .setting-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        select {
+            padding: 12px 15px;
+            border-radius: 15px;
+            border: 3px solid #FFD93D;
+            font-size: 1.1em;
+            cursor: pointer;
+            outline: none;
+            font-weight: bold;
+            background: white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        select:focus {
+            border-color: #FF6B6B;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2);
+        }
+
+        .message {
+            text-align: center;
+            font-size: 2em;
+            color: #666;
+            min-height: 50px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message.success {
+            color: #6BCB77;
+            font-weight: bold;
+            animation: celebrate 0.5s;
+        }
+
+        .message.error {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔢 Number Typing Game! 🎉</h1>
+        
+        <div class="left-panel">
+            <div class="number-display">
+                <div class="animal-display" id="animalDisplay"></div>
+                <div class="target-number" id="targetNumber">Ready?</div>
+                <div class="animal-name" id="animalName"></div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Type number" disabled inputmode="numeric">
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="right-panel">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">📊 Progress</div>
+                    <div class="stat-value" id="score">0/101</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">🎮 Mode</div>
+                    <div class="stat-value" id="modeDisplay">0-100</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="start-btn" id="startBtn">🚀 START! 🚀</button>
+                <button class="repeat-btn" id="repeatBtn" disabled>🔊 LISTEN AGAIN 🔊</button>
+                <button class="reset-btn" id="resetBtn">🔄 NEW GAME 🔄</button>
+            </div>
+
+            <div class="jump-controls">
+                <div class="jump-label">Jump to Number:</div>
+                <div class="jump-buttons">
+                    <button class="jump-btn" id="prevBtn" disabled>⬅️ Previous</button>
+                    <input type="number" id="jumpInput" min="0" max="100" placeholder="Enter number" disabled>
+                    <button class="jump-btn" id="jumpBtn" disabled>Jump ➡️</button>
+                    <button class="jump-btn" id="nextBtn" disabled>Next ➡️</button>
+                </div>
+            </div>
+
+            <div class="settings">
+                <div class="setting-row">
+                    <span class="setting-label">🎯 Mode:</span>
+                    <select id="modeSelect">
+                        <option value="0-100" selected>Numbers 0 to 100</option>
+                        <option value="101-200">Numbers 101 to 200</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            isPlaying: false,
+            score: 0,
+            currentAnimal: null,
+            currentNumber: 0,
+            mode: '0-100', // '0-100' or '101-200'
+            startNumber: 0,
+            endNumber: 100
+        };
+
+        // DOM elements
+        const targetNumberEl = document.getElementById('targetNumber');
+        const animalDisplayEl = document.getElementById('animalDisplay');
+        const animalNameEl = document.getElementById('animalName');
+        const userInputEl = document.getElementById('userInput');
+        const scoreEl = document.getElementById('score');
+        const modeDisplayEl = document.getElementById('modeDisplay');
+        const messageEl = document.getElementById('message');
+        const startBtn = document.getElementById('startBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modeSelect = document.getElementById('modeSelect');
+        const jumpInput = document.getElementById('jumpInput');
+        const jumpBtn = document.getElementById('jumpBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Simple animals for 2-year-old (easy to recognize)
+        const animalTemplates = [
+            { emoji: '🐱', name: 'Cat' },
+            { emoji: '🐶', name: 'Dog' },
+            { emoji: '🐻', name: 'Bear' },
+            { emoji: '🦊', name: 'Fox' },
+            { emoji: '🐼', name: 'Panda' },
+            { emoji: '🐰', name: 'Rabbit' },
+            { emoji: '🦁', name: 'Lion' },
+            { emoji: '🐯', name: 'Tiger' },
+            { emoji: '🐵', name: 'Monkey' },
+            { emoji: '🐸', name: 'Frog' },
+            { emoji: '🐷', name: 'Pig' },
+            { emoji: '🐮', name: 'Cow' },
+            { emoji: '🐔', name: 'Chicken' },
+            { emoji: '🐦', name: 'Bird' },
+            { emoji: '🦆', name: 'Duck' },
+            { emoji: '🦉', name: 'Owl' },
+            { emoji: '🐴', name: 'Horse' },
+            { emoji: '🦓', name: 'Zebra' },
+            { emoji: '🐘', name: 'Elephant' },
+            { emoji: '🐠', name: 'Fish' },
+            { emoji: '🐳', name: 'Whale' },
+            { emoji: '🦒', name: 'Giraffe' },
+            { emoji: '🦘', name: 'Kangaroo' },
+            { emoji: '🐨', name: 'Koala' }
+        ];
+
+        // Celebratory emojis
+        const celebrationEmojis = ['🎉', '🎊', '⭐', '🌟', '✨', '🎈', '🎁', '🏆', '👏', '🎯', '💫', '🌈'];
+        const encouragementMessages = [
+            'Yay! 🎉',
+            'Good Job! ⭐',
+            'You Did It! 🌟',
+            'Wow! 🎊',
+            'Super! 🏆',
+            'Great! ✨',
+            'Yes! 👏',
+            'Perfect! 💫',
+            'Awesome! 🎈',
+            'Amazing! 🌈'
+        ];
+
+        // Text-to-Speech function
+        function speak(text, rate = 0.8) {
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = rate; // Slower speed for kids
+            utterance.pitch = 1.1; // Slightly higher pitch for friendly tone
+            utterance.volume = 1.0;
+            
+            // Use a friendly voice if available
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && 
+                (voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Karen'))
+            );
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Load voices (needed for some browsers)
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+
+        // Select random animal with the current sequential number
+        function selectRandomAnimal() {
+            const randomIndex = Math.floor(Math.random() * animalTemplates.length);
+            const animal = { ...animalTemplates[randomIndex] };
+            
+            // Use the current number in sequence (1 to 100)
+            animal.number = gameState.currentNumber.toString();
+            
+            return animal;
+        }
+
+        // Set new target animal
+        function setNewAnimal() {
+            gameState.currentAnimal = selectRandomAnimal();
+            
+            // Display multiple animal emojis (as many as the number)
+            const count = parseInt(gameState.currentAnimal.number);
+            const emoji = gameState.currentAnimal.emoji;
+            
+            // Limit display to avoid too many emojis
+            if (count <= 20) {
+                animalDisplayEl.textContent = emoji.repeat(count);
+            } else {
+                // For numbers > 20, show a sample and count
+                animalDisplayEl.textContent = emoji.repeat(10) + '...';
+            }
+            
+            targetNumberEl.textContent = gameState.currentAnimal.number;
+            animalNameEl.textContent = gameState.currentAnimal.name;
+            
+            // Speak the animal name and number
+            const numberText = gameState.currentAnimal.number;
+            speak(`${numberText} for ${gameState.currentAnimal.name}`);
+            
+            userInputEl.value = '';
+            userInputEl.className = '';
+            messageEl.textContent = 'Type the number!';
+            messageEl.className = 'message';
+        }
+
+        // Update stats display
+        function updateStats() {
+            // Show current progress
+            const completed = gameState.currentNumber - gameState.startNumber;
+            const total = gameState.endNumber - gameState.startNumber + 1;
+            scoreEl.textContent = `${completed}/${total}`;
+            
+            // Display current mode
+            modeDisplayEl.textContent = gameState.mode === '0-100' ? '0-100' : '101-200';
+        }
+
+        // Show celebration
+        function showCelebration() {
+            const emoji = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+            const message = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+            messageEl.textContent = `${message} ${emoji}`;
+            messageEl.className = 'message success';
+            
+            // Speak encouragement
+            const cleanMessage = message.replace(/[🎉🎊⭐🌟✨🎈🎁🏆👏🎯💫🌈]/g, '').trim();
+            speak(cleanMessage, 1.0); // Normal speed for encouragement
+        }
+
+        // Repeat current animal
+        function repeatCurrentAnimal() {
+            if (!gameState.isPlaying || !gameState.currentAnimal) return;
+            
+            speak(`${gameState.currentAnimal.number} for ${gameState.currentAnimal.name}`);
+        }
+
+        // Start game
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.score = 0;
+            gameState.mode = modeSelect.value;
+            
+            // Set range based on mode
+            if (gameState.mode === '0-100') {
+                gameState.startNumber = 0;
+                gameState.endNumber = 100;
+            } else {
+                gameState.startNumber = 101;
+                gameState.endNumber = 200;
+            }
+            
+            gameState.currentNumber = gameState.startNumber;
+            
+            userInputEl.disabled = false;
+            userInputEl.focus();
+            startBtn.disabled = true;
+            repeatBtn.disabled = false;
+            modeSelect.disabled = true;
+            jumpInput.disabled = false;
+            jumpBtn.disabled = false;
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+            
+            const rangeText = gameState.mode === '0-100' ? '0 to 100' : '101 to 200';
+            messageEl.textContent = "Let's Go! 🚀";
+            messageEl.className = 'message success';
+            speak(`Let's go! Type from ${rangeText}!`, 1.0);
+            
+            setTimeout(() => {
+                messageEl.textContent = '';
+                setNewAnimal();
+                updateStats();
+            }, 1500);
+        }
+
+        
+        // End game (completed all numbers)
+        function endGameComplete() {
+            gameState.isPlaying = false;
+            
+            userInputEl.disabled = true;
+            startBtn.disabled = false;
+            repeatBtn.disabled = true;
+            modeSelect.disabled = false;
+            jumpInput.disabled = true;
+            jumpBtn.disabled = true;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            
+            const rangeText = gameState.mode === '0-100' ? '0 to 100' : '101 to 200';
+            targetNumberEl.textContent = '🏆';
+            animalDisplayEl.textContent = '';
+            animalNameEl.textContent = '';
+            messageEl.textContent = `Amazing! You completed ${rangeText}! 🎉`;
+            messageEl.className = 'message success';
+            
+            // Speak celebration
+            speak(`Amazing! You completed all numbers from ${rangeText}! Congratulations!`, 0.9);
+        }
+
+        // Reset game
+        function resetGame() {
+            gameState.isPlaying = false;
+            gameState.score = 0;
+            gameState.mode = modeSelect.value;
+            
+            // Reset to start based on mode
+            if (gameState.mode === '0-100') {
+                gameState.startNumber = 0;
+                gameState.endNumber = 100;
+            } else {
+                gameState.startNumber = 101;
+                gameState.endNumber = 200;
+            }
+            gameState.currentNumber = gameState.startNumber;
+            
+            userInputEl.disabled = true;
+            userInputEl.value = '';
+            userInputEl.className = '';
+            startBtn.disabled = false;
+            repeatBtn.disabled = true;
+            modeSelect.disabled = false;
+            jumpInput.disabled = true;
+            jumpInput.value = '';
+            jumpBtn.disabled = true;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            
+            targetNumberEl.textContent = 'Ready?';
+            animalDisplayEl.textContent = '';
+            animalNameEl.textContent = '';
+            messageEl.textContent = '';
+            messageEl.className = 'message';
+            
+            updateStats();
+        }
+
+        // Check user input
+        function checkInput() {
+            if (!gameState.isPlaying || !gameState.currentAnimal) return;
+            
+            const userValue = userInputEl.value.trim();
+            const targetNumber = gameState.currentAnimal.number;
+            
+            // Check if input matches the number
+            if (userValue === targetNumber) {
+                gameState.score++;
+                gameState.currentNumber++; // Move to next number
+                
+                userInputEl.className = 'correct';
+                showCelebration();
+                
+                // Check if completed all numbers
+                if (gameState.currentNumber > gameState.endNumber) {
+                    setTimeout(() => {
+                        endGameComplete();
+                    }, 1500);
+                } else {
+                    setTimeout(() => {
+                        if (gameState.isPlaying) {
+                            setNewAnimal();
+                            updateStats();
+                        }
+                    }, 1500);
+                }
+            } else if (userValue.length > 0) {
+                // Check if user pressed Enter with wrong answer
+                const isComplete = userValue.length >= targetNumber.length;
+                
+                if (isComplete) {
+                    // Wrong input
+                    userInputEl.className = 'incorrect';
+                    messageEl.textContent = 'Oops! Try Again! 💪';
+                    messageEl.className = 'message error';
+                    speak('Try again!', 1.0);
+                    
+                    setTimeout(() => {
+                        userInputEl.value = '';
+                        userInputEl.className = '';
+                        if (gameState.isPlaying) {
+                            messageEl.textContent = 'Type the number!';
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        // Jump to specific number
+        function jumpToNumber(targetNum) {
+            if (!gameState.isPlaying) return;
+            
+            targetNum = Math.max(gameState.startNumber, Math.min(gameState.endNumber, targetNum));
+            gameState.currentNumber = targetNum;
+            setNewAnimal();
+            updateStats();
+            userInputEl.focus();
+        }
+
+        // Jump button handler
+        function handleJump() {
+            const targetNum = parseInt(jumpInput.value);
+            if (!isNaN(targetNum) && targetNum >= gameState.startNumber && targetNum <= gameState.endNumber) {
+                jumpToNumber(targetNum);
+                jumpInput.value = '';
+            }
+        }
+
+        // Previous button handler
+        function handlePrevious() {
+            if (gameState.currentNumber > gameState.startNumber) {
+                jumpToNumber(gameState.currentNumber - 1);
+            }
+        }
+
+        // Next button handler
+        function handleNext() {
+            if (gameState.currentNumber < gameState.endNumber) {
+                jumpToNumber(gameState.currentNumber + 1);
+            }
+        }
+
+        // Update jump input range based on mode
+        function updateJumpInputRange() {
+            const mode = modeSelect.value;
+            if (mode === '0-100') {
+                jumpInput.min = '0';
+                jumpInput.max = '100';
+            } else {
+                jumpInput.min = '101';
+                jumpInput.max = '200';
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        repeatBtn.addEventListener('click', repeatCurrentAnimal);
+        resetBtn.addEventListener('click', resetGame);
+        jumpBtn.addEventListener('click', handleJump);
+        prevBtn.addEventListener('click', handlePrevious);
+        nextBtn.addEventListener('click', handleNext);
+        
+        // Mode change handler
+        modeSelect.addEventListener('change', () => {
+            updateJumpInputRange();
+            resetGame();
+        });
+        
+        // Jump on Enter key
+        jumpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleJump();
+            }
+        });
+
+        // Allow only numbers and limit to 1 character
+        userInputEl.addEventListener('keypress', (e) => {
+            const isValid = /[0-9]/.test(e.key);
+            
+            if (!isValid && e.key !== 'Enter' && e.key !== 'Backspace') {
+                e.preventDefault();
+            }
+        });
+
+        // Limit input to 3 characters (for numbers 1-200)
+        userInputEl.addEventListener('input', (e) => {
+            // Remove any non-numeric characters
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            
+            // Limit to 3 characters
+            if (e.target.value.length > 3) {
+                e.target.value = e.target.value.slice(0, 3);
+            }
+            
+            // Limit to max 200
+            const numValue = parseInt(e.target.value);
+            if (numValue > 200) {
+                e.target.value = '200';
+            }
+            
+            checkInput();
+        });
+
+        // Initialize display
+        updateJumpInputRange();
+        updateStats();
+    </script>
+</body>
+</html>
+

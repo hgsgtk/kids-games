@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Typing A→Z 🔤</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            animation: backgroundShift 10s ease infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            grid-template-rows: auto 1fr auto;
+            gap: 25px;
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #667eea;
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 20px;
+            text-align: center;
+            border: 4px solid #f093fb;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .stat-label {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .letter-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid #667eea;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .emoji-display {
+            font-size: 8em;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+        }
+
+        .target-letter {
+            font-size: 10em;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 10px;
+            text-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .letter-word {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: white;
+            margin-top: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .case-indicator {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .input-area {
+            width: 100%;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 25px;
+            font-size: 5em;
+            text-align: center;
+            border: 5px solid #667eea;
+            border-radius: 20px;
+            outline: none;
+            transition: all 0.3s;
+            letter-spacing: 0px;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        #userInput:focus {
+            border-color: #f5576c;
+            box-shadow: 0 0 0 6px rgba(245, 87, 108, 0.3);
+            transform: scale(1.02);
+        }
+
+        #userInput.correct {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            animation: bounce 0.5s;
+        }
+
+        #userInput.incorrect {
+            border-color: #ff6b9d;
+            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-15px) rotate(-5deg); }
+            75% { transform: translateX(15px) rotate(5deg); }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .jump-controls {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 20px;
+            border: 4px solid #667eea;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .jump-label {
+            font-weight: bold;
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .jump-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .jump-btn {
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: white;
+            color: #667eea;
+            border: 3px solid white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .jump-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .jump-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border: 4px solid #333;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(76, 175, 80, 0.5);
+        }
+
+        .start-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .repeat-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .repeat-btn:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+
+        .repeat-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(245, 87, 108, 0.5);
+        }
+
+        .reset-btn:active {
+            transform: scale(0.98);
+        }
+
+        .settings {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 25px;
+            border-radius: 20px;
+            border: 4px solid #667eea;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .setting-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            font-weight: bold;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        select {
+            padding: 12px 15px;
+            border-radius: 15px;
+            border: 3px solid white;
+            font-size: 1.1em;
+            cursor: pointer;
+            outline: none;
+            font-weight: bold;
+            background: white;
+            color: #667eea;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .message {
+            text-align: center;
+            font-size: 2em;
+            color: #667eea;
+            min-height: 50px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message.success {
+            color: #4CAF50;
+            font-weight: bold;
+            animation: celebrate 0.5s;
+        }
+
+        .message.error {
+            color: #f5576c;
+            font-weight: bold;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔤 Alphabet Typing A→Z! 🎉</h1>
+        
+        <div class="left-panel">
+            <div class="letter-display">
+                <div class="emoji-display" id="emojiDisplay">🎯</div>
+                <div class="target-letter" id="targetLetter">Ready?</div>
+                <div class="letter-word" id="letterWord"></div>
+                <div class="case-indicator" id="caseIndicator" style="display: none;"></div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Type letter" disabled maxlength="1">
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="right-panel">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">📊 Progress</div>
+                    <div class="stat-value" id="score">0/26</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">🎯 Current</div>
+                    <div class="stat-value" id="currentDisplay">A</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="start-btn" id="startBtn">🚀 START! 🚀</button>
+                <button class="repeat-btn" id="repeatBtn" disabled>🔊 LISTEN AGAIN 🔊</button>
+                <button class="reset-btn" id="resetBtn">🔄 NEW GAME 🔄</button>
+            </div>
+
+            <div class="jump-controls">
+                <div class="jump-label">Navigate:</div>
+                <div class="jump-buttons">
+                    <button class="jump-btn" id="prevBtn" disabled>⬅️ Previous Letter</button>
+                    <button class="jump-btn" id="nextBtn" disabled>Next Letter ➡️</button>
+                </div>
+            </div>
+
+            <div class="settings">
+                <div class="setting-row">
+                    <span class="setting-label">🎮 Mode:</span>
+                    <select id="modeSelect">
+                        <option value="uppercase" selected>Uppercase (A-Z)</option>
+                        <option value="lowercase">Lowercase (a-z)</option>
+                        <option value="both">Both Cases</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Alphabet data with words and emojis
+        const alphabetData = [
+            { letter: 'A', word: 'Apple', emoji: '🍎' },
+            { letter: 'B', word: 'Ball', emoji: '⚽' },
+            { letter: 'C', word: 'Cat', emoji: '🐱' },
+            { letter: 'D', word: 'Dog', emoji: '🐶' },
+            { letter: 'E', word: 'Elephant', emoji: '🐘' },
+            { letter: 'F', word: 'Fish', emoji: '🐠' },
+            { letter: 'G', word: 'Grapes', emoji: '🍇' },
+            { letter: 'H', word: 'House', emoji: '🏠' },
+            { letter: 'I', word: 'Ice Cream', emoji: '🍦' },
+            { letter: 'J', word: 'Juice', emoji: '🧃' },
+            { letter: 'K', word: 'Kite', emoji: '🪁' },
+            { letter: 'L', word: 'Lion', emoji: '🦁' },
+            { letter: 'M', word: 'Moon', emoji: '🌙' },
+            { letter: 'N', word: 'Nest', emoji: '🪹' },
+            { letter: 'O', word: 'Orange', emoji: '🍊' },
+            { letter: 'P', word: 'Pizza', emoji: '🍕' },
+            { letter: 'Q', word: 'Queen', emoji: '👸' },
+            { letter: 'R', word: 'Rainbow', emoji: '🌈' },
+            { letter: 'S', word: 'Sun', emoji: '☀️' },
+            { letter: 'T', word: 'Tiger', emoji: '🐯' },
+            { letter: 'U', word: 'Umbrella', emoji: '☂️' },
+            { letter: 'V', word: 'Violin', emoji: '🎻' },
+            { letter: 'W', word: 'Whale', emoji: '🐳' },
+            { letter: 'X', word: 'Xylophone', emoji: '🎵' },
+            { letter: 'Y', word: 'Yo-yo', emoji: '🪀' },
+            { letter: 'Z', word: 'Zebra', emoji: '🦓' }
+        ];
+
+        // Game state
+        let gameState = {
+            isPlaying: false,
+            currentIndex: 0,
+            mode: 'uppercase'
+        };
+
+        // DOM elements
+        const targetLetterEl = document.getElementById('targetLetter');
+        const emojiDisplayEl = document.getElementById('emojiDisplay');
+        const letterWordEl = document.getElementById('letterWord');
+        const caseIndicatorEl = document.getElementById('caseIndicator');
+        const userInputEl = document.getElementById('userInput');
+        const scoreEl = document.getElementById('score');
+        const currentDisplayEl = document.getElementById('currentDisplay');
+        const messageEl = document.getElementById('message');
+        const startBtn = document.getElementById('startBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modeSelect = document.getElementById('modeSelect');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Celebratory emojis
+        const celebrationEmojis = ['🎉', '🎊', '⭐', '🌟', '✨', '🎈', '🎁', '🏆', '👏', '🎯', '💫', '🌈'];
+        const encouragementMessages = [
+            'Yay! 🎉',
+            'Good Job! ⭐',
+            'You Did It! 🌟',
+            'Wow! 🎊',
+            'Super! 🏆',
+            'Great! ✨',
+            'Yes! 👏',
+            'Perfect! 💫',
+            'Awesome! 🎈',
+            'Amazing! 🌈'
+        ];
+
+        // Text-to-Speech function
+        function speak(text, rate = 0.8) {
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = rate;
+            utterance.pitch = 1.1;
+            utterance.volume = 1.0;
+            
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && 
+                (voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Karen'))
+            );
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Load voices
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+
+        // Get current letter based on mode
+        function getCurrentLetter() {
+            const data = alphabetData[gameState.currentIndex];
+            if (gameState.mode === 'lowercase') {
+                return data.letter.toLowerCase();
+            } else if (gameState.mode === 'both') {
+                // Alternate between uppercase and lowercase
+                return gameState.currentIndex % 2 === 0 
+                    ? data.letter.toUpperCase() 
+                    : data.letter.toLowerCase();
+            }
+            return data.letter.toUpperCase();
+        }
+
+        // Display current letter
+        function displayLetter() {
+            const data = alphabetData[gameState.currentIndex];
+            const displayLetter = getCurrentLetter();
+            const isUppercase = displayLetter === displayLetter.toUpperCase();
+            
+            emojiDisplayEl.textContent = data.emoji;
+            targetLetterEl.textContent = displayLetter;
+            letterWordEl.textContent = data.word;
+            
+            // Show case indicator
+            if (gameState.mode === 'lowercase') {
+                caseIndicatorEl.textContent = '📝 Lowercase';
+                caseIndicatorEl.style.display = 'block';
+            } else if (gameState.mode === 'both') {
+                caseIndicatorEl.textContent = isUppercase ? '📝 Uppercase' : '📝 Lowercase';
+                caseIndicatorEl.style.display = 'block';
+            } else {
+                caseIndicatorEl.textContent = '📝 Uppercase';
+                caseIndicatorEl.style.display = 'block';
+            }
+            
+            // Speak the letter and word with case information
+            let speechText;
+            if (gameState.mode === 'lowercase') {
+                speechText = `Lowercase ${data.letter.toLowerCase()}, ${data.word}`;
+            } else if (gameState.mode === 'both') {
+                const caseType = isUppercase ? 'Uppercase' : 'Lowercase';
+                speechText = `${caseType} ${displayLetter}, ${data.word}`;
+            } else {
+                speechText = `Uppercase ${data.letter} for ${data.word}`;
+            }
+            
+            speak(speechText);
+            
+            userInputEl.value = '';
+            userInputEl.className = '';
+            messageEl.textContent = 'Type the letter!';
+            messageEl.className = 'message';
+            
+            updateStats();
+        }
+
+        // Update stats display
+        function updateStats() {
+            scoreEl.textContent = `${gameState.currentIndex}/26`;
+            currentDisplayEl.textContent = getCurrentLetter();
+        }
+
+        // Show celebration
+        function showCelebration() {
+            const emoji = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+            const message = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+            messageEl.textContent = `${message} ${emoji}`;
+            messageEl.className = 'message success';
+            
+            const cleanMessage = message.replace(/[🎉🎊⭐🌟✨🎈🎁🏆👏🎯💫🌈]/g, '').trim();
+            speak(cleanMessage, 1.0);
+        }
+
+        // Repeat current letter
+        function repeatCurrentLetter() {
+            if (!gameState.isPlaying) return;
+            
+            const data = alphabetData[gameState.currentIndex];
+            const displayLetter = getCurrentLetter();
+            const isUppercase = displayLetter === displayLetter.toUpperCase();
+            
+            let speechText;
+            if (gameState.mode === 'lowercase') {
+                speechText = `Lowercase ${data.letter.toLowerCase()}, ${data.word}`;
+            } else if (gameState.mode === 'both') {
+                const caseType = isUppercase ? 'Uppercase' : 'Lowercase';
+                speechText = `${caseType} ${displayLetter}, ${data.word}`;
+            } else {
+                speechText = `${data.letter} for ${data.word}`;
+            }
+            
+            speak(speechText);
+        }
+
+        // Start game
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.currentIndex = 0;
+            gameState.mode = modeSelect.value;
+            
+            userInputEl.disabled = false;
+            userInputEl.focus();
+            startBtn.disabled = true;
+            repeatBtn.disabled = false;
+            modeSelect.disabled = true;
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+            
+            messageEl.textContent = "Let's Go! 🚀";
+            messageEl.className = 'message success';
+            speak("Let's learn the alphabet!", 1.0);
+            
+            setTimeout(() => {
+                messageEl.textContent = '';
+                displayLetter();
+            }, 1500);
+        }
+
+        // End game
+        function endGameComplete() {
+            gameState.isPlaying = false;
+            
+            userInputEl.disabled = true;
+            startBtn.disabled = false;
+            repeatBtn.disabled = true;
+            modeSelect.disabled = false;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            
+            targetLetterEl.textContent = '🏆';
+            emojiDisplayEl.textContent = '🎉';
+            letterWordEl.textContent = 'Complete!';
+            messageEl.textContent = `Amazing! You completed A to Z! 🎉`;
+            messageEl.className = 'message success';
+            
+            speak(`Amazing! You completed all letters from A to Z! Congratulations!`, 0.9);
+        }
+
+        // Reset game
+        function resetGame() {
+            gameState.isPlaying = false;
+            gameState.currentIndex = 0;
+            gameState.mode = modeSelect.value;
+            
+            userInputEl.disabled = true;
+            userInputEl.value = '';
+            userInputEl.className = '';
+            startBtn.disabled = false;
+            repeatBtn.disabled = true;
+            modeSelect.disabled = false;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            
+            targetLetterEl.textContent = 'Ready?';
+            emojiDisplayEl.textContent = '🎯';
+            letterWordEl.textContent = '';
+            caseIndicatorEl.style.display = 'none';
+            messageEl.textContent = '';
+            messageEl.className = 'message';
+            
+            updateStats();
+        }
+
+        // Check user input
+        function checkInput() {
+            if (!gameState.isPlaying) return;
+            
+            const userValue = userInputEl.value.trim();
+            const targetLetter = getCurrentLetter();
+            
+            if (userValue.length === 0) return;
+            
+            // Check if input matches (case-insensitive in both mode)
+            if (userValue.toUpperCase() === targetLetter.toUpperCase()) {
+                userInputEl.className = 'correct';
+                showCelebration();
+                
+                gameState.currentIndex++;
+                
+                setTimeout(() => {
+                    if (gameState.currentIndex >= 26) {
+                        endGameComplete();
+                    } else if (gameState.isPlaying) {
+                        displayLetter();
+                        userInputEl.focus();
+                    }
+                }, 1500);
+            } else {
+                userInputEl.className = 'incorrect';
+                messageEl.textContent = 'Oops! Try Again! 💪';
+                messageEl.className = 'message error';
+                speak('Try again!', 1.0);
+                
+                setTimeout(() => {
+                    userInputEl.value = '';
+                    userInputEl.className = '';
+                    if (gameState.isPlaying) {
+                        messageEl.textContent = 'Type the letter!';
+                        messageEl.className = 'message';
+                    }
+                }, 1000);
+            }
+        }
+
+        // Jump to previous
+        function goToPrevious() {
+            if (!gameState.isPlaying) return;
+            if (gameState.currentIndex > 0) {
+                gameState.currentIndex--;
+                displayLetter();
+                userInputEl.focus();
+            }
+        }
+
+        // Jump to next
+        function goToNext() {
+            if (!gameState.isPlaying) return;
+            if (gameState.currentIndex < 25) {
+                gameState.currentIndex++;
+                displayLetter();
+                userInputEl.focus();
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        repeatBtn.addEventListener('click', repeatCurrentLetter);
+        resetBtn.addEventListener('click', resetGame);
+        prevBtn.addEventListener('click', goToPrevious);
+        nextBtn.addEventListener('click', goToNext);
+
+        // Mode change handler
+        modeSelect.addEventListener('change', () => {
+            resetGame();
+        });
+
+        // Allow only letters
+        userInputEl.addEventListener('keypress', (e) => {
+            const isValid = /[a-zA-Z]/.test(e.key);
+            
+            if (!isValid && e.key !== 'Enter' && e.key !== 'Backspace') {
+                e.preventDefault();
+            }
+        });
+
+        // Check input on change
+        userInputEl.addEventListener('input', (e) => {
+            e.target.value = e.target.value.slice(0, 1);
+            checkInput();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.isPlaying) return;
+            
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goToPrevious();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                goToNext();
+            }
+        });
+
+        // Initialize display
+        updateStats();
+    </script>
+</body>
+</html>
+
