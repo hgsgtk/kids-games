@@ -443,8 +443,10 @@
                 <div class="setting-row">
                     <span class="setting-label">🎯 Mode:</span>
                     <select id="modeSelect">
-                        <option value="0-100" selected>Numbers 0 to 100</option>
-                        <option value="101-200">Numbers 101 to 200</option>
+                        <option value="0-100" selected>Count Up: 0 to 100</option>
+                        <option value="101-200">Count Up: 101 to 200</option>
+                        <option value="100-0">Count Down: 100 to 0</option>
+                        <option value="200-101">Count Down: 200 to 101</option>
                     </select>
                 </div>
             </div>
@@ -458,9 +460,10 @@
             score: 0,
             currentAnimal: null,
             currentNumber: 0,
-            mode: '0-100', // '0-100' or '101-200'
+            mode: '0-100', // '0-100', '101-200', '100-0', or '200-101'
             startNumber: 0,
-            endNumber: 100
+            endNumber: 100,
+            isCountdown: false
         };
 
         // DOM elements
@@ -594,12 +597,18 @@
         // Update stats display
         function updateStats() {
             // Show current progress
-            const completed = gameState.currentNumber - gameState.startNumber;
-            const total = gameState.endNumber - gameState.startNumber + 1;
+            let completed, total;
+            if (gameState.isCountdown) {
+                completed = gameState.startNumber - gameState.currentNumber;
+                total = gameState.startNumber - gameState.endNumber + 1;
+            } else {
+                completed = gameState.currentNumber - gameState.startNumber;
+                total = gameState.endNumber - gameState.startNumber + 1;
+            }
             scoreEl.textContent = `${completed}/${total}`;
             
             // Display current mode
-            modeDisplayEl.textContent = gameState.mode === '0-100' ? '0-100' : '101-200';
+            modeDisplayEl.textContent = gameState.mode;
         }
 
         // Show celebration
@@ -627,13 +636,23 @@
             gameState.score = 0;
             gameState.mode = modeSelect.value;
             
-            // Set range based on mode
+            // Set range and direction based on mode
             if (gameState.mode === '0-100') {
                 gameState.startNumber = 0;
                 gameState.endNumber = 100;
-            } else {
+                gameState.isCountdown = false;
+            } else if (gameState.mode === '101-200') {
                 gameState.startNumber = 101;
                 gameState.endNumber = 200;
+                gameState.isCountdown = false;
+            } else if (gameState.mode === '100-0') {
+                gameState.startNumber = 100;
+                gameState.endNumber = 0;
+                gameState.isCountdown = true;
+            } else if (gameState.mode === '200-101') {
+                gameState.startNumber = 200;
+                gameState.endNumber = 101;
+                gameState.isCountdown = true;
             }
             
             gameState.currentNumber = gameState.startNumber;
@@ -648,7 +667,9 @@
             prevBtn.disabled = false;
             nextBtn.disabled = false;
             
-            const rangeText = gameState.mode === '0-100' ? '0 to 100' : '101 to 200';
+            const rangeText = gameState.isCountdown ? 
+                `${gameState.startNumber} down to ${gameState.endNumber}` :
+                `${gameState.startNumber} to ${gameState.endNumber}`;
             messageEl.textContent = "Let's Go! 🚀";
             messageEl.className = 'message success';
             speak(`Let's go! Type from ${rangeText}!`, 1.0);
@@ -674,7 +695,9 @@
             prevBtn.disabled = true;
             nextBtn.disabled = true;
             
-            const rangeText = gameState.mode === '0-100' ? '0 to 100' : '101 to 200';
+            const rangeText = gameState.isCountdown ? 
+                `${gameState.startNumber} down to ${gameState.endNumber}` :
+                `${gameState.startNumber} to ${gameState.endNumber}`;
             targetNumberEl.textContent = '🏆';
             animalDisplayEl.textContent = '';
             animalNameEl.textContent = '';
@@ -695,9 +718,19 @@
             if (gameState.mode === '0-100') {
                 gameState.startNumber = 0;
                 gameState.endNumber = 100;
-            } else {
+                gameState.isCountdown = false;
+            } else if (gameState.mode === '101-200') {
                 gameState.startNumber = 101;
                 gameState.endNumber = 200;
+                gameState.isCountdown = false;
+            } else if (gameState.mode === '100-0') {
+                gameState.startNumber = 100;
+                gameState.endNumber = 0;
+                gameState.isCountdown = true;
+            } else if (gameState.mode === '200-101') {
+                gameState.startNumber = 200;
+                gameState.endNumber = 101;
+                gameState.isCountdown = true;
             }
             gameState.currentNumber = gameState.startNumber;
             
@@ -732,13 +765,23 @@
             // Check if input matches the number
             if (userValue === targetNumber) {
                 gameState.score++;
-                gameState.currentNumber++; // Move to next number
+                
+                // Move to next number (increment or decrement based on mode)
+                if (gameState.isCountdown) {
+                    gameState.currentNumber--;
+                } else {
+                    gameState.currentNumber++;
+                }
                 
                 userInputEl.className = 'correct';
                 showCelebration();
                 
                 // Check if completed all numbers
-                if (gameState.currentNumber > gameState.endNumber) {
+                const isComplete = gameState.isCountdown ? 
+                    (gameState.currentNumber < gameState.endNumber) :
+                    (gameState.currentNumber > gameState.endNumber);
+                
+                if (isComplete) {
                     setTimeout(() => {
                         endGameComplete();
                     }, 1500);
@@ -776,7 +819,13 @@
         function jumpToNumber(targetNum) {
             if (!gameState.isPlaying) return;
             
-            targetNum = Math.max(gameState.startNumber, Math.min(gameState.endNumber, targetNum));
+            // Clamp to valid range
+            if (gameState.isCountdown) {
+                targetNum = Math.min(gameState.startNumber, Math.max(gameState.endNumber, targetNum));
+            } else {
+                targetNum = Math.max(gameState.startNumber, Math.min(gameState.endNumber, targetNum));
+            }
+            
             gameState.currentNumber = targetNum;
             setNewAnimal();
             updateStats();
@@ -786,7 +835,10 @@
         // Jump button handler
         function handleJump() {
             const targetNum = parseInt(jumpInput.value);
-            if (!isNaN(targetNum) && targetNum >= gameState.startNumber && targetNum <= gameState.endNumber) {
+            const minNum = Math.min(gameState.startNumber, gameState.endNumber);
+            const maxNum = Math.max(gameState.startNumber, gameState.endNumber);
+            
+            if (!isNaN(targetNum) && targetNum >= minNum && targetNum <= maxNum) {
                 jumpToNumber(targetNum);
                 jumpInput.value = '';
             }
@@ -794,25 +846,43 @@
 
         // Previous button handler
         function handlePrevious() {
-            if (gameState.currentNumber > gameState.startNumber) {
-                jumpToNumber(gameState.currentNumber - 1);
+            // Previous means going back in the sequence
+            if (gameState.isCountdown) {
+                // For countdown, previous means going to a higher number
+                if (gameState.currentNumber < gameState.startNumber) {
+                    jumpToNumber(gameState.currentNumber + 1);
+                }
+            } else {
+                // For count-up, previous means going to a lower number
+                if (gameState.currentNumber > gameState.startNumber) {
+                    jumpToNumber(gameState.currentNumber - 1);
+                }
             }
         }
 
         // Next button handler
         function handleNext() {
-            if (gameState.currentNumber < gameState.endNumber) {
-                jumpToNumber(gameState.currentNumber + 1);
+            // Next means advancing in the sequence
+            if (gameState.isCountdown) {
+                // For countdown, next means going to a lower number
+                if (gameState.currentNumber > gameState.endNumber) {
+                    jumpToNumber(gameState.currentNumber - 1);
+                }
+            } else {
+                // For count-up, next means going to a higher number
+                if (gameState.currentNumber < gameState.endNumber) {
+                    jumpToNumber(gameState.currentNumber + 1);
+                }
             }
         }
 
         // Update jump input range based on mode
         function updateJumpInputRange() {
             const mode = modeSelect.value;
-            if (mode === '0-100') {
+            if (mode === '0-100' || mode === '100-0') {
                 jumpInput.min = '0';
                 jumpInput.max = '100';
-            } else {
+            } else if (mode === '101-200' || mode === '200-101') {
                 jumpInput.min = '101';
                 jumpInput.max = '200';
             }
