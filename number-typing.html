@@ -447,7 +447,7 @@
                         <option value="101-200">Count Up: 101 to 200</option>
                         <option value="100-0">Count Down: 100 to 0</option>
                         <option value="200-101">Count Down: 200 to 101</option>
-                        <option value="3-digit-sequence">Sequential: 123, 456, 789, 10</option>
+                        <option value="3-digit-sequence">Sequential: 012, 123...10, 111213...596061</option>
                     </select>
                 </div>
             </div>
@@ -468,9 +468,10 @@
             isSequentialMode: false
         };
 
-        // Sequential numbers (123, 456, 789, 10)
+        // Sequential numbers (012, 123, 456, 789, 10, 111213, 141516, 171819, 202122, 232425, 262728, 293031, 323334, 353637, 383940, 414243, 444546, 474849, 505152, 535455, 565758, 596061)
         const sequential3DigitNumbers = [
-            '123', '456', '789', '10'
+            '012', '123', '456', '789', '10', '111213', '141516', '171819', '202122', '232425', '262728', '293031',
+            '323334', '353637', '383940', '414243', '444546', '474849', '505152', '535455', '565758', '596061'
         ];
 
         // DOM elements
@@ -535,9 +536,17 @@
 
         // Text-to-Speech function
         function speak(text, rate = 0.8) {
-            // Cancel any ongoing speech
-            window.speechSynthesis.cancel();
-            
+            // Cancel any ongoing speech and add small delay for Safari
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                // Small delay needed for some browsers (especially Safari)
+                setTimeout(() => speakNow(text, rate), 100);
+            } else {
+                speakNow(text, rate);
+            }
+        }
+        
+        function speakNow(text, rate) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = rate; // Slower speed for kids
             utterance.pitch = 1.1; // Slightly higher pitch for friendly tone
@@ -570,7 +579,7 @@
             if (gameState.isSequentialMode) {
                 animal.number = sequential3DigitNumbers[gameState.currentNumber];
             } else {
-                animal.number = gameState.currentNumber.toString();
+            animal.number = gameState.currentNumber.toString();
             }
             
             return animal;
@@ -586,14 +595,18 @@
             
             // For sequential mode
             if (gameState.isSequentialMode) {
-                // For 10, show exactly 10 emojis; for others, show sample
+                // For 10, show exactly 10 emojis; for large numbers like 111213, show sample
                 if (gameState.currentAnimal.number === '10') {
                     animalDisplayEl.textContent = emoji.repeat(10);
+                } else if (gameState.currentAnimal.number.length === 6) {
+                    // For 6-digit numbers, show sample
+                    animalDisplayEl.textContent = emoji.repeat(10) + '...';
                 } else {
+                    // For 3-digit numbers, show sample
                     animalDisplayEl.textContent = emoji.repeat(10) + '...';
                 }
             } else if (count <= 20) {
-                // Limit display to avoid too many emojis
+            // Limit display to avoid too many emojis
                 animalDisplayEl.textContent = emoji.repeat(count);
             } else {
                 // For numbers > 20, show a sample and count
@@ -605,16 +618,24 @@
             
             // Speak the animal name and number
             const numberText = gameState.currentAnimal.number;
-            // For 3-digit numbers, speak each digit separately; for 10, speak as-is
+            // For sequential mode, handle different number formats
             if (gameState.isSequentialMode) {
                 if (numberText === '10') {
-                    speak(`${numberText} for ${gameState.currentAnimal.name}`);
+                    // Speak 10 as-is
+                    speak(`${numberText} for ${gameState.currentAnimal.name}`, 0.8);
+                } else if (numberText.length === 6) {
+                    // For 6-digit numbers like 111213, split into pairs: "11, 12, 13"
+                    const first = numberText.substring(0, 2);
+                    const second = numberText.substring(2, 4);
+                    const third = numberText.substring(4, 6);
+                    speak(`${first}, ${second}, ${third} for ${gameState.currentAnimal.name}`, 0.8);
                 } else {
+                    // For 3-digit numbers like 123, speak each digit: "1, 2, 3"
                     const digits = numberText.split('').join(', ');
-                    speak(`${digits} for ${gameState.currentAnimal.name}`);
+                    speak(`${digits} for ${gameState.currentAnimal.name}`, 0.8);
                 }
             } else {
-                speak(`${numberText} for ${gameState.currentAnimal.name}`);
+                speak(`${numberText} for ${gameState.currentAnimal.name}`, 0.8);
             }
             
             userInputEl.value = '';
@@ -642,7 +663,7 @@
             
             // Display current mode
             if (gameState.isSequentialMode) {
-                modeDisplayEl.textContent = '123-456-789-10';
+                modeDisplayEl.textContent = 'Sequential';
             } else {
                 modeDisplayEl.textContent = gameState.mode;
             }
@@ -664,7 +685,26 @@
         function repeatCurrentAnimal() {
             if (!gameState.isPlaying || !gameState.currentAnimal) return;
             
-            speak(`${gameState.currentAnimal.number} for ${gameState.currentAnimal.name}`);
+            const numberText = gameState.currentAnimal.number;
+            
+            // Handle different number formats for sequential mode
+            if (gameState.isSequentialMode) {
+                if (numberText === '10') {
+                    speak(`${numberText} for ${gameState.currentAnimal.name}`, 0.8);
+                } else if (numberText.length === 6) {
+                    // For 6-digit numbers like 111213, split into pairs: "11, 12, 13"
+                    const first = numberText.substring(0, 2);
+                    const second = numberText.substring(2, 4);
+                    const third = numberText.substring(4, 6);
+                    speak(`${first}, ${second}, ${third} for ${gameState.currentAnimal.name}`, 0.8);
+                } else {
+                    // For 3-digit numbers like 123, speak each digit: "1, 2, 3"
+                    const digits = numberText.split('').join(', ');
+                    speak(`${digits} for ${gameState.currentAnimal.name}`, 0.8);
+                }
+            } else {
+                speak(`${gameState.currentAnimal.number} for ${gameState.currentAnimal.name}`, 0.8);
+            }
         }
 
         // Start game
@@ -716,15 +756,15 @@
                 prevBtn.disabled = true;
                 nextBtn.disabled = true;
             } else {
-                jumpInput.disabled = false;
-                jumpBtn.disabled = false;
-                prevBtn.disabled = false;
-                nextBtn.disabled = false;
+            jumpInput.disabled = false;
+            jumpBtn.disabled = false;
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
             }
             
             let rangeText;
             if (gameState.isSequentialMode) {
-                rangeText = '123, 456, 789, 10';
+                rangeText = 'sequential numbers';
             } else {
                 rangeText = gameState.isCountdown ? 
                     `${gameState.startNumber} down to ${gameState.endNumber}` :
@@ -758,7 +798,7 @@
             
             let rangeText;
             if (gameState.isSequentialMode) {
-                rangeText = '123, 456, 789, 10';
+                rangeText = 'all sequential numbers';
             } else {
                 rangeText = gameState.isCountdown ? 
                     `${gameState.startNumber} down to ${gameState.endNumber}` :
@@ -906,7 +946,7 @@
             if (gameState.isCountdown) {
                 targetNum = Math.min(gameState.startNumber, Math.max(gameState.endNumber, targetNum));
             } else {
-                targetNum = Math.max(gameState.startNumber, Math.min(gameState.endNumber, targetNum));
+            targetNum = Math.max(gameState.startNumber, Math.min(gameState.endNumber, targetNum));
             }
             
             gameState.currentNumber = targetNum;
@@ -937,8 +977,8 @@
                 }
             } else {
                 // For count-up, previous means going to a lower number
-                if (gameState.currentNumber > gameState.startNumber) {
-                    jumpToNumber(gameState.currentNumber - 1);
+            if (gameState.currentNumber > gameState.startNumber) {
+                jumpToNumber(gameState.currentNumber - 1);
                 }
             }
         }
@@ -953,8 +993,8 @@
                 }
             } else {
                 // For count-up, next means going to a higher number
-                if (gameState.currentNumber < gameState.endNumber) {
-                    jumpToNumber(gameState.currentNumber + 1);
+            if (gameState.currentNumber < gameState.endNumber) {
+                jumpToNumber(gameState.currentNumber + 1);
                 }
             }
         }
@@ -1001,22 +1041,23 @@
             }
         });
 
-        // Limit input to 3 characters (for numbers 1-999)
+        // Limit input based on mode (3 digits normally, 6 digits for sequential mode)
         userInputEl.addEventListener('input', (e) => {
             // Remove any non-numeric characters
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
             
-            // Limit to 3 characters
-            if (e.target.value.length > 3) {
-                e.target.value = e.target.value.slice(0, 3);
+            // Limit length based on mode
+            const maxLength = gameState.isSequentialMode ? 6 : 3;
+            if (e.target.value.length > maxLength) {
+                e.target.value = e.target.value.slice(0, maxLength);
             }
             
-            // Limit to max 999 for sequential mode, 200 for other modes
-            const numValue = parseInt(e.target.value);
-            if (!gameState.isSequentialMode && numValue > 200) {
-                e.target.value = '200';
-            } else if (gameState.isSequentialMode && numValue > 999) {
-                e.target.value = '999';
+            // Limit to max value for non-sequential modes
+            if (!gameState.isSequentialMode) {
+                const numValue = parseInt(e.target.value);
+                if (numValue > 200) {
+                    e.target.value = '200';
+                }
             }
             
             checkInput();
