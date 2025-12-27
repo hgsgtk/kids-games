@@ -90,6 +90,8 @@
         .game-card:nth-child(4) { animation-delay: 0.4s; }
         .game-card:nth-child(5) { animation-delay: 0.5s; }
         .game-card:nth-child(6) { animation-delay: 0.6s; }
+        .game-card:nth-child(7) { animation-delay: 0.7s; }
+        .game-card:nth-child(8) { animation-delay: 0.8s; }
 
         @keyframes fadeInUp {
             from {
@@ -289,11 +291,11 @@
             <h2>📊 Collection Overview</h2>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number">7</span>
+                    <span class="stat-number">8</span>
                     <span class="stat-label">Total Games</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">2</span>
+                    <span class="stat-number">3</span>
                     <span class="stat-label">Learning Games</span>
                 </div>
                 <div class="stat-item">
@@ -438,6 +440,25 @@
                 </ul>
                 <a href="baby-countdown-timer.html" class="play-button" onclick="event.stopPropagation()">
                     🎮 Try It!
+                </a>
+            </div>
+
+            <!-- Game 8: Elevator Game -->
+            <div class="game-card" onclick="window.location.href='elevator-game.html'">
+                <span class="category-badge">📚 Learning</span>
+                <div class="game-icon">🏢</div>
+                <h2 class="game-title">Elevator Game - キッズタワー20</h2>
+                <p class="game-description">
+                    Type numbers to visit 20 different floors! Realistic elevator with themed commercial building!
+                </p>
+                <ul class="game-features">
+                    <li>Realistic elevator movement</li>
+                    <li>20 themed floors (1F to 20F)</li>
+                    <li>Door open/close animations</li>
+                    <li>Type numbers to select floors</li>
+                </ul>
+                <a href="elevator-game.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
                 </a>
             </div>
         </div>

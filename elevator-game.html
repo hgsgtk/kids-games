@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>エレベーターゲーム - キッズタワー20</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 30px;
+            padding: 20px;
+            max-width: 1200px;
+        }
+
+        /* ビル外観 */
+        .building {
+            position: relative;
+            width: 300px;
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .building-title {
+            text-align: center;
+            color: gold;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .floor-indicator {
+            position: relative;
+            height: 800px;
+            background: #1a252f;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #95a5a6;
+        }
+
+        .floor-shaft {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .floor-line {
+            position: absolute;
+            width: 100%;
+            height: 40px;
+            border-bottom: 2px solid #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #7f8c8d;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .elevator-car {
+            position: absolute;
+            width: 90%;
+            height: 35px;
+            left: 5%;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: 3px solid #daa520;
+            border-radius: 8px;
+            transition: top 0.05s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #8b4513;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .elevator-car.moving::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            width: 2px;
+            height: 20px;
+            background: #7f8c8d;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* コントロールパネル */
+        .control-panel {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            width: 450px;
+        }
+
+        .current-floor-display {
+            background: #000;
+            color: #0f0;
+            font-size: 80px;
+            font-weight: bold;
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+            box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.3);
+            border: 5px solid #2c3e50;
+        }
+
+        .floor-info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            min-height: 120px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .floor-info h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .floor-info p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #2c3e50;
+        }
+
+        .button-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .button-grid::-webkit-scrollbar-track {
+            background: #2c3e50;
+            border-radius: 10px;
+        }
+
+        .button-grid::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .button-grid::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        .floor-button {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            height: 50px;
+            width: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floor-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .floor-button:active {
+            transform: scale(0.95);
+        }
+
+        .floor-button.current {
+            background: linear-gradient(145deg, #27ae60, #229954);
+            box-shadow: 0 0 20px rgba(39, 174, 96, 0.6);
+        }
+
+        .input-display {
+            background: #000;
+            color: #ff6b6b;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #e74c3c;
+            position: relative;
+        }
+
+        .input-display::after {
+            content: '▌';
+            animation: blink-cursor 1s infinite;
+            margin-left: 5px;
+        }
+
+        @keyframes blink-cursor {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .instruction {
+            text-align: center;
+            color: #ecf0f1;
+            font-size: 16px;
+            margin-top: 15px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-indicator {
+            text-align: center;
+            color: #f39c12;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 30px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-hint {
+            text-align: center;
+            color: #3498db;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            min-height: 25px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .door-animation {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, #95a5a6, #7f8c8d);
+            z-index: 20;
+            transition: transform 0.8s ease-in-out;
+        }
+
+        .door-left {
+            left: 0;
+            transform-origin: left;
+        }
+
+        .door-right {
+            right: 0;
+            transform-origin: right;
+        }
+
+        .door-open .door-left {
+            transform: translateX(-100%);
+        }
+
+        .door-open .door-right {
+            transform: translateX(100%);
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+
+        .elevator-car.moving {
+            animation: none;
+        }
+
+        .moving-indicator {
+            display: none;
+            font-size: 28px;
+            animation: blink 1s infinite;
+        }
+
+        .elevator-car.moving .moving-indicator {
+            display: block;
+        }
+
+        .emoji-display {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body tabindex="0" style="outline: none;">
+    <div class="game-container">
+        <!-- ビル外観 -->
+        <div class="building">
+            <div class="building-title">🏢 キッズタワー20</div>
+            <div class="floor-indicator">
+                <div class="floor-shaft" id="floorShaft"></div>
+                <div class="elevator-car" id="elevator">
+                    <span id="elevatorDisplay">1F</span>
+                    <span class="moving-indicator">🔼</span>
+                </div>
+                <div class="door-animation door-left" id="doorLeft"></div>
+                <div class="door-animation door-right" id="doorRight"></div>
+            </div>
+        </div>
+
+        <!-- コントロールパネル -->
+        <div class="control-panel">
+            <div class="current-floor-display" id="currentFloor">1F</div>
+            
+            <div class="floor-info" id="floorInfo">
+                <div class="emoji-display">💄</div>
+                <h2>1階 - 化粧品・アクセサリー</h2>
+                <p>キラキラした商品がいっぱい！</p>
+            </div>
+
+            <div class="input-display" id="inputDisplay">数字を入力してね</div>
+            <div class="input-hint" id="inputHint"></div>
+
+            <div class="button-grid">
+                <button class="floor-button" data-floor="20">20F</button>
+                <button class="floor-button" data-floor="19">19F</button>
+                <button class="floor-button" data-floor="18">18F</button>
+                <button class="floor-button" data-floor="17">17F</button>
+                <button class="floor-button" data-floor="16">16F</button>
+                <button class="floor-button" data-floor="15">15F</button>
+                <button class="floor-button" data-floor="14">14F</button>
+                <button class="floor-button" data-floor="13">13F</button>
+                <button class="floor-button" data-floor="12">12F</button>
+                <button class="floor-button" data-floor="11">11F</button>
+                <button class="floor-button" data-floor="10">10F</button>
+                <button class="floor-button" data-floor="9">9F</button>
+                <button class="floor-button" data-floor="8">8F</button>
+                <button class="floor-button" data-floor="7">7F</button>
+                <button class="floor-button" data-floor="6">6F</button>
+                <button class="floor-button" data-floor="5">5F</button>
+                <button class="floor-button" data-floor="4">4F</button>
+                <button class="floor-button" data-floor="3">3F</button>
+                <button class="floor-button" data-floor="2">2F</button>
+                <button class="floor-button current" data-floor="1">1F</button>
+            </div>
+
+            <div class="status-indicator" id="statusIndicator"></div>
+            <div class="instruction">
+                ⌨️ キーボード操作方法 ⌨️<br>
+                <strong style="color: #ffd700; font-size: 18px;">数字入力 → Enter で移動！</strong><br>
+                例：「1」「5」「Enter」で15階へ<br>
+                Backspace: 削除 | ESC: キャンセル
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // フロア情報データベース（20階建て商業施設）
+        const floorData = {
+            20: {
+                name: "20階 - 屋上スカイガーデン",
+                description: "観覧車とスカイラウンジ！",
+                emoji: "🎡",
+                color: "linear-gradient(135deg, #00d2ff, #3a7bd5)"
+            },
+            19: {
+                name: "19階 - 展望レストラン",
+                description: "絶景を見ながら食事！",
+                emoji: "🌃",
+                color: "linear-gradient(135deg, #a8edea, #fed6e3)"
+            },
+            18: {
+                name: "18階 - イベントホール",
+                description: "楽しいイベント開催中！",
+                emoji: "🎪",
+                color: "linear-gradient(135deg, #ff9a9e, #fad0c4)"
+            },
+            17: {
+                name: "17階 - 映画館",
+                description: "最新の映画を楽しもう！",
+                emoji: "🎬",
+                color: "linear-gradient(135deg, #ffecd2, #fcb69f)"
+            },
+            16: {
+                name: "16階 - ゲームセンター",
+                description: "たくさんのゲームがあるよ！",
+                emoji: "🎮",
+                color: "linear-gradient(135deg, #f093fb, #f5576c)"
+            },
+            15: {
+                name: "15階 - カラオケ・アミューズメント",
+                description: "カラオケで歌おう！",
+                emoji: "🎤",
+                color: "linear-gradient(135deg, #4facfe, #00f2fe)"
+            },
+            14: {
+                name: "14階 - フィットネスジム",
+                description: "運動して健康に！",
+                emoji: "💪",
+                color: "linear-gradient(135deg, #43e97b, #38f9d7)"
+            },
+            13: {
+                name: "13階 - 書籍・文具",
+                description: "本とかわいい文房具",
+                emoji: "📚",
+                color: "linear-gradient(135deg, #fa709a, #fee140)"
+            },
+            12: {
+                name: "12階 - 家電・PC",
+                description: "最新の電化製品",
+                emoji: "💻",
+                color: "linear-gradient(135deg, #ff9a9e, #fecfef)"
+            },
+            11: {
+                name: "11階 - インテリア・家具",
+                description: "素敵な家具がいっぱい！",
+                emoji: "🛋️",
+                color: "linear-gradient(135deg, #ffdde1, #ee9ca7)"
+            },
+            10: {
+                name: "10階 - ペットショップ",
+                description: "かわいい動物たち！",
+                emoji: "🐶",
+                color: "linear-gradient(135deg, #fbc2eb, #a6c1ee)"
+            },
+            9: {
+                name: "9階 - 美容・コスメ専門店",
+                description: "キレイになれる場所！",
+                emoji: "💅",
+                color: "linear-gradient(135deg, #a8edea, #fed6e3)"
+            },
+            8: {
+                name: "8階 - レストラン街",
+                description: "おいしいごはんがたくさん！",
+                emoji: "🍜",
+                color: "linear-gradient(135deg, #ff9a9e, #fad0c4)"
+            },
+            7: {
+                name: "7階 - カフェ・スイーツ",
+                description: "甘いお菓子がいっぱい！",
+                emoji: "🍰",
+                color: "linear-gradient(135deg, #ffecd2, #fcb69f)"
+            },
+            6: {
+                name: "6階 - スポーツ・アウトドア",
+                description: "スポーツ用品とアウトドアグッズ",
+                emoji: "⚽",
+                color: "linear-gradient(135deg, #f093fb, #f5576c)"
+            },
+            5: {
+                name: "5階 - おもちゃ・ホビー",
+                description: "楽しいおもちゃがいっぱい！",
+                emoji: "🧸",
+                color: "linear-gradient(135deg, #4facfe, #00f2fe)"
+            },
+            4: {
+                name: "4階 - こども服・ベビー用品",
+                description: "かわいい子供服",
+                emoji: "👶",
+                color: "linear-gradient(135deg, #43e97b, #38f9d7)"
+            },
+            3: {
+                name: "3階 - 紳士服",
+                description: "かっこいい服がたくさん",
+                emoji: "👔",
+                color: "linear-gradient(135deg, #fa709a, #fee140)"
+            },
+            2: {
+                name: "2階 - 婦人服・雑貨",
+                description: "おしゃれな服と小物",
+                emoji: "👗",
+                color: "linear-gradient(135deg, #ff9a9e, #fecfef)"
+            },
+            1: {
+                name: "1階 - 化粧品・アクセサリー",
+                description: "キラキラした商品がいっぱい！",
+                emoji: "💄",
+                color: "linear-gradient(135deg, #3498db, #2980b9)"
+            }
+        };
+
+        // ゲーム状態
+        let currentFloor = 1;
+        let targetFloor = 1;
+        let isMoving = false;
+        let inputBuffer = "";
+        let inputTimeout = null;
+
+        // DOM要素
+        const elevator = document.getElementById('elevator');
+        const elevatorDisplay = document.getElementById('elevatorDisplay');
+        const currentFloorDisplay = document.getElementById('currentFloor');
+        const floorInfo = document.getElementById('floorInfo');
+        const inputDisplay = document.getElementById('inputDisplay');
+        const inputHint = document.getElementById('inputHint');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const doorLeft = document.getElementById('doorLeft');
+        const doorRight = document.getElementById('doorRight');
+        const floorShaft = document.getElementById('floorShaft');
+        const floorIndicator = document.querySelector('.floor-indicator');
+
+        // フロア線の描画
+        function drawFloorLines() {
+            const floors = [20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+            floors.forEach((floor, index) => {
+                const line = document.createElement('div');
+                line.className = 'floor-line';
+                line.style.top = `${index * 40}px`;
+                line.innerHTML = `<span>${getFloorLabel(floor)}</span>`;
+                floorShaft.appendChild(line);
+            });
+        }
+
+        // フロア番号のラベル取得
+        function getFloorLabel(floor) {
+            return `${floor}F`;
+        }
+
+        // エレベーター位置を計算（ピクセル）
+        function getElevatorPosition(floor) {
+            const floors = [20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+            const index = floors.indexOf(floor);
+            return index * 40 + 2.5;
+        }
+
+        // エレベーター移動アニメーション
+        async function moveElevator(from, to) {
+            if (isMoving || from === to) return;
+            
+            isMoving = true;
+            elevator.classList.add('moving');
+            inputHint.textContent = '';
+            
+            // ドアを閉める
+            floorIndicator.classList.remove('door-open');
+            await sleep(1000);
+
+            const startPos = getElevatorPosition(from);
+            const endPos = getElevatorPosition(to);
+            const distance = Math.abs(endPos - startPos);
+            const direction = to > from ? '🔼' : '🔽';
+            
+            document.querySelector('.moving-indicator').textContent = direction;
+
+            // 移動速度の計算（リアルな加速・減速）
+            const totalSteps = 100;
+            const duration = Math.max(1000, distance * 10); // 距離に応じた時間
+            const stepTime = duration / totalSteps;
+
+            statusIndicator.textContent = `${direction} 移動中...`;
+            statusIndicator.style.color = '#f39c12';
+
+            for (let i = 0; i <= totalSteps; i++) {
+                // イージング関数（加速・減速）
+                const progress = easeInOutCubic(i / totalSteps);
+                const currentPos = startPos + (endPos - startPos) * progress;
+                elevator.style.top = `${currentPos}px`;
+
+                // 通過フロアの表示
+                const currentApproxFloor = getCurrentFloorByPosition(currentPos);
+                elevatorDisplay.textContent = getFloorLabel(currentApproxFloor);
+
+                await sleep(stepTime);
+            }
+
+            currentFloor = to;
+            elevator.classList.remove('moving');
+            
+            // 到着処理
+            updateDisplay();
+            statusIndicator.textContent = '✅ 到着しました';
+            statusIndicator.style.color = '#27ae60';
+
+            // ドアを開ける
+            await sleep(500);
+            floorIndicator.classList.add('door-open');
+            
+            await sleep(2000);
+            statusIndicator.textContent = '';
+            isMoving = false;
+        }
+
+        // イージング関数
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        // 現在位置から近いフロアを取得
+        function getCurrentFloorByPosition(pos) {
+            const floors = [20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+            let closestFloor = floors[0];
+            let minDistance = Math.abs(pos - getElevatorPosition(floors[0]));
+
+            floors.forEach(floor => {
+                const distance = Math.abs(pos - getElevatorPosition(floor));
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestFloor = floor;
+                }
+            });
+
+            return closestFloor;
+        }
+
+        // スリープ関数
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // 表示を更新
+        function updateDisplay() {
+            const label = getFloorLabel(currentFloor);
+            currentFloorDisplay.textContent = label;
+            elevatorDisplay.textContent = label;
+
+            const data = floorData[currentFloor];
+            floorInfo.style.background = data.color;
+            floorInfo.innerHTML = `
+                <div class="emoji-display">${data.emoji}</div>
+                <h2>${data.name}</h2>
+                <p>${data.description}</p>
+            `;
+
+            // ボタンの状態を更新
+            document.querySelectorAll('.floor-button').forEach(btn => {
+                const btnFloor = parseInt(btn.dataset.floor);
+                if (btnFloor === currentFloor) {
+                    btn.classList.add('current');
+                } else {
+                    btn.classList.remove('current');
+                }
+            });
+        }
+
+        // フロアに移動
+        function goToFloor(floor) {
+            if (floorData[floor] && !isMoving) {
+                moveElevator(currentFloor, floor);
+            }
+        }
+
+        // キーボード入力の処理
+        function handleKeyPress(key) {
+            if (isMoving) return;
+
+            // 数字キーで直接入力（1-9, 0）
+            if (key >= '0' && key <= '9') {
+                // 最大2桁まで入力可能
+                if (inputBuffer.length < 2) {
+                    inputBuffer += key;
+                    const displayText = inputBuffer.length === 1 && inputBuffer === '0' ? '入力してね' : `${inputBuffer}階`;
+                    inputDisplay.textContent = displayText;
+                    inputDisplay.style.color = '#ffff00';
+                    inputHint.textContent = '👉 Enter を押して移動！';
+                    inputHint.style.color = '#3498db';
+                }
+            } else if (key === 'Backspace' || key === 'Delete') {
+                clearTimeout(inputTimeout);
+                inputBuffer = inputBuffer.slice(0, -1);
+                inputDisplay.textContent = inputBuffer ? `${inputBuffer}階` : '数字を入力してね';
+                inputDisplay.style.color = inputBuffer ? '#ffff00' : '#ff6b6b';
+                inputHint.textContent = inputBuffer ? '👉 Enter を押して移動！' : '';
+            } else if (key === 'Enter' && inputBuffer) {
+                clearTimeout(inputTimeout);
+                const floor = parseInt(inputBuffer);
+                if (floor >= 1 && floor <= 20 && floorData[floor]) {
+                    inputDisplay.textContent = `${floor}F に移動します！`;
+                    inputDisplay.style.color = '#00ff00';
+                    inputHint.textContent = '';
+                    setTimeout(() => {
+                        goToFloor(floor);
+                        inputBuffer = '';
+                        inputDisplay.textContent = '数字を入力してね';
+                        inputDisplay.style.color = '#ff6b6b';
+                    }, 500);
+                } else {
+                    inputDisplay.textContent = `${floor}階は存在しません`;
+                    inputDisplay.style.color = '#ff0000';
+                    inputHint.textContent = '1〜20の数字を入力してね';
+                    inputHint.style.color = '#e74c3c';
+                    setTimeout(() => {
+                        inputBuffer = '';
+                        inputDisplay.textContent = '数字を入力してね';
+                        inputDisplay.style.color = '#ff6b6b';
+                        inputHint.textContent = '';
+                    }, 1500);
+                }
+            } else if (key === 'Escape') {
+                // ESCキーでキャンセル
+                clearTimeout(inputTimeout);
+                inputBuffer = '';
+                inputDisplay.textContent = '数字を入力してね';
+                inputDisplay.style.color = '#ff6b6b';
+                inputHint.textContent = '';
+            }
+        }
+
+        // イベントリスナー
+        document.addEventListener('keydown', (e) => {
+            console.log('Key pressed:', e.key); // デバッグ用
+            handleKeyPress(e.key);
+            // 数字キーが押された場合、デフォルトの動作を防ぐ
+            if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        // ページがロードされたらbodyにフォーカスを設定
+        window.addEventListener('load', () => {
+            document.body.focus();
+        });
+
+        document.querySelectorAll('.floor-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const floor = parseInt(button.dataset.floor);
+                if (!isMoving) {
+                    inputBuffer = '';
+                    inputDisplay.textContent = `${getFloorLabel(floor)} に移動します！`;
+                    inputDisplay.style.color = '#00ff00';
+                    inputHint.textContent = '';
+                    setTimeout(() => {
+                        goToFloor(floor);
+                        inputDisplay.textContent = '数字を入力してね';
+                        inputDisplay.style.color = '#ff6b6b';
+                    }, 500);
+                }
+            });
+        });
+
+        // 初期化
+        drawFloorLines();
+        elevator.style.top = `${getElevatorPosition(1)}px`;
+        updateDisplay();
+        
+        // ページにフォーカスを設定してキーボード入力を有効化
+        document.body.focus();
+        
+        // 初期ドアアニメーション
+        setTimeout(() => {
+            floorIndicator.classList.add('door-open');
+        }, 500);
+
+        // クリックしてもフォーカスを維持
+        document.addEventListener('click', () => {
+            document.body.focus();
+        });
+    </script>
+</body>
+</html>
+
