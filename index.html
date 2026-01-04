@@ -92,6 +92,8 @@
         .game-card:nth-child(6) { animation-delay: 0.6s; }
         .game-card:nth-child(7) { animation-delay: 0.7s; }
         .game-card:nth-child(8) { animation-delay: 0.8s; }
+        .game-card:nth-child(9) { animation-delay: 0.9s; }
+        .game-card:nth-child(10) { animation-delay: 1.0s; }
 
         @keyframes fadeInUp {
             from {
@@ -291,7 +293,7 @@
             <h2>📊 Collection Overview</h2>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number">8</span>
+                    <span class="stat-number">10</span>
                     <span class="stat-label">Total Games</span>
                 </div>
                 <div class="stat-item">
@@ -303,8 +305,8 @@
                     <span class="stat-label">3D/4D Games</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">1</span>
-                    <span class="stat-label">Utility App</span>
+                    <span class="stat-number">2</span>
+                    <span class="stat-label">New Year Special</span>
                 </div>
             </div>
         </div>
@@ -458,6 +460,44 @@
                     <li>Clear moving animations</li>
                 </ul>
                 <a href="elevator-game.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 9: Mochitsuki Game -->
+            <div class="game-card" onclick="window.location.href='mochitsuki-game.html'">
+                <span class="category-badge">🎍 New Year</span>
+                <div class="game-icon">🎍</div>
+                <h2 class="game-title">もちつきゲーム</h2>
+                <p class="game-description">
+                    Japanese New Year's mochi pounding game! Click fast to make delicious mochi!
+                </p>
+                <ul class="game-features">
+                    <li>Traditional mochi pounding action</li>
+                    <li>Combo system for extra points</li>
+                    <li>Level up as you improve</li>
+                    <li>Fun sound effects and animations</li>
+                </ul>
+                <a href="mochitsuki-game.html" class="play-button" onclick="event.stopPropagation()">
+                    🎮 Play Now!
+                </a>
+            </div>
+
+            <!-- Game 10: Tako-age (Kite Flying) Number Game -->
+            <div class="game-card" onclick="window.location.href='tako-age-game.html'">
+                <span class="category-badge">🎍 New Year</span>
+                <div class="game-icon">🪁</div>
+                <h2 class="game-title">凧揚げ数字ゲーム</h2>
+                <p class="game-description">
+                    Type numbers to catch flying kites! Traditional New Year's kite game with number learning!
+                </p>
+                <ul class="game-features">
+                    <li>4 difficulty levels (0-9 to 0-100)</li>
+                    <li>Beautiful Japanese scenery</li>
+                    <li>Combo system for high scores</li>
+                    <li>Learn numbers while having fun</li>
+                </ul>
+                <a href="tako-age-game.html" class="play-button" onclick="event.stopPropagation()">
                     🎮 Play Now!
                 </a>
             </div>

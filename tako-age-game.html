@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🪁 お正月凧揚げ数字ゲーム 🪁</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #98D8C8 100%);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* 雲のアニメーション */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 100px;
+            opacity: 0.8;
+            animation: float-cloud linear infinite;
+        }
+
+        @keyframes float-cloud {
+            from { transform: translateX(-200px); }
+            to { transform: translateX(calc(100vw + 200px)); }
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #e74c3c;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 25px;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .tako {
+            position: absolute;
+            width: 120px;
+            height: 140px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            animation: sway 3s ease-in-out infinite;
+        }
+
+        .tako:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: translateX(-10px) rotate(-2deg); }
+            50% { transform: translateX(10px) rotate(2deg); }
+        }
+
+        .tako-body {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 50%, #c44569 100%);
+            position: relative;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .tako-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .tako-string {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            width: 2px;
+            height: 200px;
+            background: linear-gradient(180deg, rgba(139, 69, 19, 0.8), rgba(139, 69, 19, 0));
+            transform: translateX(-50%);
+            animation: string-wave 2s ease-in-out infinite;
+        }
+
+        @keyframes string-wave {
+            0%, 100% { transform: translateX(-50%) rotate(0deg); }
+            50% { transform: translateX(-50%) rotate(5deg); }
+        }
+
+        .tako-tail {
+            position: absolute;
+            top: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tail-piece {
+            width: 30px;
+            height: 40px;
+            background: linear-gradient(45deg, #ffd93d, #6bcf7f, #4d96ff);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            animation: tail-flutter 1.5s ease-in-out infinite;
+        }
+
+        .tail-piece:nth-child(2) { animation-delay: 0.2s; }
+        .tail-piece:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes tail-flutter {
+            0%, 100% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        button {
+            padding: 20px 40px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 60px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+
+        .message-box.show {
+            display: block;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .message-text {
+            font-size: 2.5em;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .particle-explosion {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .score-popup {
+            position: absolute;
+            font-size: 2em;
+            font-weight: bold;
+            color: #f39c12;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            animation: scoreFloat 1s ease-out forwards;
+            z-index: 50;
+        }
+
+        @keyframes scoreFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(1.5);
+            }
+        }
+
+        .difficulty-selector {
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .difficulty-selector h3 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .mode-selector {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: 3px solid transparent;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .mode-btn.selected {
+            border-color: #e74c3c;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+
+        .sequence-settings {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .sequence-settings.show {
+            display: block;
+        }
+
+        .sequence-settings label {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .sequence-settings input {
+            padding: 10px 15px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            width: 100px;
+            text-align: center;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: 3px solid transparent;
+            background: linear-gradient(135deg, #ffd93d 0%, #6bcf7f 100%);
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .difficulty-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .difficulty-btn.selected {
+            border-color: #e74c3c;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+
+        .direction-btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: 3px solid transparent;
+            background: linear-gradient(135deg, #ffd93d 0%, #6bcf7f 100%);
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .direction-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .direction-btn.selected {
+            border-color: #e74c3c;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, #90EE90 0%, #228B22 100%);
+            z-index: 10;
+        }
+
+        .mountain {
+            position: absolute;
+            bottom: 100px;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-bottom: 200px solid #8B7355;
+            opacity: 0.6;
+        }
+
+        .mountain:nth-child(1) { left: 10%; }
+        .mountain:nth-child(2) { right: 20%; border-bottom-color: #A0826D; }
+
+        .fuji {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 200px solid transparent;
+            border-right: 200px solid transparent;
+            border-bottom: 300px solid #9370DB;
+            opacity: 0.7;
+        }
+
+        .fuji::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 80px solid transparent;
+            border-right: 80px solid transparent;
+            border-bottom: 120px solid white;
+        }
+
+        .sun {
+            position: absolute;
+            top: 50px;
+            right: 100px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #FFD700 0%, #FFA500 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+            animation: sunrise 2s ease-in-out;
+        }
+
+        @keyframes sunrise {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.3em;
+            color: #667eea;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+            padding: 8px 20px;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 太陽 -->
+        <div class="sun"></div>
+
+        <!-- 雲 -->
+        <div class="cloud" style="top: 15%; width: 150px; height: 60px; animation-duration: 30s;"></div>
+        <div class="cloud" style="top: 25%; width: 120px; height: 50px; animation-duration: 40s; animation-delay: -10s;"></div>
+        <div class="cloud" style="top: 10%; width: 180px; height: 70px; animation-duration: 50s; animation-delay: -20s;"></div>
+
+        <!-- ヘッダー -->
+        <div class="game-header">
+            <h1>🪁 凧揚げ数字ゲーム 🪁</h1>
+            <div class="game-stats">
+                <div class="stat-box" id="scoreBox">スコア: <span id="score">0</span></div>
+                <div class="stat-box" id="timeBox">時間: <span id="time">60</span>秒</div>
+                <div class="stat-box">連続: <span id="combo">0</span></div>
+            </div>
+            <div class="level-badge">レベル: <span id="level">1</span></div>
+        </div>
+
+        <!-- 難易度選択 -->
+        <div class="difficulty-selector" id="difficultySelector">
+            <!-- モード選択 -->
+            <div class="mode-selector">
+                <h3>モードを選んでね！</h3>
+                <div class="mode-buttons">
+                    <button class="mode-btn selected" data-mode="timeattack">⏱️ タイムアタック<br>(60秒)</button>
+                    <button class="mode-btn" data-mode="sequence">📚 順番モード<br>(時間制限なし)</button>
+                </div>
+                
+                <!-- 順番モード設定 -->
+                <div class="sequence-settings" id="sequenceSettings">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px;">順番の方向:</label>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button class="direction-btn selected" id="ascendingBtn">
+                                ⬆️ 昇順<br>(小→大)
+                            </button>
+                            <button class="direction-btn" id="descendingBtn">
+                                ⬇️ 降順<br>(大→小)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label for="startNumber">開始数字:</label>
+                        <input type="number" id="startNumber" value="0" min="0" max="100">
+                        <span style="margin: 0 10px;">→</span>
+                        <label for="endNumber">終了数字:</label>
+                        <input type="number" id="endNumber" value="9" min="0" max="100">
+                    </div>
+                    
+                    <p style="margin-top: 10px; color: #764ba2; font-size: 0.9em;">
+                        💡 昇順: 0→1→2...、降順: 100→99→98...<br>
+                        🎈 一桁の数だけ凧が出るよ！（5の時は5個）
+                    </p>
+                </div>
+            </div>
+
+            <h3>難易度を選んでね！</h3>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn selected" data-difficulty="easy">かんたん<br>(0-9)</button>
+                <button class="difficulty-btn" data-difficulty="medium">ふつう<br>(0-20)</button>
+                <button class="difficulty-btn" data-difficulty="hard">むずかしい<br>(0-50)</button>
+                <button class="difficulty-btn" data-difficulty="expert">超むずかしい<br>(0-100)</button>
+            </div>
+        </div>
+
+        <!-- 説明 -->
+        <div class="instruction" id="instruction">
+            凧に書かれた数字をキーボードで入力してね！
+        </div>
+
+        <!-- 富士山と山 -->
+        <div class="fuji"></div>
+        <div class="mountain"></div>
+        <div class="mountain"></div>
+
+        <!-- 地面 -->
+        <div class="ground"></div>
+
+        <!-- 凧が入るコンテナ -->
+        <div id="takosContainer"></div>
+
+        <!-- メッセージボックス -->
+        <div class="message-box" id="messageBox">
+            <div class="message-text" id="messageText"></div>
+        </div>
+
+        <!-- コントロール -->
+        <div class="controls">
+            <button class="start-btn" id="startBtn">🎮 スタート</button>
+            <button class="reset-btn" id="resetBtn">🔄 リセット</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let timeLeft = 60;
+        let combo = 0;
+        let level = 1;
+        let gameActive = false;
+        let gameInterval;
+        let spawnInterval;
+        let takos = [];
+        let currentInput = '';
+        let difficulty = 'easy';
+        let maxNumber = 9;
+        let gameMode = 'timeattack'; // 'timeattack' or 'sequence'
+        let sequenceNumber = 0; // 順番モードで現在表示すべき数字
+        let startNumber = 0; // 順番モードの開始数字
+        let sequenceDirection = 'ascending'; // 'ascending' or 'descending'
+        let endNumber = 0; // 順番モードの終了数字
+
+        const difficultySettings = {
+            easy: { max: 9, spawnRate: 2000, speed: 3 },
+            medium: { max: 20, spawnRate: 1500, speed: 4 },
+            hard: { max: 50, spawnRate: 1200, speed: 5 },
+            expert: { max: 100, spawnRate: 1000, speed: 6 }
+        };
+
+        const scoreDisplay = document.getElementById('score');
+        const scoreBox = document.getElementById('scoreBox');
+        const timeDisplay = document.getElementById('time');
+        const timeBox = document.getElementById('timeBox');
+        const comboDisplay = document.getElementById('combo');
+        const levelDisplay = document.getElementById('level');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const takosContainer = document.getElementById('takosContainer');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+        const instruction = document.getElementById('instruction');
+        const difficultySelector = document.getElementById('difficultySelector');
+        const sequenceSettings = document.getElementById('sequenceSettings');
+        const startNumberInput = document.getElementById('startNumber');
+        const endNumberInput = document.getElementById('endNumber');
+        const ascendingBtn = document.getElementById('ascendingBtn');
+        const descendingBtn = document.getElementById('descendingBtn');
+
+        // Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // モード選択
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                gameMode = btn.dataset.mode;
+                
+                // 順番モードの設定を表示/非表示
+                if (gameMode === 'sequence') {
+                    sequenceSettings.classList.add('show');
+                } else {
+                    sequenceSettings.classList.remove('show');
+                }
+            });
+        });
+
+        // 昇順/降順選択
+        ascendingBtn.addEventListener('click', () => {
+            document.querySelectorAll('.direction-btn').forEach(b => b.classList.remove('selected'));
+            ascendingBtn.classList.add('selected');
+            sequenceDirection = 'ascending';
+            // デフォルト値を設定
+            startNumberInput.value = '0';
+            endNumberInput.value = '9';
+        });
+
+        descendingBtn.addEventListener('click', () => {
+            document.querySelectorAll('.direction-btn').forEach(b => b.classList.remove('selected'));
+            descendingBtn.classList.add('selected');
+            sequenceDirection = 'descending';
+            // デフォルト値を設定（降順用）
+            startNumberInput.value = '100';
+            endNumberInput.value = '0';
+        });
+
+        // 開始数字が変更されたら終了数字も自動調整
+        startNumberInput.addEventListener('change', () => {
+            const start = parseInt(startNumberInput.value);
+            if (sequenceDirection === 'ascending') {
+                // 昇順の場合、終了数字は開始より大きい値
+                if (parseInt(endNumberInput.value) <= start) {
+                    endNumberInput.value = Math.min(start + 10, maxNumber);
+                }
+            } else {
+                // 降順の場合、終了数字は開始より小さい値
+                if (parseInt(endNumberInput.value) >= start) {
+                    endNumberInput.value = Math.max(start - 10, 0);
+                }
+            }
+        });
+
+        // 難易度選択
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // dataset.difficultyが存在する場合のみ処理（昇順/降順ボタンを除外）
+                if (!btn.dataset.difficulty) return;
+                
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                difficulty = btn.dataset.difficulty;
+                maxNumber = difficultySettings[difficulty].max;
+                
+                // 開始/終了数字の最大値を更新
+                startNumberInput.max = maxNumber;
+                endNumberInput.max = maxNumber;
+                
+                // 昇順の場合のデフォルト値調整
+                if (sequenceDirection === 'ascending') {
+                    if (parseInt(startNumberInput.value) > maxNumber) {
+                        startNumberInput.value = 0;
+                    }
+                    if (parseInt(endNumberInput.value) > maxNumber) {
+                        endNumberInput.value = maxNumber;
+                    }
+                } else {
+                    // 降順の場合のデフォルト値調整
+                    if (parseInt(startNumberInput.value) > maxNumber) {
+                        startNumberInput.value = maxNumber;
+                    }
+                }
+            });
+        });
+
+        function playSound(frequency, duration, type = 'sine') {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // 数字に応じた凧の表示数を計算
+        function getTargetTakoCount(number) {
+            if (gameMode !== 'sequence') {
+                return 1;
+            }
+            
+            // 一桁の数だけ凧を表示（0の場合は1個）
+            const onesDigit = number % 10;
+            return onesDigit === 0 ? 1 : onesDigit;
+        }
+
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            score = 0;
+            combo = 0;
+            level = 1;
+            currentInput = '';
+            takos = [];
+            
+            // モードに応じた初期化
+            if (gameMode === 'sequence') {
+                // 順番モード
+                timeLeft = 0; // 時間制限なし
+                startNumber = parseInt(startNumberInput.value) || 0;
+                endNumber = parseInt(endNumberInput.value) || (sequenceDirection === 'ascending' ? maxNumber : 0);
+                sequenceNumber = startNumber;
+                
+                // 方向に応じたメッセージ
+                const directionText = sequenceDirection === 'ascending' ? '→' : '←';
+                instruction.textContent = `数字 ${sequenceNumber} の凧を探そう！ (${startNumber}${directionText}${endNumber})`;
+            } else {
+                // タイムアタックモード
+                timeLeft = 60;
+                instruction.textContent = '数字を入力して凧を撃ち落とせ！';
+            }
+            
+            updateDisplay();
+            startBtn.disabled = true;
+            difficultySelector.style.display = 'none';
+            
+            // 凧を定期的に生成
+            const spawnRate = gameMode === 'sequence' ? 500 : difficultySettings[difficulty].spawnRate;
+            spawnInterval = setInterval(spawnTako, spawnRate);
+            
+            // タイマー（タイムアタックモードのみ）
+            if (gameMode === 'timeattack') {
+                gameInterval = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay();
+                    
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                    
+                    // レベルアップ
+                    const newLevel = Math.floor(score / 30) + 1;
+                    if (newLevel > level) {
+                        level = newLevel;
+                        levelDisplay.textContent = level;
+                        playSound(600, 0.3, 'triangle');
+                        showMessage('レベル ' + level + '！');
+                    }
+                }, 1000);
+            }
+            
+            // 初期の凧をいくつか生成
+            if (gameMode === 'sequence') {
+                const targetCount = getTargetTakoCount(sequenceNumber);
+                for (let i = 0; i < targetCount; i++) {
+                    setTimeout(() => spawnTako(), i * 300);
+                }
+            } else {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => spawnTako(), i * 800);
+                }
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(spawnInterval);
+            
+            // すべての凧を削除
+            takos.forEach(tako => {
+                if (tako.element && tako.element.parentNode) {
+                    tako.element.remove();
+                }
+            });
+            takos = [];
+            
+            let finalMessage = '';
+            if (gameMode === 'sequence') {
+                let numbersCleared;
+                let totalNumbers;
+                if (sequenceDirection === 'ascending') {
+                    numbersCleared = sequenceNumber - startNumber;
+                    totalNumbers = endNumber - startNumber + 1;
+                } else {
+                    numbersCleared = startNumber - sequenceNumber;
+                    totalNumbers = startNumber - endNumber + 1;
+                }
+                
+                if (numbersCleared >= totalNumbers) {
+                    finalMessage = '🎉 完璧！全部クリア！ 🎉';
+                } else {
+                    finalMessage = `🌟 ${numbersCleared}個の数字をクリア！`;
+                }
+            } else {
+                if (score >= 100) {
+                    finalMessage = '🏆 凧揚げ名人！すごい！ 🏆';
+                } else if (score >= 70) {
+                    finalMessage = '🌟 とってもすばらしい！';
+                } else if (score >= 40) {
+                    finalMessage = '👏 よくできました！';
+                } else {
+                    finalMessage = '😊 がんばりました！';
+                }
+            }
+            
+            showMessage(finalMessage + '<br>スコア: ' + score + '点', true);
+            startBtn.disabled = false;
+            startBtn.textContent = '🎮 もう一度';
+            difficultySelector.style.display = 'block';
+            instruction.textContent = '凧に書かれた数字をキーボードで入力してね！';
+        }
+
+        function resetGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(spawnInterval);
+            
+            takos.forEach(tako => {
+                if (tako.element && tako.element.parentNode) {
+                    tako.element.remove();
+                }
+            });
+            takos = [];
+            
+            score = 0;
+            timeLeft = 60;
+            combo = 0;
+            level = 1;
+            currentInput = '';
+            sequenceNumber = 0;
+            
+            // 表示を初期化（タイムアタックモードに戻す）
+            gameMode = 'timeattack';
+            sequenceDirection = 'ascending';
+            scoreBox.innerHTML = 'スコア: <span id="score">0</span>';
+            timeBox.innerHTML = '時間: <span id="time">60</span>秒';
+            
+            // モード選択ボタンをリセット
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelector('.mode-btn[data-mode="timeattack"]').classList.add('selected');
+            sequenceSettings.classList.remove('show');
+            
+            // 昇順/降順ボタンをリセット
+            document.querySelectorAll('.direction-btn').forEach(b => b.classList.remove('selected'));
+            ascendingBtn.classList.add('selected');
+            startNumberInput.value = '0';
+            endNumberInput.value = '9';
+            
+            updateDisplay();
+            startBtn.disabled = false;
+            startBtn.textContent = '🎮 スタート';
+            difficultySelector.style.display = 'block';
+            instruction.textContent = '凧に書かれた数字をキーボードで入力してね！';
+            messageBox.classList.remove('show');
+        }
+
+        function updateDisplay() {
+            if (gameMode === 'sequence') {
+                // 順番モードでは進捗を表示
+                let progress, total;
+                if (sequenceDirection === 'ascending') {
+                    progress = sequenceNumber - startNumber;
+                    total = endNumber - startNumber + 1;
+                } else {
+                    progress = startNumber - sequenceNumber;
+                    total = startNumber - endNumber + 1;
+                }
+                scoreBox.innerHTML = `進捗: <strong>${progress}/${total}</strong>`;
+                
+                // 一桁の数を表示
+                const onesDigit = sequenceNumber % 10;
+                const takoCount = onesDigit === 0 ? 1 : onesDigit;
+                timeBox.innerHTML = `次: <strong id="time">${sequenceNumber}</strong> (×${takoCount})`;
+            } else {
+                // タイムアタックモードではスコアと時間を表示
+                scoreBox.innerHTML = `スコア: <strong id="score">${score}</strong>`;
+                timeBox.innerHTML = `時間: <strong id="time">${timeLeft}</strong>秒`;
+            }
+            
+            comboDisplay.textContent = combo;
+            levelDisplay.textContent = level;
+        }
+
+        function spawnTako() {
+            if (!gameActive) return;
+            
+            // モードに応じて数字を決定
+            let number;
+            let shouldSpawn = true;
+            
+            if (gameMode === 'sequence') {
+                // 順番モード：現在の順番の数字のみ
+                number = sequenceNumber;
+                
+                // 範囲チェック
+                if (sequenceDirection === 'ascending') {
+                    if (sequenceNumber > endNumber) {
+                        return;
+                    }
+                } else {
+                    if (sequenceNumber < endNumber) {
+                        return;
+                    }
+                }
+                
+                // 既に必要な数の凧が存在する場合は生成しない
+                const targetCount = getTargetTakoCount(sequenceNumber);
+                const existingCount = takos.filter(t => t.number === sequenceNumber).length;
+                if (existingCount >= targetCount) {
+                    return;
+                }
+            } else {
+                // タイムアタックモード：ランダム
+                number = Math.floor(Math.random() * (maxNumber + 1));
+            }
+            
+            const colors = [
+                'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 50%, #c44569 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+            ];
+            
+            const tako = document.createElement('div');
+            tako.className = 'tako';
+            
+            // 順番モードで複数凧の場合は配置を調整
+            let leftPos;
+            if (gameMode === 'sequence') {
+                const existingCount = takos.filter(t => t.number === number).length;
+                const targetCount = getTargetTakoCount(number);
+                
+                // 画面を均等に分割して配置
+                if (targetCount > 1) {
+                    const spacing = (window.innerWidth - 240) / targetCount;
+                    leftPos = spacing * existingCount + 60;
+                } else {
+                    leftPos = (window.innerWidth - 120) / 2;
+                }
+            } else {
+                leftPos = Math.random() * (window.innerWidth - 120);
+            }
+            
+            tako.style.left = leftPos + 'px';
+            tako.style.top = '-200px';
+            
+            const body = document.createElement('div');
+            body.className = 'tako-body';
+            body.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            const pattern = document.createElement('div');
+            pattern.className = 'tako-pattern';
+            pattern.textContent = number;
+            
+            const string = document.createElement('div');
+            string.className = 'tako-string';
+            
+            const tail = document.createElement('div');
+            tail.className = 'tako-tail';
+            for (let i = 0; i < 3; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'tail-piece';
+                tail.appendChild(piece);
+            }
+            
+            body.appendChild(pattern);
+            tako.appendChild(body);
+            tako.appendChild(string);
+            tako.appendChild(tail);
+            takosContainer.appendChild(tako);
+            
+            const takoObj = {
+                element: tako,
+                number: number,
+                y: -200,
+                targetY: Math.random() * 200 + 100,
+                speed: difficultySettings[difficulty].speed
+            };
+            
+            takos.push(takoObj);
+            
+            tako.addEventListener('click', () => {
+                if (gameActive) {
+                    captureTako(takoObj);
+                }
+            });
+        }
+
+        function animateTakos() {
+            takos.forEach((tako, index) => {
+                if (!tako.element || !tako.element.parentNode) {
+                    takos.splice(index, 1);
+                    return;
+                }
+                
+                if (tako.y < tako.targetY) {
+                    tako.y += tako.speed * 0.3;
+                } else {
+                    tako.y += Math.sin(Date.now() * 0.001 + index) * 0.5;
+                }
+                
+                tako.element.style.top = tako.y + 'px';
+            });
+            
+            if (gameActive) {
+                requestAnimationFrame(animateTakos);
+            }
+        }
+
+        function captureTako(tako) {
+            const capturedNumber = tako.number;
+            
+            // 順番モードでは同じ数字の凧を全て取得
+            let takosToCapture = [tako];
+            if (gameMode === 'sequence') {
+                takosToCapture = takos.filter(t => t.number === capturedNumber);
+            }
+            
+            const points = 10 + combo * 2 + (level - 1) * 5;
+            score += points;
+            combo++;
+            
+            updateDisplay();
+            playSound(400 + combo * 50, 0.2, 'sine');
+            
+            // 全ての凧を削除してエフェクト表示
+            takosToCapture.forEach((t, idx) => {
+                // スコアポップアップ（最初の凧だけ）
+                if (idx === 0) {
+                    const popup = document.createElement('div');
+                    popup.className = 'score-popup';
+                    popup.textContent = '+' + points;
+                    popup.style.left = t.element.offsetLeft + 60 + 'px';
+                    popup.style.top = t.element.offsetTop + 'px';
+                    document.body.appendChild(popup);
+                    setTimeout(() => popup.remove(), 1000);
+                }
+                
+                // パーティクル（全ての凧で表示）
+                setTimeout(() => {
+                    createParticles(t.element.offsetLeft + 60, t.element.offsetTop + 60);
+                    t.element.remove();
+                }, idx * 100); // 少しずつ時間差で消える
+            });
+            
+            // 配列から一括削除
+            takosToCapture.forEach(t => {
+                const index = takos.indexOf(t);
+                if (index > -1) {
+                    takos.splice(index, 1);
+                }
+            });
+            
+            // 順番モードでは次の数字へ進む
+            if (gameMode === 'sequence') {
+                // 同じ数字の凧は全て消えたので、必ず0になる
+                const remainingSameTakos = 0;
+                
+                if (remainingSameTakos === 0) {
+                    // 次の数字へ
+                    if (sequenceDirection === 'ascending') {
+                        sequenceNumber++;
+                    } else {
+                        sequenceNumber--;
+                    }
+                    
+                    // 終了条件チェック
+                    let isFinished = false;
+                    if (sequenceDirection === 'ascending') {
+                        isFinished = sequenceNumber > endNumber;
+                    } else {
+                        isFinished = sequenceNumber < endNumber;
+                    }
+                    
+                    if (isFinished) {
+                        setTimeout(() => {
+                            endGame();
+                            showMessage('🎉 すべての数字をクリアしました！ 🎉<br>スコア: ' + score + '点', true);
+                        }, 500);
+                    } else {
+                        const directionText = sequenceDirection === 'ascending' ? '→' : '←';
+                        instruction.textContent = `数字 ${sequenceNumber} の凧を探そう！ (${startNumber}${directionText}${endNumber})`;
+                        // 次の凧を生成
+                        setTimeout(() => {
+                            const targetCount = getTargetTakoCount(sequenceNumber);
+                            for (let i = 0; i < targetCount; i++) {
+                                setTimeout(() => spawnTako(), i * 200);
+                            }
+                        }, 300);
+                    }
+                    
+                    // レベルアップ（順番モードでは10個ごと）
+                    const progress = Math.abs(sequenceNumber - startNumber);
+                    if (progress % 10 === 0 && progress > 0) {
+                        level++;
+                        levelDisplay.textContent = level;
+                        playSound(600, 0.3, 'triangle');
+                        showMessage('レベル ' + level + '！');
+                    }
+                }
+            }
+        }
+
+        function createParticles(x, y) {
+            const colors = ['#ff6b6b', '#4facfe', '#43e97b', '#fa709a', '#ffd93d'];
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle-explosion';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                document.body.appendChild(particle);
+                
+                const angle = (Math.PI * 2 * i) / 15;
+                const velocity = 50 + Math.random() * 50;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+                
+                let posX = x;
+                let posY = y;
+                let opacity = 1;
+                let velocityY = vy;
+                
+                const animation = setInterval(() => {
+                    posX += vx * 0.1;
+                    posY += velocityY * 0.1;
+                    velocityY += 2; // 重力
+                    opacity -= 0.03;
+                    
+                    particle.style.left = posX + 'px';
+                    particle.style.top = posY + 'px';
+                    particle.style.opacity = opacity;
+                    
+                    if (opacity <= 0 || posY > window.innerHeight) {
+                        clearInterval(animation);
+                        particle.remove();
+                    }
+                }, 16);
+            }
+        }
+
+        function showMessage(text, persist = false) {
+            messageText.innerHTML = text;
+            messageBox.classList.add('show');
+            if (!persist) {
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                }, 1500);
+            }
+        }
+
+        // キーボード入力
+        document.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                currentInput += e.key;
+                
+                if (gameMode === 'sequence') {
+                    const directionText = sequenceDirection === 'ascending' ? '→' : '←';
+                    instruction.textContent = `数字 ${sequenceNumber} の凧を探そう！ (${startNumber}${directionText}${endNumber}) [入力: ${currentInput}]`;
+                } else {
+                    instruction.textContent = '入力中: ' + currentInput;
+                }
+                
+                // 入力された数字と一致する凧を探す
+                const inputNumber = parseInt(currentInput);
+                
+                let matchingTako;
+                if (gameMode === 'sequence') {
+                    // 順番モードでは現在の順番の数字のみマッチ
+                    matchingTako = takos.find(t => t.number === inputNumber && t.number === sequenceNumber);
+                } else {
+                    // タイムアタックモードでは任意の数字
+                    matchingTako = takos.find(t => t.number === inputNumber);
+                }
+                
+                if (matchingTako) {
+                    captureTako(matchingTako);
+                    currentInput = '';
+                } else {
+                    // 順番モードでは、目標の数字以外は即エラー
+                    if (gameMode === 'sequence') {
+                        if (inputNumber !== sequenceNumber && !sequenceNumber.toString().startsWith(currentInput)) {
+                            currentInput = '';
+                            const directionText = sequenceDirection === 'ascending' ? '→' : '←';
+                            instruction.textContent = `違うよ！数字 ${sequenceNumber} を探そう！`;
+                            combo = 0;
+                            updateDisplay();
+                            playSound(200, 0.2, 'sawtooth');
+                            setTimeout(() => {
+                                if (gameActive) {
+                                    instruction.textContent = `数字 ${sequenceNumber} の凧を探そう！ (${startNumber}${directionText}${endNumber})`;
+                                }
+                            }, 1000);
+                        }
+                    } else {
+                        // タイムアタックモード：現在の入力で始まる数字がない場合はリセット
+                        const possibleMatch = takos.some(t => 
+                            t.number.toString().startsWith(currentInput)
+                        );
+                        
+                        if (!possibleMatch) {
+                            currentInput = '';
+                            instruction.textContent = 'その数字の凧はないよ！';
+                            combo = 0;
+                            updateDisplay();
+                            playSound(200, 0.2, 'sawtooth');
+                            setTimeout(() => {
+                                if (gameActive) {
+                                    instruction.textContent = '数字を入力して凧を撃ち落とせ！';
+                                }
+                            }, 1000);
+                        }
+                    }
+                }
+            } else if (e.key === 'Backspace') {
+                currentInput = currentInput.slice(0, -1);
+                if (gameMode === 'sequence') {
+                    const directionText = sequenceDirection === 'ascending' ? '→' : '←';
+                    instruction.textContent = currentInput ? 
+                        `数字 ${sequenceNumber} の凧を探そう！ (${startNumber}${directionText}${endNumber}) [入力: ${currentInput}]` : 
+                        `数字 ${sequenceNumber} の凧を探そう！ (${startNumber}${directionText}${endNumber})`;
+                } else {
+                    instruction.textContent = currentInput ? '入力中: ' + currentInput : '数字を入力して凧を撃ち落とせ！';
+                }
+            } else if (e.key === 'Escape') {
+                currentInput = '';
+                if (gameMode === 'sequence') {
+                    const directionText = sequenceDirection === 'ascending' ? '→' : '←';
+                    instruction.textContent = `数字 ${sequenceNumber} の凧を探そう！ (${startNumber}${directionText}${endNumber})`;
+                } else {
+                    instruction.textContent = '数字を入力して凧を撃ち落とせ！';
+                }
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            startGame();
+            animateTakos();
+        });
+        
+        resetBtn.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
+

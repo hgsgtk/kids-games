@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎍 もちつきゲーム 🎍</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 10px;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .mochi-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .mochi-container:hover {
+            transform: scale(1.05);
+        }
+
+        .mochi-container.pounding {
+            animation: pound 0.2s;
+        }
+
+        @keyframes pound {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+        }
+
+        .mochi {
+            width: 250px;
+            height: 250px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0 -20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .mochi.stretchy {
+            animation: stretch 0.5s;
+        }
+
+        @keyframes stretch {
+            0%, 100% { border-radius: 50%; }
+            50% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+        }
+
+        .kine {
+            position: absolute;
+            width: 80px;
+            height: 200px;
+            background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+            border-radius: 40px;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .kine.hitting {
+            animation: hit 0.3s;
+        }
+
+        @keyframes hit {
+            0% {
+                top: -100px;
+                opacity: 1;
+            }
+            50% {
+                top: 20px;
+                opacity: 1;
+            }
+            100% {
+                top: -100px;
+                opacity: 0;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 20px 40px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .message {
+            font-size: 2em;
+            color: #e74c3c;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 50px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .decorations {
+            position: fixed;
+            font-size: 3em;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        .level-indicator {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .combo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            font-weight: bold;
+            color: #f39c12;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .combo.show {
+            animation: comboShow 1s;
+        }
+
+        @keyframes comboShow {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1) translateY(-50px);
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: 0;
+            pointer-events: none;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎍 もちつきゲーム 🎍</h1>
+        
+        <div class="level-indicator">
+            レベル: <span id="level">1</span>
+        </div>
+
+        <div class="game-info">
+            <div class="info-box">
+                スコア: <span id="score">0</span>
+            </div>
+            <div class="info-box">
+                時間: <span id="time">30</span>秒
+            </div>
+            <div class="info-box">
+                コンボ: <span id="combo">0</span>
+            </div>
+        </div>
+
+        <div class="mochi-container" id="mochiContainer">
+            <div class="kine" id="kine"></div>
+            <div class="mochi" id="mochi"></div>
+            <div class="combo" id="comboText"></div>
+        </div>
+
+        <div class="message" id="message">
+            スタートボタンを押してね！
+        </div>
+
+        <div class="buttons">
+            <button class="start-btn" id="startBtn" onclick="startGame()">
+                🎮 スタート
+            </button>
+            <button class="reset-btn" onclick="resetGame()">
+                🔄 リセット
+            </button>
+        </div>
+    </div>
+
+    <!-- 装飾 -->
+    <div class="decorations" style="top: 10%; left: 10%; animation: float 3s infinite;">🎍</div>
+    <div class="decorations" style="top: 15%; right: 10%; animation: float 3.5s infinite;">🎌</div>
+    <div class="decorations" style="bottom: 10%; left: 15%; animation: float 4s infinite;">🏮</div>
+    <div class="decorations" style="bottom: 15%; right: 15%; animation: float 3.2s infinite;">🎊</div>
+    <div class="decorations" style="top: 50%; left: 5%; animation: float 3.8s infinite;">⛩️</div>
+    <div class="decorations" style="top: 50%; right: 5%; animation: float 4.2s infinite;">🧧</div>
+
+    <audio id="poundSound" preload="auto"></audio>
+    <audio id="levelUpSound" preload="auto"></audio>
+
+    <script>
+        let score = 0;
+        let timeLeft = 30;
+        let level = 1;
+        let combo = 0;
+        let gameActive = false;
+        let gameInterval;
+        let comboTimeout;
+        let clickCount = 0;
+        let lastClickTime = 0;
+
+        const mochiContainer = document.getElementById('mochiContainer');
+        const mochi = document.getElementById('mochi');
+        const kine = document.getElementById('kine');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const comboDisplay = document.getElementById('combo');
+        const levelDisplay = document.getElementById('level');
+        const message = document.getElementById('message');
+        const comboText = document.getElementById('comboText');
+        const startBtn = document.getElementById('startBtn');
+
+        // サウンド効果（Web Audio APIを使用）
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playPoundSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 200 - (combo * 10);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        function playLevelUpSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.3);
+            oscillator.type = 'triangle';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            score = 0;
+            timeLeft = 30;
+            level = 1;
+            combo = 0;
+            clickCount = 0;
+            
+            updateDisplay();
+            message.textContent = 'もちをついてね！';
+            startBtn.disabled = true;
+            startBtn.style.opacity = '0.5';
+            
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+                
+                // レベルアップチェック
+                const newLevel = Math.floor(score / 50) + 1;
+                if (newLevel > level) {
+                    level = newLevel;
+                    levelDisplay.textContent = level;
+                    playLevelUpSound();
+                    showMessage('レベルアップ！🎉');
+                    createConfetti();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            
+            let finalMessage = '';
+            if (score >= 200) {
+                finalMessage = '🏆 すごい！もちつき名人！ 🏆';
+            } else if (score >= 150) {
+                finalMessage = '🌟 すばらしい！';
+            } else if (score >= 100) {
+                finalMessage = '👏 よくできました！';
+            } else {
+                finalMessage = '😊 がんばりました！';
+            }
+            
+            message.textContent = `${finalMessage}\nスコア: ${score}点`;
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.textContent = '🎮 もう一度';
+            
+            createConfetti();
+        }
+
+        function resetGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            score = 0;
+            timeLeft = 30;
+            level = 1;
+            combo = 0;
+            clickCount = 0;
+            
+            updateDisplay();
+            message.textContent = 'スタートボタンを押してね！';
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.textContent = '🎮 スタート';
+        }
+
+        function updateDisplay() {
+            scoreDisplay.textContent = score;
+            timeDisplay.textContent = timeLeft;
+            comboDisplay.textContent = combo;
+            levelDisplay.textContent = level;
+        }
+
+        function showMessage(text) {
+            const tempMessage = message.textContent;
+            message.textContent = text;
+            setTimeout(() => {
+                if (gameActive) {
+                    message.textContent = 'もちをついてね！';
+                }
+            }, 1500);
+        }
+
+        mochiContainer.addEventListener('click', (e) => {
+            if (!gameActive) return;
+            
+            // クリック間隔をチェック
+            const currentTime = Date.now();
+            const timeDiff = currentTime - lastClickTime;
+            lastClickTime = currentTime;
+            
+            // コンボシステム
+            if (timeDiff < 500) {
+                combo++;
+                clearTimeout(comboTimeout);
+                comboTimeout = setTimeout(() => {
+                    combo = 0;
+                    comboDisplay.textContent = combo;
+                }, 1000);
+            } else {
+                combo = 0;
+            }
+            
+            // スコア加算
+            const points = 1 + Math.floor(combo / 3) + (level - 1);
+            score += points;
+            clickCount++;
+            
+            updateDisplay();
+            playPoundSound();
+            
+            // アニメーション
+            mochiContainer.classList.add('pounding');
+            mochi.classList.add('stretchy');
+            kine.classList.add('hitting');
+            
+            setTimeout(() => {
+                mochiContainer.classList.remove('pounding');
+                mochi.classList.remove('stretchy');
+                kine.classList.remove('hitting');
+            }, 300);
+            
+            // パーティクル効果
+            createParticles(e.clientX, e.clientY);
+            
+            // コンボ表示
+            if (combo > 0 && combo % 5 === 0) {
+                comboText.textContent = `${combo} コンボ！`;
+                comboText.classList.add('show');
+                setTimeout(() => {
+                    comboText.classList.remove('show');
+                }, 1000);
+            }
+            
+            // もちの色を変更（だんだん白くなる）
+            const whiteness = Math.min(255, 200 + clickCount * 2);
+            mochi.style.background = `rgb(${whiteness}, ${whiteness}, ${whiteness})`;
+        });
+
+        function createParticles(x, y) {
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                document.body.appendChild(particle);
+                
+                const angle = (Math.PI * 2 * i) / 10;
+                const velocity = 50 + Math.random() * 50;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+                
+                let posX = x;
+                let posY = y;
+                let opacity = 1;
+                
+                const animation = setInterval(() => {
+                    posX += vx * 0.1;
+                    posY += vy * 0.1;
+                    opacity -= 0.05;
+                    
+                    particle.style.left = posX + 'px';
+                    particle.style.top = posY + 'px';
+                    particle.style.opacity = opacity;
+                    
+                    if (opacity <= 0) {
+                        clearInterval(animation);
+                        particle.remove();
+                    }
+                }, 16);
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s linear forwards`;
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 50);
+            }
+        }
+
+        // キーボードでもプレイできるように
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameActive) {
+                e.preventDefault();
+                mochiContainer.click();
+            }
+        });
+    </script>
+</body>
+</html>
+
