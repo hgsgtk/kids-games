@@ -535,7 +535,7 @@
                     
                     <p style="margin-top: 10px; color: #764ba2; font-size: 0.9em;">
                         💡 昇順: 0→1→2...、降順: 100→99→98...<br>
-                        🎈 一桁の数だけ凧が出るよ！（5の時は5個）
+                        🎈 一桁の数だけ凧が出るよ！（5の時は5個、10の時は10個）
                     </p>
                 </div>
             </div>
@@ -730,9 +730,9 @@
                 return 1;
             }
             
-            // 一桁の数だけ凧を表示（0の場合は1個）
+            // 一桁の数だけ凧を表示（0の場合は10個）
             const onesDigit = number % 10;
-            return onesDigit === 0 ? 1 : onesDigit;
+            return onesDigit === 0 ? 10 : onesDigit;
         }
 
         function startGame() {
@@ -910,9 +910,9 @@
                 }
                 scoreBox.innerHTML = `進捗: <strong>${progress}/${total}</strong>`;
                 
-                // 一桁の数を表示
+                // 一桁の数を表示（0の場合は10個）
                 const onesDigit = sequenceNumber % 10;
-                const takoCount = onesDigit === 0 ? 1 : onesDigit;
+                const takoCount = onesDigit === 0 ? 10 : onesDigit;
                 timeBox.innerHTML = `次: <strong id="time">${sequenceNumber}</strong> (×${takoCount})`;
             } else {
                 // タイムアタックモードではスコアと時間を表示
@@ -976,8 +976,13 @@
                 
                 // 画面を均等に分割して配置
                 if (targetCount > 1) {
-                    const spacing = (window.innerWidth - 240) / targetCount;
-                    leftPos = spacing * existingCount + 60;
+                    const availableWidth = window.innerWidth - 240;
+                    const spacing = availableWidth / targetCount;
+                    leftPos = spacing * existingCount + 60 + (spacing - 120) / 2;
+                    
+                    // 画面からはみ出さないように調整
+                    if (leftPos < 20) leftPos = 20;
+                    if (leftPos > window.innerWidth - 140) leftPos = window.innerWidth - 140;
                 } else {
                     leftPos = (window.innerWidth - 120) / 2;
                 }
