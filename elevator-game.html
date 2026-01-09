@@ -654,6 +654,37 @@
             border-color: #ffd700;
         }
 
+        .sound-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            color: #ffd700;
+            border: 2px solid #333;
+            padding: 15px 20px;
+            font-size: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.5);
+            border-color: #ffd700;
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
         .error-message {
             color: #ff6b6b;
             font-size: 18px;
@@ -693,6 +724,11 @@
             </button>
         </div>
     </div>
+
+    <!-- 音声トグルボタン -->
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" title="音声のON/OFF">
+        🔊
+    </button>
 
     <!-- 設定アイコン -->
     <button class="settings-icon" id="settingsIcon" onclick="openSettings()" title="設定を変更">
@@ -751,6 +787,34 @@
         // ⚙️ 最大階数の設定
         // ========================================
         let MAX_FLOOR = 100; // デフォルト値
+        
+        // ========================================
+        // 🔊 音声設定
+        // ========================================
+        const doorCloseSound = new Audio('door-simarimasu.mp3');
+        const doorOpenSound = new Audio('door-akimasu.mp3');
+        
+        // 音声ボリューム調整（0.0 ~ 1.0）
+        doorCloseSound.volume = 0.7;
+        doorOpenSound.volume = 0.7;
+        
+        // 音声の有効/無効状態
+        let isSoundEnabled = true;
+        
+        // 音声のON/OFF切り替え
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            const toggleBtn = document.getElementById('soundToggle');
+            if (isSoundEnabled) {
+                toggleBtn.textContent = '🔊';
+                toggleBtn.classList.remove('muted');
+                toggleBtn.title = '音声をOFF';
+            } else {
+                toggleBtn.textContent = '🔇';
+                toggleBtn.classList.add('muted');
+                toggleBtn.title = '音声をON';
+            }
+        }
         
         // 画像テンプレート（Unsplash無料画像）
         const imageTemplates = [
@@ -1027,6 +1091,19 @@
             const direction = to > from ? '🔼' : '🔽';
             directionArrow.textContent = direction;
             
+            // 🔊 「ドアが閉まります」の音声を再生
+            if (isSoundEnabled) {
+                try {
+                    doorCloseSound.currentTime = 0; // 再生位置をリセット
+                    doorCloseSound.play().catch(e => console.log('音声再生エラー:', e));
+                } catch (e) {
+                    console.log('音声再生エラー:', e);
+                }
+            }
+            
+            // ドアが閉まる演出のため少し待つ
+            await sleep(1500);
+            
             // 移動中表示を開始
             elevatorView.classList.add('moving');
 
@@ -1057,6 +1134,16 @@
             
             // 移動終了
             elevatorView.classList.remove('moving');
+            
+            // 🔊 「ドアが開きます」の音声を再生
+            if (isSoundEnabled) {
+                try {
+                    doorOpenSound.currentTime = 0; // 再生位置をリセット
+                    doorOpenSound.play().catch(e => console.log('音声再生エラー:', e));
+                } catch (e) {
+                    console.log('音声再生エラー:', e);
+                }
+            }
             
             // 到着処理
             updateDisplay();
