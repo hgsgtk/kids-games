@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>エレベーターゲーム - キッズタワー100</title>
+    <title>エレベーターゲーム - キッズタワー</title>
     <style>
         * {
             margin: 0;
@@ -491,9 +491,202 @@
             margin-bottom: 15px;
             animation: float 3s ease-in-out infinite;
         }
+
+        /* 設定モーダル */
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-modal.hidden {
+            display: none;
+        }
+
+        .settings-content {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            padding: 50px;
+            border-radius: 25px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            max-width: 600px;
+            border: 5px solid #667eea;
+        }
+
+        .settings-content h1 {
+            color: #ffd700;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .settings-content p {
+            color: #ecf0f1;
+            font-size: 20px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .floor-input-group {
+            margin-bottom: 40px;
+        }
+
+        .floor-input-group label {
+            display: block;
+            color: #3498db;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .floor-input {
+            width: 200px;
+            padding: 20px;
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            border: 5px solid #667eea;
+            border-radius: 15px;
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.3), 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .floor-input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.7);
+        }
+
+        .start-button {
+            background: linear-gradient(145deg, #27ae60, #229954);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 32px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.5);
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .start-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(39, 174, 96, 0.7);
+        }
+
+        .start-button:active {
+            transform: scale(0.95);
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .preset-button {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .preset-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            background: linear-gradient(145deg, #764ba2, #667eea);
+        }
+
+        .settings-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s;
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-icon:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.7);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 18px;
+            margin-top: 15px;
+            min-height: 25px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body tabindex="0" style="outline: none;">
+    <!-- 設定モーダル -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h1>🏢 エレベーターゲーム</h1>
+            <p>何階建てのビルにしますか？</p>
+            
+            <div class="floor-input-group">
+                <label for="maxFloorInput">最大階数を入力</label>
+                <input type="number" id="maxFloorInput" class="floor-input" 
+                       min="5" max="500" value="100" 
+                       placeholder="100">
+            </div>
+
+            <div class="preset-buttons">
+                <button class="preset-button" onclick="setMaxFloor(50)">50階</button>
+                <button class="preset-button" onclick="setMaxFloor(96)">96階</button>
+                <button class="preset-button" onclick="setMaxFloor(100)">100階</button>
+                <button class="preset-button" onclick="setMaxFloor(150)">150階</button>
+                <button class="preset-button" onclick="setMaxFloor(200)">200階</button>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <button class="start-button" onclick="startGame()">
+                🚀 ゲームスタート！
+            </button>
+        </div>
+    </div>
+
+    <!-- 設定アイコン -->
+    <button class="settings-icon" id="settingsIcon" onclick="openSettings()" title="設定を変更">
+        ⚙️
+    </button>
+
     <div class="game-container">
         <!-- エレベーター内部ビュー -->
         <div class="building">
@@ -542,6 +735,11 @@
     </div>
 
     <script>
+        // ========================================
+        // ⚙️ 最大階数の設定
+        // ========================================
+        let MAX_FLOOR = 100; // デフォルト値
+        
         // 画像テンプレート（Unsplash無料画像）
         const imageTemplates = [
             "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800",  // 観覧車
@@ -644,9 +842,9 @@
             "linear-gradient(135deg, #3498db, #2980b9)",
         ];
 
-        // 100階分のフロアデータを生成
-        for (let floor = 100; floor >= 1; floor--) {
-            const themeIndex = (100 - floor) % floorThemes.length;
+        // 最大階数分のフロアデータを生成
+        for (let floor = MAX_FLOOR; floor >= 1; floor--) {
+            const themeIndex = (MAX_FLOOR - floor) % floorThemes.length;
             const theme = floorThemes[themeIndex];
             const colorIndex = floor % colorPalette.length;
             const imageIndex = floor % imageTemplates.length;
@@ -661,8 +859,8 @@
         }
 
         // 特別階の上書き（重要な階だけカスタマイズ）
-        floorData[100] = {
-            name: "100階 - 屋上スカイガーデン",
+        floorData[MAX_FLOOR] = {
+            name: `${MAX_FLOOR}階 - 屋上スカイガーデン`,
             description: "最上階！観覧車とスカイラウンジ！",
             emoji: "🎡",
             color: "linear-gradient(135deg, #00d2ff, #3a7bd5)",
@@ -677,9 +875,111 @@
             bgImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"
         };
 
-        console.log('100階分のフロアデータを生成しました');
+        console.log(`${MAX_FLOOR}階分のフロアデータを生成しました`);
 
+        // ========================================
+        // 設定モーダルの処理
+        // ========================================
+        
+        // 最大階数を設定
+        function setMaxFloor(value) {
+            document.getElementById('maxFloorInput').value = value;
+            document.getElementById('errorMessage').textContent = '';
+        }
+
+        // 設定を開く
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            const input = document.getElementById('maxFloorInput');
+            input.value = MAX_FLOOR;
+            modal.classList.remove('hidden');
+            input.focus();
+            document.getElementById('errorMessage').textContent = '';
+        }
+
+        // ゲームを開始
+        function startGame() {
+            const input = document.getElementById('maxFloorInput');
+            const value = parseInt(input.value);
+            const errorMsg = document.getElementById('errorMessage');
+
+            // バリデーション
+            if (isNaN(value) || value < 5) {
+                errorMsg.textContent = '⚠️ 5階以上を入力してください';
+                return;
+            }
+            if (value > 500) {
+                errorMsg.textContent = '⚠️ 500階以下にしてください';
+                return;
+            }
+
+            // 最大階数を更新
+            MAX_FLOOR = value;
+            
+            // 設定モーダルを閉じる
+            document.getElementById('settingsModal').classList.add('hidden');
+            
+            // ゲームをリセットして初期化
+            resetGame();
+        }
+
+        // ゲームをリセット
+        function resetGame() {
+            // フロアデータをクリア
+            for (let key in floorData) {
+                delete floorData[key];
+            }
+
+            // 新しい階数でフロアデータを生成
+            for (let floor = MAX_FLOOR; floor >= 1; floor--) {
+                const themeIndex = (MAX_FLOOR - floor) % floorThemes.length;
+                const theme = floorThemes[themeIndex];
+                const colorIndex = floor % colorPalette.length;
+                const imageIndex = floor % imageTemplates.length;
+                
+                floorData[floor] = {
+                    name: `${floor}階 - ${theme.name}`,
+                    description: theme.desc,
+                    emoji: theme.emoji,
+                    color: colorPalette[colorIndex],
+                    bgImage: imageTemplates[imageIndex]
+                };
+            }
+
+            // 特別階の上書き
+            floorData[MAX_FLOOR] = {
+                name: `${MAX_FLOOR}階 - 屋上スカイガーデン`,
+                description: "最上階！観覧車とスカイラウンジ！",
+                emoji: "🎡",
+                color: "linear-gradient(135deg, #00d2ff, #3a7bd5)",
+                bgImage: "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800"
+            };
+            
+            floorData[1] = {
+                name: "1階 - エントランスロビー",
+                description: "キラキラした商品がいっぱい！",
+                emoji: "💄",
+                color: "linear-gradient(135deg, #3498db, #2980b9)",
+                bgImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"
+            };
+
+            // 現在階を1階にリセット
+            currentFloor = 1;
+            inputBuffer = '';
+            
+            // ボタングリッドをクリアして再生成
+            const buttonGrid = document.getElementById('buttonGrid');
+            buttonGrid.innerHTML = '';
+            
+            // 初期化処理を再実行
+            initialize();
+            
+            console.log(`${MAX_FLOOR}階建てに変更しました`);
+        }
+
+        // ========================================
         // ゲーム状態
+        // ========================================
         let currentFloor = 1;
         let targetFloor = 1;
         let isMoving = false;
@@ -848,8 +1148,9 @@
 
             // 数字キーで直接入力（1-9, 0）
             if (key >= '0' && key <= '9') {
-                // 最大3桁まで入力可能（100階まで）
-                if (inputBuffer.length < 3) {
+                // 最大階数の桁数まで入力可能
+                const maxDigits = MAX_FLOOR.toString().length;
+                if (inputBuffer.length < maxDigits) {
                     inputBuffer += key;
                     const displayText = inputBuffer.length === 1 && inputBuffer === '0' ? '入力してね' : `${inputBuffer}階`;
                     inputDisplay.textContent = displayText;
@@ -866,7 +1167,7 @@
             } else if (key === 'Enter' && inputBuffer) {
                 clearTimeout(inputTimeout);
                 const floor = parseInt(inputBuffer);
-                if (floor >= 1 && floor <= 100 && floorData[floor]) {
+                if (floor >= 1 && floor <= MAX_FLOOR && floorData[floor]) {
                     inputDisplay.textContent = `${floor}F に移動します！`;
                     inputDisplay.style.color = '#00ff00';
                     inputHint.textContent = '';
@@ -879,7 +1180,7 @@
                 } else {
                     inputDisplay.textContent = `${floor}階は存在しません`;
                     inputDisplay.style.color = '#ff0000';
-                    inputHint.textContent = '1〜100の数字を入力してね';
+                    inputHint.textContent = `1〜${MAX_FLOOR}の数字を入力してね`;
                     inputHint.style.color = '#e74c3c';
                     setTimeout(() => {
                         inputBuffer = '';
@@ -913,7 +1214,7 @@
         // ボタンを動的に生成
         function generateButtons() {
             const buttonGrid = document.getElementById('buttonGrid');
-            for (let floor = 100; floor >= 1; floor--) {
+            for (let floor = MAX_FLOOR; floor >= 1; floor--) {
                 const button = document.createElement('button');
                 button.className = 'floor-button';
                 if (floor === 1) button.classList.add('current');
@@ -937,14 +1238,61 @@
         }
 
         // 初期化
-        generateButtons();
-        updateDisplay();
-        document.body.focus();
+        function initialize() {
+            // タイトルを動的に更新
+            document.querySelector('.building-title').textContent = `🏢 キッズタワー${MAX_FLOOR}`;
+            
+            // 説明文を動的に更新
+            const instructionElement = document.querySelector('.instruction');
+            instructionElement.innerHTML = `
+                ⌨️ キーボード操作方法 ⌨️<br>
+                <strong style="color: #ffd700; font-size: 18px;">数字入力 → Enter で移動！</strong><br>
+                例：「1」「0」「0」「Enter」で${MAX_FLOOR}階へ<br>
+                Backspace: 削除 | ESC: キャンセル<br>
+                <span style="font-size: 14px; color: #95a5a6;">${MAX_FLOOR}階建て！全階に実写背景</span>
+            `;
+            
+            generateButtons();
+            updateDisplay();
+            document.body.focus();
+        }
+        
+        initialize();
 
         // クリックしてもフォーカスを維持
         document.addEventListener('click', () => {
             document.body.focus();
         });
+
+        // 設定モーダルでのEnterキー処理
+        document.getElementById('maxFloorInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+
+        // 初回は設定モーダルを表示
+        window.addEventListener('load', () => {
+            // ローカルストレージから前回の設定を読み込み
+            const savedMaxFloor = localStorage.getItem('elevator-max-floor');
+            if (savedMaxFloor) {
+                const value = parseInt(savedMaxFloor);
+                if (value >= 5 && value <= 500) {
+                    document.getElementById('maxFloorInput').value = value;
+                }
+            }
+        });
+
+        // ゲーム開始時に設定を保存
+        const originalStartGame = startGame;
+        startGame = function() {
+            const input = document.getElementById('maxFloorInput');
+            const value = parseInt(input.value);
+            if (!isNaN(value) && value >= 5 && value <= 500) {
+                localStorage.setItem('elevator-max-floor', value);
+            }
+            originalStartGame();
+        };
     </script>
 </body>
 </html>
