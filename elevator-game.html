@@ -770,6 +770,161 @@
             font-weight: bold;
             text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
         }
+
+        /* 階数変更UI */
+        .floor-selector {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+            border-radius: 15px;
+            padding: 12px;
+            border: 2px solid #333;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.3);
+            z-index: 100;
+            width: 140px;
+        }
+
+        @media (max-width: 768px) {
+            .floor-selector {
+                width: 100px;
+                padding: 8px;
+                top: 80px;
+            }
+        }
+
+        .floor-selector-title {
+            color: #ffd700;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .floor-selector-title {
+                font-size: 11px;
+            }
+        }
+
+        .floor-preset-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .floor-preset-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: #ffd700;
+            border: 2px solid #333;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .floor-preset-btn {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+        }
+
+        .floor-preset-btn:hover {
+            transform: translateX(-3px);
+            box-shadow: 0 6px 15px rgba(255, 215, 0, 0.4);
+            border-color: #ffd700;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+        }
+
+        .floor-preset-btn.active {
+            background: linear-gradient(145deg, #ffd700, #ffed4e);
+            color: #000;
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .floor-preset-btn:active {
+            transform: translateX(0);
+        }
+
+        .floor-custom-input {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+
+        .floor-custom-input label {
+            color: #ffd700;
+            font-size: 11px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .floor-input-field {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #000;
+            color: #ffd700;
+            font-family: 'Courier New', monospace;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.2);
+            margin-bottom: 5px;
+        }
+
+        .floor-input-field:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.3), 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .floor-apply-btn {
+            width: 100%;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: #ffd700;
+            border: 2px solid #333;
+            padding: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .floor-apply-btn:hover {
+            border-color: #ffd700;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            box-shadow: 0 6px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .floor-apply-btn:active {
+            transform: translateY(1px);
+        }
+
+        @media (max-width: 768px) {
+            .floor-custom-input label {
+                font-size: 10px;
+            }
+            .floor-input-field {
+                padding: 6px;
+                font-size: 14px;
+            }
+            .floor-apply-btn {
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body tabindex="0" style="outline: none;">
@@ -782,11 +937,12 @@
             <div class="floor-input-group">
                 <label for="maxFloorInput">最大階数を入力</label>
                 <input type="number" id="maxFloorInput" class="floor-input" 
-                       min="5" max="500" value="100" 
+                       min="1" max="500" value="100" 
                        placeholder="100">
             </div>
 
             <div class="preset-buttons">
+                <button class="preset-button" onclick="setMaxFloor(1)">1階</button>
                 <button class="preset-button" onclick="setMaxFloor(50)">50階</button>
                 <button class="preset-button" onclick="setMaxFloor(96)">96階</button>
                 <button class="preset-button" onclick="setMaxFloor(100)">100階</button>
@@ -811,6 +967,24 @@
     <button class="settings-icon" id="settingsIcon" onclick="openSettings()" title="設定を変更">
         ⚙️
     </button>
+
+    <!-- 階数変更UI -->
+    <div class="floor-selector">
+        <div class="floor-selector-title">🏢 階数変更</div>
+        <div class="floor-preset-buttons">
+            <button class="floor-preset-btn" onclick="quickChangeFloors(1)">1階</button>
+            <button class="floor-preset-btn" onclick="quickChangeFloors(10)">10階</button>
+            <button class="floor-preset-btn" onclick="quickChangeFloors(50)">50階</button>
+            <button class="floor-preset-btn active" onclick="quickChangeFloors(100)">100階</button>
+            <button class="floor-preset-btn" onclick="quickChangeFloors(200)">200階</button>
+        </div>
+        <div class="floor-custom-input">
+            <label for="customFloorInput">直接入力</label>
+            <input type="number" id="customFloorInput" class="floor-input-field" 
+                   min="1" max="500" placeholder="1-500">
+            <button class="floor-apply-btn" onclick="applyCustomFloors()">変更</button>
+        </div>
+    </div>
 
     <div class="game-container">
         <!-- エレベーター内部ビュー -->
@@ -1069,8 +1243,8 @@
             const errorMsg = document.getElementById('errorMessage');
 
             // バリデーション
-            if (isNaN(value) || value < 5) {
-                errorMsg.textContent = '⚠️ 5階以上を入力してください';
+            if (isNaN(value) || value < 1) {
+                errorMsg.textContent = '⚠️ 1階以上を入力してください';
                 return;
             }
             if (value > 500) {
@@ -1085,6 +1259,64 @@
             document.getElementById('settingsModal').classList.add('hidden');
             
             // ゲームをリセットして初期化
+            resetGame();
+        }
+
+        // 階数をクイック変更
+        function quickChangeFloors(floors) {
+            if (isMoving) return; // 移動中は変更できない
+            
+            // すでに同じ階数なら何もしない
+            if (MAX_FLOOR === floors) return;
+            
+            MAX_FLOOR = floors;
+            
+            // 設定を保存
+            localStorage.setItem('elevator-max-floor', floors);
+            localStorage.setItem('elevator-has-played', 'true'); // プレイ済みフラグを設定
+            
+            // カスタム入力欄をクリア
+            document.getElementById('customFloorInput').value = '';
+            
+            // ゲームをリセット
+            resetGame();
+        }
+
+        // カスタム階数を適用
+        function applyCustomFloors() {
+            if (isMoving) return; // 移動中は変更できない
+            
+            const input = document.getElementById('customFloorInput');
+            const value = parseInt(input.value);
+            
+            // バリデーション
+            if (isNaN(value) || value < 1) {
+                alert('⚠️ 1階以上を入力してください');
+                input.focus();
+                return;
+            }
+            if (value > 500) {
+                alert('⚠️ 500階以下にしてください');
+                input.focus();
+                return;
+            }
+            
+            // すでに同じ階数なら何もしない
+            if (MAX_FLOOR === value) {
+                input.value = '';
+                return;
+            }
+            
+            MAX_FLOOR = value;
+            
+            // 設定を保存
+            localStorage.setItem('elevator-max-floor', value);
+            localStorage.setItem('elevator-has-played', 'true');
+            
+            // 入力欄をクリア
+            input.value = '';
+            
+            // ゲームをリセット
             resetGame();
         }
 
@@ -1143,6 +1375,9 @@
             const gridToggle = document.getElementById('gridToggle');
             gridToggle.classList.remove('expanded');
             gridToggle.querySelector('span:first-child').textContent = 'すべての階を表示';
+            
+            // アクティブな階数ボタンを更新
+            updateActiveFloorButton();
             
             // 初期化処理を再実行
             initialize();
@@ -1523,9 +1758,24 @@
                 <span style="font-size: 14px; color: #888;">💡 大きいボタン：主要階 | 「すべての階を表示」：詳細選択</span>
             `;
             
+            // アクティブな階数ボタンを更新
+            updateActiveFloorButton();
+            
             generateButtons();
             updateDisplay();
             document.body.focus();
+        }
+        
+        // アクティブな階数ボタンを更新
+        function updateActiveFloorButton() {
+            document.querySelectorAll('.floor-preset-btn').forEach(btn => {
+                const floors = parseInt(btn.textContent);
+                if (floors === MAX_FLOOR) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
         }
         
         initialize();
@@ -1546,11 +1796,23 @@
         window.addEventListener('load', () => {
             // ローカルストレージから前回の設定を読み込み
             const savedMaxFloor = localStorage.getItem('elevator-max-floor');
+            const hasPlayedBefore = localStorage.getItem('elevator-has-played');
+            
             if (savedMaxFloor) {
                 const value = parseInt(savedMaxFloor);
-                if (value >= 5 && value <= 500) {
+                if (value >= 1 && value <= 500) {
                     document.getElementById('maxFloorInput').value = value;
+                    MAX_FLOOR = value;
+                    
+                    // 2回目以降の起動なら、モーダルを閉じてゲームを開始
+                    if (hasPlayedBefore) {
+                        document.getElementById('settingsModal').classList.add('hidden');
+                        resetGame();
+                    }
                 }
+            } else if (hasPlayedBefore) {
+                // 設定がなくても2回目以降ならモーダルを閉じる
+                document.getElementById('settingsModal').classList.add('hidden');
             }
         });
 
@@ -1559,8 +1821,9 @@
         startGame = function() {
             const input = document.getElementById('maxFloorInput');
             const value = parseInt(input.value);
-            if (!isNaN(value) && value >= 5 && value <= 500) {
+            if (!isNaN(value) && value >= 1 && value <= 500) {
                 localStorage.setItem('elevator-max-floor', value);
+                localStorage.setItem('elevator-has-played', 'true'); // プレイ済みフラグを設定
             }
             originalStartGame();
         };

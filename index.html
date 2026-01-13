@@ -75,13 +75,15 @@
         .game-card {
             background: white;
             border-radius: 25px;
-            padding: 30px;
+            padding: 0;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             cursor: pointer;
             position: relative;
             overflow: hidden;
             animation: fadeInUp 0.6s ease-out backwards;
+            display: flex;
+            flex-direction: column;
         }
 
         .game-card:nth-child(1) { animation-delay: 0.1s; }
@@ -127,11 +129,56 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
+        .game-screenshot {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-screenshot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .game-card:hover .game-screenshot img {
+            transform: scale(1.05);
+        }
+
+        .game-screenshot .placeholder {
+            font-size: 6rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .screenshot-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .game-content {
+            padding: 30px;
+        }
+
         .game-icon {
-            font-size: 5rem;
-            margin-bottom: 20px;
+            font-size: 3rem;
+            margin-bottom: 15px;
             display: block;
-            animation: rotate 3s ease-in-out infinite;
         }
 
         @keyframes rotate {
@@ -197,14 +244,17 @@
         }
 
         .category-badge {
-            display: inline-block;
-            padding: 5px 15px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 20px;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: bold;
-            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10;
         }
 
         footer {
@@ -268,16 +318,29 @@
                 grid-template-columns: 1fr;
             }
 
-            .game-card {
+            .game-content {
                 padding: 20px;
             }
 
-            .game-icon {
+            .game-screenshot {
+                height: 200px;
+            }
+
+            .game-screenshot .placeholder {
                 font-size: 4rem;
+            }
+
+            .game-icon {
+                font-size: 2.5rem;
             }
 
             .game-title {
                 font-size: 1.5rem;
+            }
+
+            .category-badge {
+                padding: 6px 15px;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -314,192 +377,242 @@
         <div class="games-grid">
             <!-- Game 1: ABC Song with Bouncing Balls -->
             <div class="game-card" onclick="window.location.href='abc-bouncing-balls.html'">
-                <span class="category-badge">👶 For Babies</span>
-                <div class="game-icon">🎵</div>
-                <h2 class="game-title">ABC Song with Bouncing Balls!</h2>
-                <p class="game-description">
-                    Watch colorful balls bounce to the ABC song! Tap to create more balls!
-                </p>
-                <ul class="game-features">
-                    <li>Full ABC song with music & voice</li>
-                    <li>Balls bounce with physics</li>
-                    <li>3 speed modes: slow, normal, fast</li>
-                    <li>Interactive - tap to add balls!</li>
-                </ul>
-                <a href="abc-bouncing-balls.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🎵</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">👶 For Babies</span>
+                    <div class="game-icon">🎵</div>
+                    <h2 class="game-title">ABC Song with Bouncing Balls!</h2>
+                    <p class="game-description">
+                        Watch colorful balls bounce to the ABC song! Tap to create more balls!
+                    </p>
+                    <ul class="game-features">
+                        <li>Full ABC song with music & voice</li>
+                        <li>Balls bounce with physics</li>
+                        <li>3 speed modes: slow, normal, fast</li>
+                        <li>Interactive - tap to add balls!</li>
+                    </ul>
+                    <a href="abc-bouncing-balls.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
             <!-- Game 2: Baby's 4D Wonder World -->
             <div class="game-card" onclick="window.location.href='4d-baby-animation.html'">
-                <span class="category-badge">👶 For Babies</span>
-                <div class="game-icon">🎈</div>
-                <h2 class="game-title">Baby's 4D Wonder World</h2>
-                <p class="game-description">
-                    Tap anywhere! Cute animals and objects appear BIG and zoom away with sounds!
-                </p>
-                <ul class="game-features">
-                    <li>Tap to create cute animations</li>
-                    <li>Happy sounds for each tap</li>
-                    <li>Auto-spawning balloons & rainbows</li>
-                    <li>Perfect for 2-year-olds!</li>
-                </ul>
-                <a href="4d-baby-animation.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🎈</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">👶 For Babies</span>
+                    <div class="game-icon">🎈</div>
+                    <h2 class="game-title">Baby's 4D Wonder World</h2>
+                    <p class="game-description">
+                        Tap anywhere! Cute animals and objects appear BIG and zoom away with sounds!
+                    </p>
+                    <ul class="game-features">
+                        <li>Tap to create cute animations</li>
+                        <li>Happy sounds for each tap</li>
+                        <li>Auto-spawning balloons & rainbows</li>
+                        <li>Perfect for 2-year-olds!</li>
+                    </ul>
+                    <a href="4d-baby-animation.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
             <!-- Game 3: Alphabet Typing -->
             <div class="game-card" onclick="window.location.href='alphabet-typing.html'">
-                <span class="category-badge">📚 Learning</span>
-                <div class="game-icon">🔤</div>
-                <h2 class="game-title">Alphabet Typing A→Z</h2>
-                <p class="game-description">
-                    Learn to type all 26 letters of the alphabet with fun words and emojis!
-                </p>
-                <ul class="game-features">
-                    <li>3 modes: Uppercase, Lowercase, Both</li>
-                    <li>Voice pronunciation for each letter</li>
-                    <li>Progress tracking from A to Z</li>
-                    <li>Fun emojis and words</li>
-                </ul>
-                <a href="alphabet-typing.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🔤</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">📚 Learning</span>
+                    <div class="game-icon">🔤</div>
+                    <h2 class="game-title">Alphabet Typing A→Z</h2>
+                    <p class="game-description">
+                        Learn to type all 26 letters of the alphabet with fun words and emojis!
+                    </p>
+                    <ul class="game-features">
+                        <li>3 modes: Uppercase, Lowercase, Both</li>
+                        <li>Voice pronunciation for each letter</li>
+                        <li>Progress tracking from A to Z</li>
+                        <li>Fun emojis and words</li>
+                    </ul>
+                    <a href="alphabet-typing.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
-            <!-- Game 3: Number Typing -->
+            <!-- Game 4: Number Typing -->
             <div class="game-card" onclick="window.location.href='number-typing.html'">
-                <span class="category-badge">📚 Learning</span>
-                <div class="game-icon">🔢</div>
-                <h2 class="game-title">Number Typing Game</h2>
-                <p class="game-description">
-                    Count and type numbers from 0-100 or 101-200 with cute animals!
-                </p>
-                <ul class="game-features">
-                    <li>Two modes: 0-100 and 101-200</li>
-                    <li>Visual counting with emojis</li>
-                    <li>No time limit - learn at your pace</li>
-                    <li>Navigate forward and backward</li>
-                </ul>
-                <a href="number-typing.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🔢</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">📚 Learning</span>
+                    <div class="game-icon">🔢</div>
+                    <h2 class="game-title">Number Typing Game</h2>
+                    <p class="game-description">
+                        Count and type numbers from 0-100 or 101-200 with cute animals!
+                    </p>
+                    <ul class="game-features">
+                        <li>Two modes: 0-100 and 101-200</li>
+                        <li>Visual counting with emojis</li>
+                        <li>No time limit - learn at your pace</li>
+                        <li>Navigate forward and backward</li>
+                    </ul>
+                    <a href="number-typing.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
-            <!-- Game 4: 3D Number Typing -->
+            <!-- Game 5: 3D Number Typing -->
             <div class="game-card" onclick="window.location.href='3d-number-typing.html'">
-                <span class="category-badge">🎮 3D Game</span>
-                <div class="game-icon">🚀</div>
-                <h2 class="game-title">3D Number Typing Adventure</h2>
-                <p class="game-description">
-                    Immersive 3D number learning experience in space!
-                </p>
-                <ul class="game-features">
-                    <li>Full 3D graphics with Three.js</li>
-                    <li>Floating numbers in space</li>
-                    <li>Collectible animations</li>
-                    <li>Fireworks celebrations</li>
-                </ul>
-                <a href="3d-number-typing.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🚀</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎮 3D Game</span>
+                    <div class="game-icon">🚀</div>
+                    <h2 class="game-title">3D Number Typing Adventure</h2>
+                    <p class="game-description">
+                        Immersive 3D number learning experience in space!
+                    </p>
+                    <ul class="game-features">
+                        <li>Full 3D graphics with Three.js</li>
+                        <li>Floating numbers in space</li>
+                        <li>Collectible animations</li>
+                        <li>Fireworks celebrations</li>
+                    </ul>
+                    <a href="3d-number-typing.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
             <!-- Game 6: 4D Number Journey -->
             <div class="game-card" onclick="window.location.href='4d-number-rush.html'">
-                <span class="category-badge">🎮 4D Game</span>
-                <div class="game-icon">⚡</div>
-                <h2 class="game-title">4D Number Journey</h2>
-                <p class="game-description">
-                    Numbers fly towards you from the distance! Practice typing at your own pace!
-                </p>
-                <ul class="game-features">
-                    <li>Relaxed gameplay - no pressure</li>
-                    <li>4 difficulty levels</li>
-                    <li>Combo multiplier system</li>
-                    <li>Stunning tunnel effects</li>
-                </ul>
-                <a href="4d-number-rush.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">⚡</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎮 4D Game</span>
+                    <div class="game-icon">⚡</div>
+                    <h2 class="game-title">4D Number Journey</h2>
+                    <p class="game-description">
+                        Numbers fly towards you from the distance! Practice typing at your own pace!
+                    </p>
+                    <ul class="game-features">
+                        <li>Relaxed gameplay - no pressure</li>
+                        <li>4 difficulty levels</li>
+                        <li>Combo multiplier system</li>
+                        <li>Stunning tunnel effects</li>
+                    </ul>
+                    <a href="4d-number-rush.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
             <!-- Game 7: Baby Countdown Timer -->
             <div class="game-card" onclick="window.location.href='baby-countdown-timer.html'">
-                <span class="category-badge">⏰ Utility</span>
-                <div class="game-icon">🎈</div>
-                <h2 class="game-title">Baby Countdown Timer</h2>
-                <p class="game-description">
-                    Fun countdown timer for tracking special moments and events!
-                </p>
-                <ul class="game-features">
-                    <li>Set custom deadlines</li>
-                    <li>Quick preset buttons</li>
-                    <li>Colorful animations</li>
-                    <li>Celebration when time's up</li>
-                </ul>
-                <a href="baby-countdown-timer.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Try It!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">⏰</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">⏰ Utility</span>
+                    <div class="game-icon">🎈</div>
+                    <h2 class="game-title">Baby Countdown Timer</h2>
+                    <p class="game-description">
+                        Fun countdown timer for tracking special moments and events!
+                    </p>
+                    <ul class="game-features">
+                        <li>Set custom deadlines</li>
+                        <li>Quick preset buttons</li>
+                        <li>Colorful animations</li>
+                        <li>Celebration when time's up</li>
+                    </ul>
+                    <a href="baby-countdown-timer.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Try It!
+                    </a>
+                </div>
             </div>
 
             <!-- Game 8: Elevator Game -->
             <div class="game-card" onclick="window.location.href='elevator-game.html'">
-                <span class="category-badge">📚 Learning</span>
-                <div class="game-icon">🏢</div>
-                <h2 class="game-title">Elevator Game - キッズタワー100</h2>
-                <p class="game-description">
-                    Type numbers to explore 100 different themed floors! Every floor has real photo backgrounds!
-                </p>
-                <ul class="game-features">
-                    <li>Real photo backgrounds on all 100 floors</li>
-                    <li>Compact button layout (10 columns)</li>
-                    <li>Big window view with scenery</li>
-                    <li>Clear moving animations</li>
-                </ul>
-                <a href="elevator-game.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🏢</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">📚 Learning</span>
+                    <div class="game-icon">🏢</div>
+                    <h2 class="game-title">Elevator Game - キッズタワー100</h2>
+                    <p class="game-description">
+                        Type numbers to explore 100 different themed floors! Every floor has real photo backgrounds!
+                    </p>
+                    <ul class="game-features">
+                        <li>Real photo backgrounds on all 100 floors</li>
+                        <li>Compact button layout (10 columns)</li>
+                        <li>Big window view with scenery</li>
+                        <li>Clear moving animations</li>
+                    </ul>
+                    <a href="elevator-game.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
             <!-- Game 9: Mochitsuki Game -->
             <div class="game-card" onclick="window.location.href='mochitsuki-game.html'">
-                <span class="category-badge">🎍 New Year</span>
-                <div class="game-icon">🎍</div>
-                <h2 class="game-title">もちつきゲーム</h2>
-                <p class="game-description">
-                    Japanese New Year's mochi pounding game! Click fast to make delicious mochi!
-                </p>
-                <ul class="game-features">
-                    <li>Traditional mochi pounding action</li>
-                    <li>Combo system for extra points</li>
-                    <li>Level up as you improve</li>
-                    <li>Fun sound effects and animations</li>
-                </ul>
-                <a href="mochitsuki-game.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🎍</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎍 New Year</span>
+                    <div class="game-icon">🎍</div>
+                    <h2 class="game-title">もちつきゲーム</h2>
+                    <p class="game-description">
+                        Japanese New Year's mochi pounding game! Click fast to make delicious mochi!
+                    </p>
+                    <ul class="game-features">
+                        <li>Traditional mochi pounding action</li>
+                        <li>Combo system for extra points</li>
+                        <li>Level up as you improve</li>
+                        <li>Fun sound effects and animations</li>
+                    </ul>
+                    <a href="mochitsuki-game.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
 
             <!-- Game 10: Tako-age (Kite Flying) Number Game -->
             <div class="game-card" onclick="window.location.href='tako-age-game.html'">
-                <span class="category-badge">🎍 New Year</span>
-                <div class="game-icon">🪁</div>
-                <h2 class="game-title">凧揚げ数字ゲーム</h2>
-                <p class="game-description">
-                    Type numbers to catch flying kites! Traditional New Year's kite game with number learning!
-                </p>
-                <ul class="game-features">
-                    <li>4 difficulty levels (0-9 to 0-100)</li>
-                    <li>Beautiful Japanese scenery</li>
-                    <li>Combo system for high scores</li>
-                    <li>Learn numbers while having fun</li>
-                </ul>
-                <a href="tako-age-game.html" class="play-button" onclick="event.stopPropagation()">
-                    🎮 Play Now!
-                </a>
+                <div class="game-screenshot">
+                    <div class="placeholder">🪁</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎍 New Year</span>
+                    <div class="game-icon">🪁</div>
+                    <h2 class="game-title">凧揚げ数字ゲーム</h2>
+                    <p class="game-description">
+                        Type numbers to catch flying kites! Traditional New Year's kite game with number learning!
+                    </p>
+                    <ul class="game-features">
+                        <li>4 difficulty levels (0-9 to 0-100)</li>
+                        <li>Beautiful Japanese scenery</li>
+                        <li>Combo system for high scores</li>
+                        <li>Learn numbers while having fun</li>
+                    </ul>
+                    <a href="tako-age-game.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
+                    </a>
+                </div>
             </div>
         </div>
 
