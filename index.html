@@ -96,6 +96,7 @@
         .game-card:nth-child(8) { animation-delay: 0.8s; }
         .game-card:nth-child(9) { animation-delay: 0.9s; }
         .game-card:nth-child(10) { animation-delay: 1.0s; }
+        .game-card:nth-child(11) { animation-delay: 1.1s; }
 
         @keyframes fadeInUp {
             from {
@@ -356,7 +357,7 @@
             <h2>📊 Collection Overview</h2>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number">10</span>
+                    <span class="stat-number">11</span>
                     <span class="stat-label">Total Games</span>
                 </div>
                 <div class="stat-item">
@@ -611,6 +612,30 @@
                     </ul>
                     <a href="tako-age-game.html" class="play-button" onclick="event.stopPropagation()">
                         🎮 Play Now!
+                    </a>
+                </div>
+            </div>
+
+            <!-- Game 11: Clock Countdown Game -->
+            <div class="game-card" onclick="window.location.href='clock-countdown-game.html'">
+                <div class="game-screenshot">
+                    <div class="placeholder">⏰</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">⏰ Utility</span>
+                    <div class="game-icon">⏰</div>
+                    <h2 class="game-title">時計カウントダウンゲーム</h2>
+                    <p class="game-description">
+                        Big analog clock with moving hands! Set custom countdown times and watch the clock hands move!
+                    </p>
+                    <ul class="game-features">
+                        <li>Large analog clock display</li>
+                        <li>Hour and minute hands animation</li>
+                        <li>Custom time settings</li>
+                        <li>Quick preset buttons (10s, 30s, 1m, 3m, 5m)</li>
+                    </ul>
+                    <a href="clock-countdown-game.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Try It!
                     </a>
                 </div>
             </div>
