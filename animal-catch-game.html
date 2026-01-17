@@ -17,31 +17,37 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
-            overflow: hidden;
             position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 16px 16px 28px;
+            gap: 12px;
         }
 
         h1 {
             color: #ff6b6b;
-            font-size: 3.5rem;
-            margin-bottom: 20px;
+            font-size: clamp(2rem, 2.8vw, 3.5rem);
+            margin-bottom: 6px;
             text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
             position: relative;
             z-index: 10;
+            text-align: center;
         }
 
         .game-info {
             background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
+            padding: 18px 24px;
             border-radius: 20px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
             display: flex;
-            gap: 40px;
-            margin-bottom: 20px;
+            gap: 24px;
+            margin-bottom: 6px;
             position: relative;
             z-index: 10;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .score-display, .timer-display, .target-display {
@@ -49,30 +55,30 @@
         }
 
         .score-display h2, .timer-display h2, .target-display h2 {
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 1.2vw, 1.5rem);
             color: #ff6b6b;
             margin-bottom: 10px;
         }
 
         .score-number, .timer-number, .target-number {
-            font-size: 3rem;
+            font-size: clamp(2rem, 2.5vw, 3rem);
             font-weight: bold;
             color: #ff6b6b;
         }
 
         .game-container {
             display: flex;
-            gap: 20px;
-            align-items: center;
+            gap: 16px;
+            align-items: stretch;
             position: relative;
             z-index: 5;
+            width: min(1200px, 95vw);
         }
 
         .game-area {
-            width: 70vw;
-            height: 60vh;
-            max-width: 900px;
-            max-height: 600px;
+            flex: 1 1 700px;
+            height: min(52vh, 520px);
+            min-height: 320px;
             position: relative;
             border-radius: 30px;
             background: rgba(255, 255, 255, 0.5);
@@ -81,20 +87,21 @@
         }
 
         .cage-container {
-            width: 250px;
-            height: 60vh;
-            max-height: 600px;
+            width: clamp(200px, 22vw, 260px);
+            height: min(52vh, 520px);
+            min-height: 320px;
             background: rgba(139, 69, 19, 0.3);
             border-radius: 20px;
-            padding: 20px;
+            padding: 16px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
+            flex: 0 0 auto;
         }
 
         .cage-title {
             text-align: center;
-            font-size: 1.8rem;
+            font-size: clamp(1.2rem, 1.6vw, 1.8rem);
             font-weight: bold;
             color: #8b4513;
             margin-bottom: 15px;
@@ -115,7 +122,7 @@
             align-content: flex-start;
         }
 
-        /* 檻の柵 */
+        /* Cage bars */
         .cage::before {
             content: '';
             position: absolute;
@@ -165,12 +172,12 @@
         }
 
         .animal {
-            font-size: 5rem;
+            font-size: clamp(3.5rem, 4vw, 5rem);
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .animal-number {
-            font-size: 2.5rem;
+            font-size: clamp(1.6rem, 2vw, 2.5rem);
             font-weight: bold;
             color: white;
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -214,15 +221,17 @@
 
         .buttons {
             display: flex;
-            gap: 20px;
-            margin-top: 20px;
+            gap: 16px;
+            margin-top: 8px;
             position: relative;
             z-index: 10;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         button {
-            padding: 20px 40px;
-            font-size: 1.8rem;
+            padding: 14px 28px;
+            font-size: clamp(1.1rem, 1.6vw, 1.8rem);
             font-weight: bold;
             border: none;
             border-radius: 20px;
@@ -373,9 +382,10 @@
         .instruction {
             text-align: center;
             color: white;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            font-size: clamp(1rem, 1.6vw, 1.5rem);
+            margin-bottom: 2px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
         }
 
         .input-display {
@@ -387,10 +397,10 @@
             padding: 40px 60px;
             border-radius: 30px;
             box-shadow: 0 10px 50px rgba(0, 0, 0, 0.4);
-            font-size: 6rem;
+            font-size: clamp(3.5rem, 8vw, 6rem);
             font-weight: bold;
             color: #667eea;
-            min-width: 200px;
+            min-width: 2.6em;
             text-align: center;
             display: none;
             z-index: 500;
@@ -431,10 +441,8 @@
             }
 
             .cage-container {
-                width: 70vw;
-                max-width: 900px;
+                width: min(900px, 95vw);
                 height: 200px;
-                max-height: 200px;
             }
 
             .cage {
@@ -556,17 +564,17 @@
         const inputDisplay = document.getElementById('inputDisplay');
         
         let score = 0;
-        let maxNumber = 20; // ゴールの数字
+        let maxNumber = 20; // Target number
         let isPlaying = false;
         let isPaused = false;
         let spawnInterval = null;
         let combo = 0;
         let lastCatchTime = 0;
-        let nextNumber = 0; // 次に出すべき数字
+        let nextNumber = 0; // Next number to spawn
         let activeAnimals = new Map(); // number -> animal element
-        let caughtAnimals = []; // 捕まえた動物のリスト
-        let currentInput = ''; // 現在入力中の数字
-        let inputTimeout = null; // 入力表示のタイムアウト
+        let caughtAnimals = []; // List of caught animals
+        let currentInput = ''; // Current input
+        let inputTimeout = null; // Input display timeout
 
         const sounds = {
             catch: createBeepSound(800, 0.1),
@@ -594,12 +602,12 @@
                     oscillator.start(audioContext.currentTime);
                     oscillator.stop(audioContext.currentTime + duration);
                 } catch (e) {
-                    // 音が再生できない場合は無視
+                    // Ignore if audio cannot play
                 }
             };
         }
 
-        function showInputDisplay(input, isCorrect = null) {
+        function showInputDisplay(input, isCorrect = null, keepVisible = false) {
             inputDisplay.textContent = input || '_';
             inputDisplay.className = 'input-display show';
             
@@ -609,12 +617,16 @@
                 inputDisplay.classList.add('wrong');
             }
             
-            // タイムアウトをクリア
+            // Clear existing timeout
             if (inputTimeout) {
                 clearTimeout(inputTimeout);
             }
+
+            if (keepVisible) {
+                return;
+            }
             
-            // 2秒後に自動で消す
+            // Auto-hide after 2 seconds
             inputTimeout = setTimeout(() => {
                 inputDisplay.classList.remove('show');
             }, 2000);
@@ -629,7 +641,7 @@
 
         function getRandomPosition() {
             const areaRect = gameArea.getBoundingClientRect();
-            const containerSize = 120; // コンテナのおおよそのサイズ
+            const containerSize = 120; // Approximate container size
             
             const x = Math.random() * (areaRect.width - containerSize);
             const y = Math.random() * (areaRect.height - containerSize);
@@ -638,15 +650,15 @@
         }
 
         function getAvailableNumber() {
-            // 次に出すべき数字 = 今までに捕まえた数
+            // Next number should be the count of caught animals
             const nextNum = caughtAnimals.length;
             
-            // まだゴールに達していなく、その数字がまだ出ていなければ返す
+            // Return if goal not reached and number is not already active
             if (nextNum <= maxNumber && !activeAnimals.has(nextNum)) {
                 return nextNum;
             }
             
-            // それ以外の場合は何も出さない
+            // Otherwise, do not spawn anything
             return null;
         }
 
@@ -654,7 +666,7 @@
             if (!isPlaying || isPaused) return;
 
             const number = getAvailableNumber();
-            if (number === null) return; // 空きがない場合はスポーンしない
+            if (number === null) return; // No slot available
 
             const container = document.createElement('div');
             container.className = 'animal-container';
@@ -681,12 +693,12 @@
                 timeout: null
             });
 
-            // 15秒後に自動的に消える（ゆっくり考えられるように）
+            // Auto-remove after 15 seconds (time to think)
             const timeoutId = setTimeout(() => {
                 if (container.parentElement && activeAnimals.has(number)) {
                     container.remove();
                     activeAnimals.delete(number);
-                    // 消えたら次の動物をすぐにスポーン
+                    // Spawn the next animal shortly after removal
                     setTimeout(spawnAnimal, 500);
                 }
             }, 15000);
@@ -697,11 +709,10 @@
         function catchAnimal(number) {
             if (!isPlaying || isPaused || !activeAnimals.has(number)) return;
             
-            // 順番通りの数字かチェック（nextNumberは次にスポーンする数字なので、現在は nextNumber - 1 を期待）
-            // ただし、最初は nextNumber が 1 になっているので、0 を捕まえるべき
-            const expectedNumber = caughtAnimals.length; // 捕まえた数 = 次に捕まえるべき数字
+            // Check order: expected number is the number of caught animals
+            const expectedNumber = caughtAnimals.length; // Next expected number
             if (number !== expectedNumber) {
-                // 間違った数字を入力した場合は何もしない
+                // Ignore incorrect number
                 currentInput = '';
                 return;
             }
@@ -713,12 +724,12 @@
             container.classList.add('caught');
             sounds.catch();
             
-            // タイムアウトをクリア
+            // Clear timeout
             if (animalData.timeout) {
                 clearTimeout(animalData.timeout);
             }
             
-            // コンボ判定（1秒以内に連続でキャッチ）
+            // Combo: catches within 1 second
             const now = Date.now();
             if (now - lastCatchTime < 1000) {
                 combo++;
@@ -727,18 +738,18 @@
             }
             lastCatchTime = now;
 
-            // スコア加算（コンボボーナス付き）
+            // Add score with combo bonus
             const points = combo;
             score += points;
             scoreDisplay.textContent = score;
 
-            // 檻に動物を追加
+            // Add animal to cage
             addToCage(emoji, number);
 
-            // パーティクル効果
+            // Particle effect
             createParticles(container);
 
-            // コンボ表示
+            // Combo display
             if (combo > 2) {
                 showComboText(combo);
             }
@@ -748,7 +759,7 @@
                 activeAnimals.delete(number);
             }, 300);
             
-            // 入力をクリア
+            // Clear input
             currentInput = '';
         }
 
@@ -756,21 +767,21 @@
             const cagedAnimal = document.createElement('div');
             cagedAnimal.className = 'caged-animal';
             cagedAnimal.textContent = emoji;
-            cagedAnimal.title = `数字: ${number}`; // ツールチップで数字を表示
+            cagedAnimal.title = `数字: ${number}`; // Show number in tooltip
             cage.appendChild(cagedAnimal);
             caughtAnimals.push({emoji, number});
             
-            // 捕まえた数を更新（現在の数字とゴールを表示）
+            // Update caught count (current number and goal)
             caughtDisplay.textContent = `${number} / ${maxNumber}`;
             
-            // 檻を一番下にスクロール
+            // Scroll cage to bottom
             cage.scrollTop = cage.scrollHeight;
             
-            // ゴールに達したらゲーム終了
+            // End game when goal is reached
             if (number >= maxNumber) {
                 setTimeout(() => endGame(), 500);
             } else {
-                // まだゴールに達していない場合は次の動物をスポーン
+                // Otherwise spawn the next animal
                 setTimeout(spawnAnimal, 300);
             }
         }
@@ -817,13 +828,13 @@
             score = 0;
             combo = 0;
             lastCatchTime = 0;
-            nextNumber = 0; // 0から始める
+            nextNumber = 0; // Start from 0
             isPlaying = true;
             isPaused = false;
             caughtAnimals = [];
             currentInput = '';
             
-            // 選択された最大数を取得
+            // Read selected maximum number
             maxNumber = parseInt(maxNumberSelect.value);
 
             scoreDisplay.textContent = score;
@@ -832,13 +843,13 @@
             document.getElementById('startBtn').disabled = true;
             document.getElementById('pauseBtn').disabled = false;
 
-            // 既存の動物を削除
+            // Remove existing animals
             gameArea.innerHTML = '';
             cage.innerHTML = '';
             activeAnimals.clear();
             hideInputDisplay();
 
-            // 最初の動物（0番）をすぐにスポーン
+            // Spawn the first animal (0) immediately
             spawnAnimal();
         }
 
@@ -858,7 +869,7 @@
         function endGame() {
             isPlaying = false;
             
-            // すべてのタイムアウトをクリア
+            // Clear all timeouts
             activeAnimals.forEach(data => {
                 if (data.timeout) {
                     clearTimeout(data.timeout);
@@ -871,7 +882,7 @@
 
             sounds.gameOver();
 
-            // 結果メッセージ
+            // Result message
             let message = '';
             const reachedNumber = caughtAnimals.length > 0 ? caughtAnimals.length - 1 : 0;
             
@@ -897,54 +908,64 @@
             startGame();
         }
 
-        // キーボードイベント - 上の桁から順番に判定
+        // Keyboard input - validate from the highest place
         document.addEventListener('keydown', function(e) {
             if (!isPlaying || isPaused) return;
             
             const key = e.key;
-            const expectedNumber = caughtAnimals.length; // 次に捕まえるべき数字
-            const expectedStr = expectedNumber.toString(); // 期待する数字の文字列
+            const expectedNumber = caughtAnimals.length; // Next expected number
+            const expectedStr = expectedNumber.toString(); // Expected number string
             
-            // Backspaceで1文字削除
+            // Backspace removes one character
             if (key === 'Backspace') {
                 currentInput = currentInput.slice(0, -1);
-                showInputDisplay(currentInput);
+                if (currentInput.length > 0) {
+                    showInputDisplay(currentInput, null, true);
+                } else {
+                    hideInputDisplay();
+                }
                 return;
             }
             
-            // Escapeでクリア
+            // Escape clears input
             if (key === 'Escape') {
                 currentInput = '';
                 hideInputDisplay();
                 return;
             }
             
-            // 0-9の数字キーのみ受け付ける
+            // Accept only digit keys 0-9
             if (key >= '0' && key <= '9') {
                 const newInput = currentInput + key;
                 
-                // 上の桁から順番に正誤判定
-                const currentPosition = currentInput.length; // 現在入力しようとしている桁の位置
+                // Validate digits from the highest place
+                const currentPosition = currentInput.length; // Current digit position
                 
-                // 期待する文字と一致するか確認
+                // Check against expected digit
                 if (currentPosition < expectedStr.length && key === expectedStr[currentPosition]) {
-                    // 正解！
+                    // Correct
                     currentInput = newInput;
                     sounds.correct();
-                    showInputDisplay(currentInput);
+                    showInputDisplay(currentInput, null, true);
                     
-                    // 全ての桁が正解したか確認
+                    // Check if all digits are correct
                     if (currentInput === expectedStr && activeAnimals.has(expectedNumber)) {
-                        // 完全一致！動物を捕まえる
+                        // Full match: catch the animal
                         showInputDisplay(currentInput, true);
-                        setTimeout(() => {
+                        if (expectedStr.length === 1) {
                             catchAnimal(expectedNumber);
                             currentInput = '';
                             hideInputDisplay();
-                        }, 500);
+                        } else {
+                            setTimeout(() => {
+                                catchAnimal(expectedNumber);
+                                currentInput = '';
+                                hideInputDisplay();
+                            }, 500);
+                        }
                     }
                 } else {
-                    // 間違い！
+                    // Incorrect
                     sounds.wrong();
                     const wrongInput = currentInput + key;
                     showInputDisplay(wrongInput, false);
@@ -956,7 +977,7 @@
             }
         });
 
-        // オーバーレイをクリックで閉じる
+        // Close overlay on click
         document.getElementById('gameOverOverlay').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.style.display = 'none';
