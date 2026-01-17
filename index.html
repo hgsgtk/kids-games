@@ -97,6 +97,7 @@
         .game-card:nth-child(9) { animation-delay: 0.9s; }
         .game-card:nth-child(10) { animation-delay: 1.0s; }
         .game-card:nth-child(11) { animation-delay: 1.1s; }
+        .game-card:nth-child(12) { animation-delay: 1.2s; }
 
         @keyframes fadeInUp {
             from {
@@ -357,11 +358,11 @@
             <h2>📊 Collection Overview</h2>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number">11</span>
+                    <span class="stat-number">12</span>
                     <span class="stat-label">Total Games</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">3</span>
+                    <span class="stat-number">4</span>
                     <span class="stat-label">Learning Games</span>
                 </div>
                 <div class="stat-item">
@@ -636,6 +637,30 @@
                     </ul>
                     <a href="clock-countdown-game.html" class="play-button" onclick="event.stopPropagation()">
                         🎮 Try It!
+                    </a>
+                </div>
+            </div>
+
+            <!-- Game 12: Animal Catch Game -->
+            <div class="game-card" onclick="window.location.href='animal-catch-game.html'">
+                <div class="game-screenshot">
+                    <div class="placeholder">🦁</div>
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎮 Action</span>
+                    <div class="game-icon">🦁</div>
+                    <h2 class="game-title">どうぶつキャッチゲーム</h2>
+                    <p class="game-description">
+                        Catch cute animals that appear on the screen! Click fast to get high scores!
+                    </p>
+                    <ul class="game-features">
+                        <li>10 different cute animals</li>
+                        <li>Combo system for extra points</li>
+                        <li>Beautiful particle effects</li>
+                        <li>60 second challenge</li>
+                    </ul>
+                    <a href="animal-catch-game.html" class="play-button" onclick="event.stopPropagation()">
+                        🎮 Play Now!
                     </a>
                 </div>
             </div>
