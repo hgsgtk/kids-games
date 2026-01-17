@@ -1,0 +1,8 @@
+---
+description: Write all code and documentation in English
+globs: "**/*"
+---
+
+- Write all code and documentation in English.
+- Use English for comments, file names, and README content.
+- Default user-facing strings to include both English and Japanese.
