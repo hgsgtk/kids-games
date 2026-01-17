@@ -1326,7 +1326,7 @@
         // 音声の有効/無効状態
         let isSoundEnabled = true;
         
-        // 音声のON/OFF切り替え
+        // Toggle sound on/off
         function toggleSound() {
             isSoundEnabled = !isSoundEnabled;
             const toggleBtn = document.getElementById('soundToggle');
@@ -1341,38 +1341,38 @@
             }
         }
         
-        // 画像テンプレート（Unsplash無料画像）
+        // Image templates (free Unsplash images)
         const imageTemplates = [
-            "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800",  // 観覧車
-            "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800",  // 宇宙
-            "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800",  // 星空
-            "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=800",  // 雲
-            "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",  // 夜景
-            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",  // レストラン
-            "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800",  // カフェ
-            "https://images.unsplash.com/photo-1528164344705-47542687000d?w=800",  // 神社
-            "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=800",  // プール
-            "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800",  // 図書館
-            "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",  // 水族館
-            "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800",  // 都市
-            "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800",  // バー
-            "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800",  // 温泉
-            "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800",  // ヨガ
-            "https://images.unsplash.com/photo-1511882150382-421056c89033?w=800",  // ボウリング
-            "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800",  // シアター
-            "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800",  // 夜空
-            "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",  // 料理
-            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800",  // 空
-            "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800",  // 城
-            "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=800",  // ショッピング
-            "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",  // おもちゃ
-            "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800",  // ファッション
-            "https://images.unsplash.com/photo-1556742044-3c52d6e88c62?w=800",  // ジム
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",  // ビジネス
-            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800",  // 本
-            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800",  // ラップトップ
-            "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800",  // 花
-            "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=800",  // 山
+            "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800",  // Ferris wheel
+            "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800",  // Space
+            "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800",  // Starry sky
+            "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=800",  // Clouds
+            "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800",  // Night view
+            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",  // Restaurant
+            "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800",  // Cafe
+            "https://images.unsplash.com/photo-1528164344705-47542687000d?w=800",  // Shrine
+            "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=800",  // Pool
+            "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800",  // Library
+            "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",  // Aquarium
+            "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800",  // City
+            "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800",  // Bar
+            "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800",  // Hot spring
+            "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800",  // Yoga
+            "https://images.unsplash.com/photo-1511882150382-421056c89033?w=800",  // Bowling
+            "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800",  // Theater
+            "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800",  // Night sky
+            "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",  // Cuisine
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800",  // Sky
+            "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800",  // Castle
+            "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=800",  // Shopping
+            "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",  // Toys
+            "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800",  // Fashion
+            "https://images.unsplash.com/photo-1556742044-3c52d6e88c62?w=800",  // Gym
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",  // Business
+            "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800",  // Books
+            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800",  // Laptop
+            "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800",  // Flowers
+            "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=800",  // Mountain
         ];
         
         // Floor information database（100-floor commercial facility）
@@ -2079,19 +2079,19 @@
         
         initialize();
 
-        // クリックしてもフォーカスを維持
+        // Keep focus even on click
         document.addEventListener('click', () => {
             document.body.focus();
         });
 
-        // 設定モーダルでのEnterキー処理
+        // Handle Enter in settings modal
         document.getElementById('maxFloorInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 startGame();
             }
         });
 
-        // カスタム入力欄でのEnterキー処理と自動選択
+        // Handle Enter in custom input and auto-select
         const customFloorInput = document.getElementById('customFloorInput');
         customFloorInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -2099,12 +2099,12 @@
             }
         });
         
-        // フォーカス時に全選択（簡単に上書きできるように）
+        // Select all on focus (easy overwrite)
         customFloorInput.addEventListener('focus', function() {
             this.select();
         });
         
-        // クリック時も全選択
+        // Select all on click
         customFloorInput.addEventListener('click', function() {
             this.select();
         });

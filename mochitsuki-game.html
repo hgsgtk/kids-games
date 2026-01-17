@@ -24,7 +24,7 @@
             cursor: default;
         }
 
-        /* カスタムカーソル（杵） */
+        /* Custom cursor (mallet) */
         .mochi-container {
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="80" viewBox="0 0 48 80"><defs><linearGradient id="kineGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%238B4513;stop-opacity:1" /><stop offset="50%" style="stop-color:%23A0522D;stop-opacity:1" /><stop offset="100%" style="stop-color:%23654321;stop-opacity:1" /></linearGradient></defs><ellipse cx="24" cy="15" rx="20" ry="15" fill="%23DEB887"/><rect x="14" y="15" width="20" height="55" rx="10" fill="url(%23kineGrad)"/><ellipse cx="24" cy="70" rx="14" ry="10" fill="%23654321"/></svg>') 24 40, pointer !important;
         }
@@ -470,7 +470,7 @@
             }
         }
 
-        /* 達成時のアニメーション */
+        /* Goal achievement animation */
         .achievement-overlay {
             position: fixed;
             top: 0;
@@ -758,7 +758,7 @@
         const settingsOverlay = document.getElementById('settingsOverlay');
         const achievementOverlay = document.getElementById('achievementOverlay');
 
-        // サウンド効果（Web Audio APIを使用）
+        // Sound effects (Web Audio API)
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
         function toggleSettings() {
@@ -787,17 +787,17 @@
         function selectGoal(goal, button) {
             applyNewGoal(goal);
             
-            // すべてのボタンからselectedクラスを削除
+            // Remove selected class from all buttons
             document.querySelectorAll('.goal-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
             
-            // クリックされたボタンにselectedクラスを追加
+            // Add selected class to the clicked button
             if (button) {
                 button.classList.add('selected');
             }
             
-            // 設定パネルを閉じる
+            // Close the settings panel
             setTimeout(() => {
                 toggleSettings();
             }, 300);
@@ -806,7 +806,7 @@
         function setCustomGoal() {
             const customValue = parseInt(customGoalInput.value);
             
-            // バリデーション
+            // Validation
             if (isNaN(customValue) || customValue < 10) {
                 alert('10点以上の数字を入力してください！');
                 customGoalInput.value = goalScore;
@@ -821,18 +821,18 @@
             
             applyNewGoal(customValue);
             
-            // すべてのプリセットボタンからselectedクラスを削除
+            // Remove selected class from preset buttons
             document.querySelectorAll('.goal-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
             
-            // カスタム値が設定されたことを視覚的にフィードバック
+            // Visual feedback for custom goal
             customGoalInput.style.background = '#e8f5e9';
             setTimeout(() => {
                 customGoalInput.style.background = 'white';
             }, 500);
             
-            // 設定パネルを閉じる
+            // Close the settings panel
             setTimeout(() => {
                 toggleSettings();
             }, 600);
@@ -891,16 +891,16 @@
         function endGame() {
             gameActive = false;
             
-            // 豪華な達成アニメーション
+            // Show celebration animation
             showAchievementAnimation();
             
-            // 目標達成！
+            // Goal achieved!
             const finalMessage = '👏 目標達成！おめでとう！';
             
-            // 表示用スコアは目標値でカンスト
+            // Cap displayed score at goal
             const displayScore = Math.min(score, goalScore);
             
-            // メッセージを少し遅れて表示（アニメーションの後）
+            // Show message after the animation
             setTimeout(() => {
                 message.textContent = `${finalMessage}\n✅ 目標達成！\nスコア: ${displayScore}点 / 目標: ${goalScore}点`;
             }, 2000);
@@ -926,9 +926,9 @@
             mochi.style.background = 'white';
             customGoalInput.value = 100;
             
-            // デフォルトの100点ボタンを選択状態に
+            // Select the default 100-point button
             document.querySelectorAll('.goal-btn').forEach((btn, index) => {
-                if (index === 1) { // 100点は2番目のボタン
+                if (index === 1) { // 100 points is the second button
                     btn.classList.add('selected');
                 } else {
                     btn.classList.remove('selected');
@@ -937,19 +937,19 @@
         }
 
         function updateDisplay() {
-            // スコア表示は目標値でカンスト
+            // Cap score display at goal
             const displayScore = Math.min(score, goalScore);
             scoreDisplay.textContent = displayScore;
             comboDisplay.textContent = combo;
             levelDisplay.textContent = level;
             goalScoreDisplay.textContent = goalScore;
             
-            // 進捗バーの更新
+            // Update progress bar
             const progress = Math.min((score / goalScore) * 100, 100);
             progressBar.style.width = progress + '%';
             progressBar.textContent = Math.round(progress) + '%';
             
-            // 進捗に応じて色を変更
+            // Change color by progress
             if (progress >= 100) {
                 progressBar.style.background = 'linear-gradient(90deg, #00c851 0%, #007e33 100%)';
             } else if (progress >= 75) {
@@ -974,12 +974,12 @@
         mochiContainer.addEventListener('click', (e) => {
             if (!gameActive) return;
             
-            // クリック間隔をチェック
+            // Check click interval
             const currentTime = Date.now();
             const timeDiff = currentTime - lastClickTime;
             lastClickTime = currentTime;
             
-            // コンボシステム
+            // Combo system
             if (timeDiff < 500) {
                 combo++;
                 clearTimeout(comboTimeout);
@@ -991,17 +991,17 @@
                 combo = 0;
             }
             
-            // スコア加算（目標値でカンスト）
+            // Add score (cap at goal)
             const points = 1 + Math.floor(combo / 3) + (level - 1);
             score += points;
             
-            // 目標達成チェック（スコアが目標を超えたら目標値に制限）
+            // Check goal reached (cap score at goal)
             if (score >= goalScore) {
                 score = goalScore;
                 updateDisplay();
                 playPoundSound();
                 
-                // アニメーション
+                // Animation
                 mochiContainer.classList.add('pounding');
                 mochi.classList.add('stretchy');
                 kine.classList.add('hitting');
@@ -1012,10 +1012,10 @@
                     kine.classList.remove('hitting');
                 }, 300);
                 
-                // パーティクル効果
+                // Particle effect
                 createParticles(e.clientX, e.clientY);
                 
-                // ゲーム終了
+                // End game
                 endGame();
                 return;
             }
@@ -1025,7 +1025,7 @@
             updateDisplay();
             playPoundSound();
             
-            // レベルアップチェック
+            // Check level up
             const newLevel = Math.floor(score / 50) + 1;
             if (newLevel > level) {
                 level = newLevel;
@@ -1035,7 +1035,7 @@
                 createConfetti();
             }
             
-            // アニメーション
+            // Animation
             mochiContainer.classList.add('pounding');
             mochi.classList.add('stretchy');
             kine.classList.add('hitting');
@@ -1046,10 +1046,10 @@
                 kine.classList.remove('hitting');
             }, 300);
             
-            // パーティクル効果
+            // Particle effect
             createParticles(e.clientX, e.clientY);
             
-            // コンボ表示
+            // Combo display
             if (combo > 0 && combo % 5 === 0) {
                 comboText.textContent = `${combo} コンボ！`;
                 comboText.classList.add('show');
@@ -1058,7 +1058,7 @@
                 }, 1000);
             }
             
-            // もちの色を変更（だんだん白くなる）
+            // Change mochi color (whitens over time)
             const whiteness = Math.min(255, 200 + clickCount * 2);
             mochi.style.background = `rgb(${whiteness}, ${whiteness}, ${whiteness})`;
         });
@@ -1175,36 +1175,36 @@
         }
 
         function showAchievementAnimation() {
-            // オーバーレイ表示
+            // Show overlay
             achievementOverlay.classList.add('show');
             
-            // もちを祝福アニメーション
+            // Mochi celebration animation
             mochi.classList.add('mochi-celebrate');
             
-            // スターバースト
+            // Star burst
             createStarBurst();
             
-            // 花火
+            // Fireworks
             createFireworks();
             
-            // 紙吹雪
+            // Confetti
             createConfetti();
             
-            // サウンド（複数回）
+            // Sound (multiple times)
             for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
                     playLevelUpSound();
                 }, i * 200);
             }
             
-            // アニメーション終了後にクリーンアップ
+            // Cleanup after animation
             setTimeout(() => {
                 achievementOverlay.classList.remove('show');
                 mochi.classList.remove('mochi-celebrate');
             }, 2000);
         }
 
-        // キーボードでもプレイできるように
+        // Allow keyboard play
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && gameActive) {
                 e.preventDefault();
@@ -1212,7 +1212,7 @@
             }
         });
 
-        // カスタム入力欄でEnterキーを押したら設定
+        // Set when Enter is pressed in custom input
         customGoalInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 setCustomGoal();

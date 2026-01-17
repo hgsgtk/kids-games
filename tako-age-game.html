@@ -720,7 +720,7 @@
         // 難易度選択
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                // dataset.difficultyが存在する場合のみ処理（昇順/降順ボタンを除外）
+                // Only handle when dataset.difficulty exists (exclude ascending/descending buttons)
                 if (!btn.dataset.difficulty) return;
                 
                 document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
