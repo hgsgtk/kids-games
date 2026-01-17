@@ -10,12 +10,10 @@ A collection of fun, educational browser-based games for young learners. Feature
 - **Number Typing Game** - Count and type numbers from 0-200
 - **3D Number Typing Adventure** - Immersive 3D number learning in space
 - **4D Number Journey** - Numbers fly towards you in stunning 4D effects
-- **Baby Countdown Timer** - Fun countdown timer for special moments
-- **Elevator Game** - Explore 100 themed floors with real photos
-- **もちつきゲーム (Mochitsuki)** - Japanese New Year mochi pounding game
-- **凧揚げ数字ゲーム (Tako-age)** - Kite flying number game
-- **時計カウントダウンゲーム** - Analog clock countdown game
-- **どうぶつキャッチゲーム** - Catch cute animals game
+- **Elevator Game - Kids Tower 100** - Explore 100 themed floors with real photos
+- **Mochitsuki Game** - Japanese New Year mochi pounding game
+- **Kite Flying Number Game** - Traditional kite flying with number learning
+- **Animal Catch Game** - Catch cute animals game
 
 ## 🚀 Getting Started
 

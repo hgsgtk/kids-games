@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>エレベーターゲーム - キッズタワー</title>
+    <title>Elevator Game - Kids Tower</title>
     <style>
         * {
             margin: 0;
@@ -31,7 +31,7 @@
             justify-content: center;
         }
 
-        /* ビル外観 */
+        /* Building exterior */
         .building {
             position: relative;
             width: 800px;
@@ -55,7 +55,7 @@
             letter-spacing: 2px;
         }
 
-        /* エレベータービュー */
+        /* Elevator view */
         .elevator-view {
             position: relative;
             height: 700px;
@@ -275,7 +275,7 @@
             50% { transform: translateY(-10px); }
         }
 
-        /* コントロールパネル */
+        /* Control panel */
         .control-panel {
             background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
             border-radius: 20px;
@@ -632,7 +632,7 @@
             animation: float 3s ease-in-out infinite;
         }
 
-        /* 設定モーダル */
+        /* Settings modal */
         .settings-modal {
             position: fixed;
             top: 0;
@@ -826,7 +826,7 @@
             text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
         }
 
-        /* 階数変更UI */
+        /* Floor change UI */
         .floor-selector {
             position: fixed;
             top: 100px;
@@ -990,29 +990,29 @@
     <!-- 設定モーダル -->
     <div class="settings-modal" id="settingsModal">
         <div class="settings-content">
-            <h1>🏢 エレベーターゲーム</h1>
-            <p>何階建てのビルにしますか？</p>
+            <h1>🏢 Elevator Game</h1>
+            <p>How many floors do you want?</p>
             
             <div class="floor-input-group">
-                <label for="maxFloorInput">最大階数を入力</label>
+                <label for="maxFloorInput">Enter max floors</label>
                 <input type="number" id="maxFloorInput" class="floor-input" 
                        min="1" max="500" value="100" 
                        placeholder="100">
             </div>
 
             <div class="preset-buttons">
-                <button class="preset-button" onclick="setMaxFloor(1)">1階</button>
-                <button class="preset-button" onclick="setMaxFloor(50)">50階</button>
-                <button class="preset-button" onclick="setMaxFloor(96)">96階</button>
-                <button class="preset-button" onclick="setMaxFloor(100)">100階</button>
-                <button class="preset-button" onclick="setMaxFloor(150)">150階</button>
-                <button class="preset-button" onclick="setMaxFloor(200)">200階</button>
+                <button class="preset-button" onclick="setMaxFloor(1)">1 Floor</button>
+                <button class="preset-button" onclick="setMaxFloor(50)">50 Floors</button>
+                <button class="preset-button" onclick="setMaxFloor(96)">96 Floors</button>
+                <button class="preset-button" onclick="setMaxFloor(100)">100 Floors</button>
+                <button class="preset-button" onclick="setMaxFloor(150)">150 Floors</button>
+                <button class="preset-button" onclick="setMaxFloor(200)">200 Floors</button>
             </div>
 
             <div class="error-message" id="errorMessage"></div>
 
             <button class="start-button" onclick="startGame()">
-                🚀 ゲームスタート！
+                🚀 Start Game!
             </button>
         </div>
     </div>
@@ -1027,28 +1027,28 @@
         ⚙️
     </button>
 
-    <!-- 階数変更UI -->
+    <!-- Floor change UI -->
     <div class="floor-selector">
-        <div class="floor-selector-title">🏢 階数変更</div>
+        <div class="floor-selector-title">🏢 Change Floors</div>
         <div class="floor-preset-buttons">
-            <button class="floor-preset-btn" onclick="quickChangeFloors(1)">1階</button>
-            <button class="floor-preset-btn" onclick="quickChangeFloors(10)">10階</button>
-            <button class="floor-preset-btn" onclick="quickChangeFloors(50)">50階</button>
-            <button class="floor-preset-btn active" onclick="quickChangeFloors(100)">100階</button>
-            <button class="floor-preset-btn" onclick="quickChangeFloors(200)">200階</button>
+            <button class="floor-preset-btn" onclick="quickChangeFloors(1)">1 Floor</button>
+            <button class="floor-preset-btn" onclick="quickChangeFloors(10)">10 Floors</button>
+            <button class="floor-preset-btn" onclick="quickChangeFloors(50)">50 Floors</button>
+            <button class="floor-preset-btn active" onclick="quickChangeFloors(100)">100 Floors</button>
+            <button class="floor-preset-btn" onclick="quickChangeFloors(200)">200 Floors</button>
         </div>
         <div class="floor-custom-input">
-            <label for="customFloorInput">直接入力</label>
+            <label for="customFloorInput">Direct Input</label>
             <input type="number" id="customFloorInput" class="floor-input-field" 
                    min="1" max="500" placeholder="1-500" value="100">
-            <button class="floor-apply-btn" onclick="applyCustomFloors()">変更</button>
+            <button class="floor-apply-btn" onclick="applyCustomFloors()">Apply</button>
         </div>
     </div>
 
     <div class="game-container">
-        <!-- エレベーター内部ビュー -->
+        <!-- Elevator interior view -->
         <div class="building">
-            <div class="building-title">🏢 キッズタワー100</div>
+            <div class="building-title">🏢 Kids Tower 100</div>
             
             <div class="elevator-view" id="elevatorView">
                 <div class="elevator-interior">
@@ -1059,59 +1059,59 @@
                     <div class="elevator-floor-display" id="elevatorFloorDisplay">1F</div>
                 </div>
                 <div class="moving-status" id="movingStatus">
-                    移動中<span class="direction-arrow" id="directionArrow">🔼</span>
+                    Moving<span class="direction-arrow" id="directionArrow">🔼</span>
                 </div>
             </div>
         </div>
 
-        <!-- コントロールパネル -->
+        <!-- Control panel -->
         <div class="control-panel">
             <div class="current-floor-display" id="currentFloor">1F</div>
             
             <div class="floor-info" id="floorInfo">
                 <div class="emoji-display">💄</div>
-                <h2>1階 - エントランスロビー</h2>
-                <p>キラキラした商品がいっぱい！</p>
+                <h2>Floor 1 - Entrance Lobby</h2>
+                <p>Sparkling products everywhere!</p>
             </div>
 
-            <div class="input-display" id="inputDisplay">数字を入力してね</div>
+            <div class="input-display" id="inputDisplay">Enter a number</div>
             <div class="input-hint" id="inputHint"></div>
 
-            <!-- クイックアクセスボタン -->
+            <!-- Quick access buttons -->
             <div class="quick-access" id="quickAccess">
-                <!-- よく使う階のボタンはJavaScriptで動的に生成されます -->
+                <!-- Frequently used floor buttons are dynamically generated by JavaScript -->
             </div>
 
-            <!-- 詳細グリッド -->
+            <!-- Detail grid -->
             <div class="button-grid-container">
                 <button class="grid-toggle" id="gridToggle" onclick="toggleGrid()">
-                    <span>すべての階を表示</span>
+                    <span>Show All Floors</span>
                     <span class="arrow">▼</span>
                 </button>
                 <div class="button-grid" id="buttonGrid">
-                    <!-- すべてのボタンはJavaScriptで動的に生成されます -->
+                    <!-- All buttons are dynamically generated by JavaScript -->
                 </div>
             </div>
 
             <div class="status-indicator" id="statusIndicator"></div>
             <div class="instruction">
-                ⌨️ キーボード操作方法 ⌨️<br>
-                <strong style="color: #ffd700; font-size: 18px;">数字入力 → Enter で移動！</strong><br>
-                例：「1」「0」「0」「Enter」で100階へ<br>
-                Backspace: 削除 | ESC: キャンセル<br>
-                <span style="font-size: 14px; color: #95a5a6;">100階建て！全階に実写背景</span>
+                ⌨️ Keyboard Controls ⌨️<br>
+                <strong style="color: #ffd700; font-size: 18px;">Type numbers → Enter to move!</strong><br>
+                Example: Type "1", "0", "0", then "Enter" to go to Floor 100<br>
+                Backspace: Delete | ESC: Cancel<br>
+                <span style="font-size: 14px; color: #95a5a6;">100 floors! Real photos on all floors</span>
             </div>
         </div>
     </div>
 
     <script>
         // ========================================
-        // ⚙️ 最大階数の設定
+        // ⚙️ Maximum floor settings
         // ========================================
         let MAX_FLOOR = 100; // デフォルト値
         
         // ========================================
-        // 🔊 音声設定
+        // 🔊 Audio settings
         // ========================================
         const doorCloseSound = new Audio('assets/sounds/door-simarimasu.mp3');
         const doorOpenSound = new Audio('assets/sounds/door-akimasu.mp3');
@@ -1172,12 +1172,12 @@
             "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=800",  // 山
         ];
         
-        // フロア情報データベース（100階建て商業施設）
+        // Floor information database（100-floor commercial facility）
         const floorData = {};
 
-        // 100階分のフロアデータを動的に生成
+        // Dynamically generate floor data for 100 floors
         const floorThemes = [
-            {emoji: "🎡", name: "屋上スカイガーデン", desc: "観覧車とスカイラウンジ！"},
+            {emoji: "🎡", name: "Rooftop Sky Garden", desc: "Ferris wheel and sky lounge!"},
             {emoji: "🚀", name: "宇宙展望台", desc: "宇宙が見える！"},
             {emoji: "⭐", name: "スターダストラウンジ", desc: "星空の下でくつろぐ"},
             {emoji: "🌤️", name: "ヘブンズデッキ", desc: "天国のような眺め！"},
@@ -1204,7 +1204,7 @@
             {emoji: "🎵", name: "音楽ホール", desc: "コンサートを楽しもう！"},
             {emoji: "🎪", name: "イベントホール", desc: "楽しいイベント開催中！"},
             {emoji: "🎬", name: "映画館", desc: "最新の映画を楽しもう！"},
-            {emoji: "🎮", name: "ゲームセンター", desc: "たくさんのゲームがあるよ！"},
+            {emoji: "🎮", name: "Game Center", desc: "Lots of games!"},
             {emoji: "🎤", name: "カラオケ", desc: "カラオケで歌おう！"},
             {emoji: "💪", name: "フィットネスジム", desc: "運動して健康に！"},
             {emoji: "📚", name: "書籍・文具", desc: "本とかわいい文房具"},
@@ -1215,11 +1215,11 @@
             {emoji: "🍜", name: "レストラン街", desc: "おいしいごはんがたくさん！"},
             {emoji: "🍰", name: "カフェ・スイーツ", desc: "甘いお菓子がいっぱい！"},
             {emoji: "⚽", name: "スポーツ", desc: "スポーツ用品とアウトドア"},
-            {emoji: "🧸", name: "おもちゃ・ホビー", desc: "楽しいおもちゃがいっぱい！"},
+            {emoji: "🧸", name: "Toys おもちゃ・ホビー Hobbies", desc: "Tons of fun toys!"},
             {emoji: "👶", name: "こども服・ベビー", desc: "かわいい子供服"},
             {emoji: "👔", name: "紳士服", desc: "かっこいい服がたくさん"},
             {emoji: "👗", name: "婦人服・雑貨", desc: "おしゃれな服と小物"},
-            {emoji: "💄", name: "化粧品", desc: "キラキラした商品がいっぱい！"},
+            {emoji: "💄", name: "化粧品", desc: "Sparkling products everywhere!"},
         ];
 
         const colorPalette = [
@@ -1240,7 +1240,7 @@
             "linear-gradient(135deg, #0a0a0a, #0f0f0f)",
         ];
 
-        // 最大階数分のフロアデータを生成
+        // Generate floor data for maximum floors
         for (let floor = MAX_FLOOR; floor >= 1; floor--) {
             const themeIndex = (MAX_FLOOR - floor) % floorThemes.length;
             const theme = floorThemes[themeIndex];
@@ -1248,7 +1248,7 @@
             const imageIndex = floor % imageTemplates.length;
             
             floorData[floor] = {
-                name: `${floor}階 - ${theme.name}`,
+                name: `${floor}Floor - ${theme.name}`,
                 description: theme.desc,
                 emoji: theme.emoji,
                 color: colorPalette[colorIndex],
@@ -1256,18 +1256,18 @@
             };
         }
 
-        // 特別階の上書き（重要な階だけカスタマイズ）
+        // Override special floors（Customize only important floors）
         floorData[MAX_FLOOR] = {
-            name: `${MAX_FLOOR}階 - 屋上スカイガーデン`,
-            description: "最上階！観覧車とスカイラウンジ！",
+            name: `${MAX_FLOOR}Floor - Rooftop Sky Garden`,
+            description: "Top floor!Ferris wheel and sky lounge!",
             emoji: "🎡",
             color: "linear-gradient(135deg, #00d2ff, #3a7bd5)",
             bgImage: "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800"
         };
         
         floorData[1] = {
-            name: "1階 - エントランスロビー",
-            description: "キラキラした商品がいっぱい！",
+            name: "1Floor - Entrance Lobby",
+            description: "Sparkling products everywhere!",
             emoji: "💄",
             color: "linear-gradient(135deg, #3498db, #2980b9)",
             bgImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"
@@ -1303,11 +1303,11 @@
 
             // バリデーション
             if (isNaN(value) || value < 1) {
-                errorMsg.textContent = '⚠️ 1階以上を入力してください';
+                errorMsg.textContent = '⚠️ 1or more';
                 return;
             }
             if (value > 500) {
-                errorMsg.textContent = '⚠️ 500階以下にしてください';
+                errorMsg.textContent = '⚠️ 500or less';
                 return;
             }
 
@@ -1321,11 +1321,11 @@
             resetGame();
         }
 
-        // 階数をクイック変更
+        // Quick change floor count
         function quickChangeFloors(floors) {
             if (isMoving) return; // 移動中は変更できない
             
-            // すでに同じ階数なら何もしない
+            // Do nothing if already the same number of floors
             if (MAX_FLOOR === floors) return;
             
             MAX_FLOOR = floors;
@@ -1337,13 +1337,13 @@
             // カスタム入力欄を新しい値で更新
             const customFloorInput = document.getElementById('customFloorInput');
             customFloorInput.value = MAX_FLOOR;
-            customFloorInput.placeholder = `現在: ${MAX_FLOOR}階`;
+            customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
             
             // ゲームをリセット
             resetGame();
         }
 
-        // カスタム階数を適用
+        // Apply custom floor count
         function applyCustomFloors() {
             if (isMoving) return; // 移動中は変更できない
             
@@ -1352,19 +1352,19 @@
             
             // バリデーション
             if (isNaN(value) || value < 1) {
-                alert('⚠️ 1階以上を入力してください');
+                alert('⚠️ 1or more');
                 input.value = MAX_FLOOR;
                 input.focus();
                 return;
             }
             if (value > 500) {
-                alert('⚠️ 500階以下にしてください');
+                alert('⚠️ 500or less');
                 input.value = MAX_FLOOR;
                 input.focus();
                 return;
             }
             
-            // すでに同じ階数なら何もしない
+            // Do nothing if already the same number of floors
             if (MAX_FLOOR === value) {
                 return;
             }
@@ -1377,7 +1377,7 @@
             
             // 入力欄を新しい値で更新
             input.value = MAX_FLOOR;
-            input.placeholder = `現在: ${MAX_FLOOR}階`;
+            input.placeholder = `Current: ${MAX_FLOOR}階`;
             
             // ゲームをリセット
             resetGame();
@@ -1390,7 +1390,7 @@
                 delete floorData[key];
             }
 
-            // 新しい階数でフロアデータを生成
+            // Generate floor data with new floor count
             for (let floor = MAX_FLOOR; floor >= 1; floor--) {
                 const themeIndex = (MAX_FLOOR - floor) % floorThemes.length;
                 const theme = floorThemes[themeIndex];
@@ -1398,7 +1398,7 @@
                 const imageIndex = floor % imageTemplates.length;
                 
                 floorData[floor] = {
-                    name: `${floor}階 - ${theme.name}`,
+                    name: `${floor}Floor - ${theme.name}`,
                     description: theme.desc,
                     emoji: theme.emoji,
                     color: colorPalette[colorIndex],
@@ -1406,18 +1406,18 @@
                 };
             }
 
-            // 特別階の上書き
+            // Override special floors
             floorData[MAX_FLOOR] = {
-                name: `${MAX_FLOOR}階 - 屋上スカイガーデン`,
-                description: "最上階！観覧車とスカイラウンジ！",
+                name: `${MAX_FLOOR}Floor - Rooftop Sky Garden`,
+                description: "Top floor!Ferris wheel and sky lounge!",
                 emoji: "🎡",
                 color: "linear-gradient(135deg, #1a1a1a, #0a0a0a)",
                 bgImage: "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800"
             };
             
             floorData[1] = {
-                name: "1階 - エントランスロビー",
-                description: "キラキラした商品がいっぱい！",
+                name: "1Floor - Entrance Lobby",
+                description: "Sparkling products everywhere!",
                 emoji: "💄",
                 color: "linear-gradient(135deg, #1a1a1a, #0a0a0a)",
                 bgImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"
@@ -1462,7 +1462,7 @@
                 buildingTitle.style.animation = '';
             }, 1000);
             
-            console.log(`${MAX_FLOOR}階建てに変更しました（現在: ${currentFloor}階）`);
+            console.log(`${MAX_FLOOR}階建てに変更しました（Current: ${currentFloor}階）`);
         }
         
         // 階数変更完了通知を表示
@@ -1853,7 +1853,7 @@
             
             // カスタム入力欄のプレースホルダーとデフォルト値を更新
             const customFloorInput = document.getElementById('customFloorInput');
-            customFloorInput.placeholder = `現在: ${MAX_FLOOR}階`;
+            customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
             if (!customFloorInput.value) {
                 customFloorInput.value = MAX_FLOOR;
             }
@@ -1918,7 +1918,7 @@
             
             // カスタム入力欄のプレースホルダーと値を初期化
             const customFloorInput = document.getElementById('customFloorInput');
-            customFloorInput.placeholder = `現在: ${MAX_FLOOR}階`;
+            customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
             customFloorInput.value = MAX_FLOOR;
             
             if (savedMaxFloor) {
@@ -1926,7 +1926,7 @@
                 if (value >= 1 && value <= 500) {
                     document.getElementById('maxFloorInput').value = value;
                     MAX_FLOOR = value;
-                    customFloorInput.placeholder = `現在: ${MAX_FLOOR}階`;
+                    customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
                     customFloorInput.value = MAX_FLOOR;
                     
                     // 2回目以降の起動なら、モーダルを閉じてゲームを開始

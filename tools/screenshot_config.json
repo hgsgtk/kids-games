@@ -31,34 +31,24 @@
       "description": "4D Number Journey"
     },
     {
-      "file": "baby-countdown-timer.html",
-      "wait_time": 2,
-      "description": "Baby Countdown Timer"
-    },
-    {
       "file": "elevator-game.html",
       "wait_time": 3,
-      "description": "Elevator Game - キッズタワー100"
+      "description": "Elevator Game - Kids Tower 100"
     },
     {
       "file": "mochitsuki-game.html",
       "wait_time": 2,
-      "description": "もちつきゲーム"
+      "description": "Mochitsuki Game (Mochi Pounding)"
     },
     {
       "file": "tako-age-game.html",
       "wait_time": 3,
-      "description": "凧揚げ数字ゲーム"
-    },
-    {
-      "file": "clock-countdown-game.html",
-      "wait_time": 2,
-      "description": "時計カウントダウンゲーム"
+      "description": "Tako-age Game (Kite Flying Numbers)"
     },
     {
       "file": "animal-catch-game.html",
       "wait_time": 2,
-      "description": "どうぶつキャッチゲーム"
+      "description": "Animal Catch Game"
     }
   ]
 }
