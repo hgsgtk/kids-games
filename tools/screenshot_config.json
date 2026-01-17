@@ -1,0 +1,64 @@
+{
+  "games": [
+    {
+      "file": "abc-bouncing-balls.html",
+      "wait_time": 3,
+      "description": "ABC Song with Bouncing Balls"
+    },
+    {
+      "file": "4d-baby-animation.html",
+      "wait_time": 2,
+      "description": "Baby's 4D Wonder World"
+    },
+    {
+      "file": "alphabet-typing.html",
+      "wait_time": 2,
+      "description": "Alphabet Typing A→Z"
+    },
+    {
+      "file": "number-typing.html",
+      "wait_time": 2,
+      "description": "Number Typing Game"
+    },
+    {
+      "file": "3d-number-typing.html",
+      "wait_time": 3,
+      "description": "3D Number Typing Adventure"
+    },
+    {
+      "file": "4d-number-rush.html",
+      "wait_time": 3,
+      "description": "4D Number Journey"
+    },
+    {
+      "file": "baby-countdown-timer.html",
+      "wait_time": 2,
+      "description": "Baby Countdown Timer"
+    },
+    {
+      "file": "elevator-game.html",
+      "wait_time": 3,
+      "description": "Elevator Game - キッズタワー100"
+    },
+    {
+      "file": "mochitsuki-game.html",
+      "wait_time": 2,
+      "description": "もちつきゲーム"
+    },
+    {
+      "file": "tako-age-game.html",
+      "wait_time": 3,
+      "description": "凧揚げ数字ゲーム"
+    },
+    {
+      "file": "clock-countdown-game.html",
+      "wait_time": 2,
+      "description": "時計カウントダウンゲーム"
+    },
+    {
+      "file": "animal-catch-game.html",
+      "wait_time": 2,
+      "description": "どうぶつキャッチゲーム"
+    }
+  ]
+}
