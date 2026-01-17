@@ -18,58 +18,258 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            cursor: default;
+        }
+
+        /* カスタムカーソル（杵） */
+        .mochi-container {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="80" viewBox="0 0 48 80"><defs><linearGradient id="kineGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%238B4513;stop-opacity:1" /><stop offset="50%" style="stop-color:%23A0522D;stop-opacity:1" /><stop offset="100%" style="stop-color:%23654321;stop-opacity:1" /></linearGradient></defs><ellipse cx="24" cy="15" rx="20" ry="15" fill="%23DEB887"/><rect x="14" y="15" width="20" height="55" rx="10" fill="url(%23kineGrad)"/><ellipse cx="24" cy="70" rx="14" ry="10" fill="%23654321"/></svg>') 24 40, pointer !important;
         }
 
         .game-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 30px;
-            padding: 40px;
+            padding: 15px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
-            max-width: 800px;
-            width: 90%;
+            max-width: 100%;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         h1 {
-            font-size: 3em;
+            font-size: 1.8em;
             color: #e74c3c;
-            margin-bottom: 20px;
+            margin-bottom: 3px;
+            margin-top: 3px;
             text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
         }
 
         .game-info {
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
+            justify-content: center;
+            margin-bottom: 5px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .info-box {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 15px 30px;
-            border-radius: 15px;
+            padding: 6px 14px;
+            border-radius: 10px;
             color: white;
-            font-size: 1.5em;
+            font-size: 1em;
             font-weight: bold;
-            margin: 10px;
-            min-width: 150px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 2em;
+            cursor: pointer !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 998;
+        }
+
+        .settings-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .settings-panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .goal-selector {
+            margin-bottom: 20px;
+        }
+
+        .goal-selector h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .goal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .goal-btn {
+            padding: 15px 20px;
+            font-size: 1.2em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer !important;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #667eea;
+            width: 100%;
+        }
+
+        .goal-btn:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .goal-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+        }
+
+        .custom-goal-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .custom-goal-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .custom-goal-btn {
+            padding: 15px 20px;
+            font-size: 1.2em;
+            border: 3px solid #27ae60;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer !important;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #27ae60;
+            width: 100%;
+        }
+
+        .custom-goal-btn:hover {
+            background: #27ae60;
+            color: white;
+        }
+
+        .close-settings {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-bar-container {
+            width: 85%;
+            max-width: 500px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            margin: 8px auto;
+            overflow: hidden;
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.4em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            min-width: 60px;
         }
 
         .mochi-container {
             position: relative;
-            width: 600px;
-            height: 600px;
-            margin: 0 auto 30px;
+            width: min(90vw, 80vh);
+            height: min(90vw, 80vh);
+            max-width: 850px;
+            max-height: 850px;
+            margin: 5px auto;
             background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
             transition: transform 0.1s;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .mochi-container:active {
+            transform: scale(0.98);
         }
 
         .mochi-container:hover {
@@ -86,11 +286,14 @@
         }
 
         .mochi {
-            width: 400px;
-            height: 400px;
+            width: 70%;
+            height: 70%;
             background: white;
             border-radius: 50%;
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             box-shadow: inset 0 -20px 40px rgba(0, 0, 0, 0.1);
             transition: all 0.3s;
         }
@@ -148,16 +351,17 @@
         .buttons {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 10px;
             flex-wrap: wrap;
+            margin-top: 5px;
         }
 
         button {
-            padding: 20px 40px;
-            font-size: 1.5em;
+            padding: 10px 20px;
+            font-size: 1.1em;
             border: none;
-            border-radius: 15px;
-            cursor: pointer;
+            border-radius: 12px;
+            cursor: pointer !important;
             font-weight: bold;
             transition: all 0.3s;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
@@ -184,11 +388,12 @@
         }
 
         .message {
-            font-size: 2em;
+            font-size: 1.2em;
             color: #e74c3c;
-            margin-top: 20px;
+            margin-top: 5px;
+            margin-bottom: 5px;
             font-weight: bold;
-            min-height: 50px;
+            min-height: 30px;
             animation: bounce 1s infinite;
         }
 
@@ -211,11 +416,11 @@
 
         .level-indicator {
             background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 5px 12px;
+            border-radius: 8px;
             color: white;
-            font-size: 1.2em;
-            margin-bottom: 20px;
+            font-size: 0.85em;
+            margin-bottom: 5px;
             display: inline-block;
         }
 
@@ -264,9 +469,155 @@
                 transform: translateY(100vh) rotate(360deg);
             }
         }
+
+        /* 達成時のアニメーション */
+        .achievement-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.9) 0%, rgba(255, 140, 0, 0.8) 50%, rgba(255, 69, 0, 0.7) 100%);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .achievement-overlay.show {
+            animation: achievementFlash 2s ease-out forwards;
+        }
+
+        @keyframes achievementFlash {
+            0% {
+                opacity: 0;
+                visibility: visible;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .achievement-text {
+            font-size: 5em;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 140, 0, 1);
+            animation: achievementBounce 2s ease-out;
+        }
+
+        @keyframes achievementBounce {
+            0% {
+                transform: scale(0) rotate(-180deg);
+            }
+            50% {
+                transform: scale(1.3) rotate(10deg);
+            }
+            70% {
+                transform: scale(0.9) rotate(-5deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .star {
+            position: fixed;
+            font-size: 3em;
+            pointer-events: none;
+            z-index: 2001;
+        }
+
+        @keyframes starBurst {
+            0% {
+                transform: translate(0, 0) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(1) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .firework {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2001;
+        }
+
+        @keyframes fireworkExplode {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--fx), var(--fy));
+                opacity: 0;
+            }
+        }
+
+        .mochi-celebrate {
+            animation: mochiCelebrate 1s ease-in-out;
+        }
+
+        @keyframes mochiCelebrate {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            25% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(10deg);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1) rotate(-10deg);
+            }
+            75% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(5deg);
+            }
+        }
     </style>
 </head>
 <body>
+    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+
+    <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+    
+    <div class="settings-panel" id="settingsPanel">
+        <button class="close-settings" onclick="toggleSettings()">✕</button>
+        <h2>⚙️ 設定</h2>
+        
+        <div class="goal-selector">
+            <h3>🎯 目標スコアを選んでね！</h3>
+            <div class="goal-buttons">
+                <button class="goal-btn" onclick="selectGoal(50)">50点</button>
+                <button class="goal-btn selected" onclick="selectGoal(100)">100点</button>
+                <button class="goal-btn" onclick="selectGoal(150)">150点</button>
+                <button class="goal-btn" onclick="selectGoal(200)">200点</button>
+                <button class="goal-btn" onclick="selectGoal(300)">300点</button>
+                <div class="custom-goal-container">
+                    <input type="number" id="customGoalInput" class="custom-goal-input" placeholder="目標を入力" min="10" max="9999" value="100">
+                    <button class="custom-goal-btn" onclick="setCustomGoal()">カスタム目標を設定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="achievement-overlay" id="achievementOverlay">
+        <div class="achievement-text" id="achievementText">🎉 目標達成！ 🎉</div>
+    </div>
+
     <div class="game-container">
         <h1>🎍 もちつきゲーム 🎍</h1>
         
@@ -279,10 +630,16 @@
                 スコア: <span id="score">0</span>
             </div>
             <div class="info-box">
-                時間: <span id="time">30</span>秒
+                目標: <span id="goalScore">100</span>
             </div>
             <div class="info-box">
                 コンボ: <span id="combo">0</span>
+            </div>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%;">
+                0%
             </div>
         </div>
 
@@ -319,11 +676,10 @@
 
     <script>
         let score = 0;
-        let timeLeft = 30;
         let level = 1;
         let combo = 0;
+        let goalScore = 100;
         let gameActive = false;
-        let gameInterval;
         let comboTimeout;
         let clickCount = 0;
         let lastClickTime = 0;
@@ -332,15 +688,86 @@
         const mochi = document.getElementById('mochi');
         const kine = document.getElementById('kine');
         const scoreDisplay = document.getElementById('score');
-        const timeDisplay = document.getElementById('time');
         const comboDisplay = document.getElementById('combo');
         const levelDisplay = document.getElementById('level');
+        const goalScoreDisplay = document.getElementById('goalScore');
+        const progressBar = document.getElementById('progressBar');
         const message = document.getElementById('message');
         const comboText = document.getElementById('comboText');
         const startBtn = document.getElementById('startBtn');
+        const customGoalInput = document.getElementById('customGoalInput');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        const achievementOverlay = document.getElementById('achievementOverlay');
 
         // サウンド効果（Web Audio APIを使用）
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function toggleSettings() {
+            if (gameActive) return; // ゲーム中は設定を開けない
+            
+            settingsPanel.classList.toggle('open');
+            settingsOverlay.classList.toggle('open');
+        }
+
+        function selectGoal(goal) {
+            if (gameActive) return;
+            
+            goalScore = goal;
+            goalScoreDisplay.textContent = goalScore;
+            customGoalInput.value = goal;
+            
+            // すべてのボタンからselectedクラスを削除
+            document.querySelectorAll('.goal-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // クリックされたボタンにselectedクラスを追加
+            event.target.classList.add('selected');
+            
+            // 設定パネルを閉じる
+            setTimeout(() => {
+                toggleSettings();
+            }, 300);
+        }
+
+        function setCustomGoal() {
+            if (gameActive) return;
+            
+            const customValue = parseInt(customGoalInput.value);
+            
+            // バリデーション
+            if (isNaN(customValue) || customValue < 10) {
+                alert('10点以上の数字を入力してください！');
+                customGoalInput.value = goalScore;
+                return;
+            }
+            
+            if (customValue > 9999) {
+                alert('9999点以下の数字を入力してください！');
+                customGoalInput.value = goalScore;
+                return;
+            }
+            
+            goalScore = customValue;
+            goalScoreDisplay.textContent = goalScore;
+            
+            // すべてのプリセットボタンからselectedクラスを削除
+            document.querySelectorAll('.goal-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // カスタム値が設定されたことを視覚的にフィードバック
+            customGoalInput.style.background = '#e8f5e9';
+            setTimeout(() => {
+                customGoalInput.style.background = 'white';
+            }, 500);
+            
+            // 設定パネルを閉じる
+            setTimeout(() => {
+                toggleSettings();
+            }, 600);
+        }
 
         function playPoundSound() {
             const oscillator = audioContext.createOscillator();
@@ -382,80 +809,87 @@
             
             gameActive = true;
             score = 0;
-            timeLeft = 30;
             level = 1;
             combo = 0;
             clickCount = 0;
             
             updateDisplay();
-            message.textContent = 'もちをついてね！';
+            message.textContent = `目標 ${goalScore}点を目指そう！`;
             startBtn.disabled = true;
             startBtn.style.opacity = '0.5';
-            
-            gameInterval = setInterval(() => {
-                timeLeft--;
-                timeDisplay.textContent = timeLeft;
-                
-                if (timeLeft <= 0) {
-                    endGame();
-                }
-                
-                // レベルアップチェック
-                const newLevel = Math.floor(score / 50) + 1;
-                if (newLevel > level) {
-                    level = newLevel;
-                    levelDisplay.textContent = level;
-                    playLevelUpSound();
-                    showMessage('レベルアップ！🎉');
-                    createConfetti();
-                }
-            }, 1000);
         }
 
         function endGame() {
             gameActive = false;
-            clearInterval(gameInterval);
             
-            let finalMessage = '';
-            if (score >= 200) {
-                finalMessage = '🏆 すごい！もちつき名人！ 🏆';
-            } else if (score >= 150) {
-                finalMessage = '🌟 すばらしい！';
-            } else if (score >= 100) {
-                finalMessage = '👏 よくできました！';
-            } else {
-                finalMessage = '😊 がんばりました！';
-            }
+            // 豪華な達成アニメーション
+            showAchievementAnimation();
             
-            message.textContent = `${finalMessage}\nスコア: ${score}点`;
+            // 目標達成！
+            const finalMessage = '👏 目標達成！おめでとう！';
+            
+            // 表示用スコアは目標値でカンスト
+            const displayScore = Math.min(score, goalScore);
+            
+            // メッセージを少し遅れて表示（アニメーションの後）
+            setTimeout(() => {
+                message.textContent = `${finalMessage}\n✅ 目標達成！\nスコア: ${displayScore}点 / 目標: ${goalScore}点`;
+            }, 2000);
+            
             startBtn.disabled = false;
             startBtn.style.opacity = '1';
             startBtn.textContent = '🎮 もう一度';
-            
-            createConfetti();
         }
 
         function resetGame() {
             gameActive = false;
-            clearInterval(gameInterval);
             score = 0;
-            timeLeft = 30;
             level = 1;
             combo = 0;
             clickCount = 0;
+            goalScore = 100;
             
             updateDisplay();
             message.textContent = 'スタートボタンを押してね！';
             startBtn.disabled = false;
             startBtn.style.opacity = '1';
             startBtn.textContent = '🎮 スタート';
+            mochi.style.background = 'white';
+            customGoalInput.value = 100;
+            
+            // デフォルトの100点ボタンを選択状態に
+            document.querySelectorAll('.goal-btn').forEach((btn, index) => {
+                if (index === 1) { // 100点は2番目のボタン
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
         }
 
         function updateDisplay() {
-            scoreDisplay.textContent = score;
-            timeDisplay.textContent = timeLeft;
+            // スコア表示は目標値でカンスト
+            const displayScore = Math.min(score, goalScore);
+            scoreDisplay.textContent = displayScore;
             comboDisplay.textContent = combo;
             levelDisplay.textContent = level;
+            goalScoreDisplay.textContent = goalScore;
+            
+            // 進捗バーの更新
+            const progress = Math.min((score / goalScore) * 100, 100);
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = Math.round(progress) + '%';
+            
+            // 進捗に応じて色を変更
+            if (progress >= 100) {
+                progressBar.style.background = 'linear-gradient(90deg, #00c851 0%, #007e33 100%)';
+            } else if (progress >= 75) {
+                progressBar.style.background = 'linear-gradient(90deg, #2ecc71 0%, #27ae60 100%)';
+            } else if (progress >= 50) {
+                progressBar.style.background = 'linear-gradient(90deg, #f39c12 0%, #e67e22 100%)';
+            } else {
+                progressBar.style.background = 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)';
+            }
         }
 
         function showMessage(text) {
@@ -488,13 +922,49 @@
                 combo = 0;
             }
             
-            // スコア加算
+            // スコア加算（目標値でカンスト）
             const points = 1 + Math.floor(combo / 3) + (level - 1);
             score += points;
+            
+            // 目標達成チェック（スコアが目標を超えたら目標値に制限）
+            if (score >= goalScore) {
+                score = goalScore;
+                updateDisplay();
+                playPoundSound();
+                
+                // アニメーション
+                mochiContainer.classList.add('pounding');
+                mochi.classList.add('stretchy');
+                kine.classList.add('hitting');
+                
+                setTimeout(() => {
+                    mochiContainer.classList.remove('pounding');
+                    mochi.classList.remove('stretchy');
+                    kine.classList.remove('hitting');
+                }, 300);
+                
+                // パーティクル効果
+                createParticles(e.clientX, e.clientY);
+                
+                // ゲーム終了
+                endGame();
+                return;
+            }
+            
             clickCount++;
             
             updateDisplay();
             playPoundSound();
+            
+            // レベルアップチェック
+            const newLevel = Math.floor(score / 50) + 1;
+            if (newLevel > level) {
+                level = newLevel;
+                levelDisplay.textContent = level;
+                playLevelUpSound();
+                showMessage('レベルアップ！🎉');
+                createConfetti();
+            }
             
             // アニメーション
             mochiContainer.classList.add('pounding');
@@ -560,7 +1030,7 @@
 
         function createConfetti() {
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 100; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
@@ -570,8 +1040,99 @@
                     document.body.appendChild(confetti);
                     
                     setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        function createStarBurst() {
+            const stars = ['⭐', '✨', '🌟', '💫'];
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.textContent = stars[Math.floor(Math.random() * stars.length)];
+                    star.style.left = centerX + 'px';
+                    star.style.top = centerY + 'px';
+                    
+                    const angle = (Math.PI * 2 * i) / 20;
+                    const distance = 200 + Math.random() * 300;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    
+                    star.style.setProperty('--tx', tx + 'px');
+                    star.style.setProperty('--ty', ty + 'px');
+                    star.style.animation = `starBurst ${1 + Math.random()}s ease-out forwards`;
+                    
+                    document.body.appendChild(star);
+                    
+                    setTimeout(() => star.remove(), 2000);
                 }, i * 50);
             }
+        }
+
+        function createFireworks() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff6600', '#ff0066'];
+            
+            for (let burst = 0; burst < 8; burst++) {
+                setTimeout(() => {
+                    const burstX = Math.random() * window.innerWidth;
+                    const burstY = Math.random() * (window.innerHeight * 0.6);
+                    
+                    for (let i = 0; i < 30; i++) {
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.style.left = burstX + 'px';
+                        firework.style.top = burstY + 'px';
+                        firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        const angle = (Math.PI * 2 * i) / 30;
+                        const distance = 100 + Math.random() * 150;
+                        const fx = Math.cos(angle) * distance;
+                        const fy = Math.sin(angle) * distance;
+                        
+                        firework.style.setProperty('--fx', fx + 'px');
+                        firework.style.setProperty('--fy', fy + 'px');
+                        firework.style.animation = `fireworkExplode ${0.8 + Math.random() * 0.4}s ease-out forwards`;
+                        
+                        document.body.appendChild(firework);
+                        
+                        setTimeout(() => firework.remove(), 1500);
+                    }
+                }, burst * 300);
+            }
+        }
+
+        function showAchievementAnimation() {
+            // オーバーレイ表示
+            achievementOverlay.classList.add('show');
+            
+            // もちを祝福アニメーション
+            mochi.classList.add('mochi-celebrate');
+            
+            // スターバースト
+            createStarBurst();
+            
+            // 花火
+            createFireworks();
+            
+            // 紙吹雪
+            createConfetti();
+            
+            // サウンド（複数回）
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    playLevelUpSound();
+                }, i * 200);
+            }
+            
+            // アニメーション終了後にクリーンアップ
+            setTimeout(() => {
+                achievementOverlay.classList.remove('show');
+                mochi.classList.remove('mochi-celebrate');
+            }, 2000);
         }
 
         // キーボードでもプレイできるように
@@ -579,6 +1140,13 @@
             if (e.code === 'Space' && gameActive) {
                 e.preventDefault();
                 mochiContainer.click();
+            }
+        });
+
+        // カスタム入力欄でEnterキーを押したら設定
+        customGoalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                setCustomGoal();
             }
         });
     </script>
