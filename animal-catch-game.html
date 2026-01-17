@@ -451,22 +451,22 @@
 <body>
     <h1 data-i18n="title">🦁 Animal Catch Game 🐻</h1>
     
-    <p class="instruction">⌨️ 0から順番に数字をタイプしよう！上の桁から1桁ずつ入力してね！</p>
+    <p class="instruction" data-i18n="instruction">⌨️ 0から順番に数字をタイプしよう！上の桁から1桁ずつ入力してね！</p>
     
     <div class="game-info">
         <div class="score-display">
-            <h2>スコア</h2>
+            <h2 data-i18n="score">スコア</h2>
             <div class="score-number" id="scoreDisplay">0</div>
         </div>
         <div class="target-display">
-            <h2>現在の数字</h2>
+            <h2 data-i18n="currentNumber">現在の数字</h2>
             <div class="target-number" id="caughtDisplay">- / 20</div>
         </div>
     </div>
 
     <div class="game-info" style="margin-bottom: 10px;">
         <div style="text-align: center;">
-            <label style="font-size: 1.3rem; color: #667eea; font-weight: bold; margin-right: 15px;">数字の範囲:</label>
+            <label style="font-size: 1.3rem; color: #667eea; font-weight: bold; margin-right: 15px;" data-i18n="numberRange">数字の範囲:</label>
             <select id="maxNumberSelect" style="font-size: 1.3rem; padding: 10px 20px; border-radius: 10px; border: 3px solid #667eea; background: white; cursor: pointer;">
                 <option value="9">0 - 9</option>
                 <option value="20" selected>0 - 20</option>
@@ -481,25 +481,25 @@
         <div class="game-area" id="gameArea"></div>
         
         <div class="cage-container">
-            <div class="cage-title">🏠 つかまえた動物</div>
+            <div class="cage-title" data-i18n="caughtAnimals">🏠 つかまえた動物</div>
             <div class="cage" id="cage"></div>
         </div>
     </div>
 
     <div class="buttons">
-        <button id="startBtn" onclick="startGame()">スタート</button>
-        <button id="pauseBtn" onclick="pauseGame()" disabled>ポーズ</button>
+        <button id="startBtn" onclick="startGame()" data-i18n="start">スタート</button>
+        <button id="pauseBtn" onclick="pauseGame()" disabled data-i18n="pause">ポーズ</button>
     </div>
 
     <div class="input-display" id="inputDisplay"></div>
 
     <div class="game-over-overlay" id="gameOverOverlay">
         <div class="game-over-message">
-            <h2>🎉 ゲーム終了！ 🎉</h2>
+            <h2 data-i18n="gameOver">🎉 ゲーム終了！ 🎉</h2>
             <p class="final-score" id="finalScore">0点</p>
             <p class="caught-count" id="caughtCount">つかまえた動物: 0匹</p>
             <p id="resultMessage">すごい！</p>
-            <button class="restart-btn" onclick="restartGame()">もう一回！</button>
+            <button class="restart-btn" onclick="restartGame()" data-i18n="playAgain">もう一回！</button>
         </div>
     </div>
 
@@ -515,9 +515,14 @@
                 caughtAnimals: "🏠 Caught Animals",
                 start: "Start",
                 pause: "Pause",
+                resume: "Resume",
                 gameOver: "🎉 Game Over! 🎉",
-                finalScore: "Final Score:",
-                playAgain: "Play Again"
+                finalScore: "Final Score: {score}",
+                caughtCount: "0 → {reached} (Goal: {max})",
+                goalReached: "🎊 Goal reached! 0 to {max} perfect! 🏆",
+                goalProgress: "0 to {reached}! Great job! 😊",
+                playAgain: "Play Again",
+                scoreSuffix: " pts"
             },
             ja: {
                 title: "🦁 どうぶつキャッチゲーム 🐻",
@@ -528,9 +533,14 @@
                 caughtAnimals: "🏠 つかまえた動物",
                 start: "スタート",
                 pause: "ポーズ",
+                resume: "さいかい",
                 gameOver: "🎉 ゲーム終了！ 🎉",
-                finalScore: "最終スコア:",
-                playAgain: "もう一度プレイ"
+                finalScore: "最終スコア: {score}",
+                caughtCount: "0 → {reached} (ゴール: {max})",
+                goalReached: "🎊 ゴール達成！ 0から{max}まで完璧！ 🏆",
+                goalProgress: "0から{reached}まで到達！ がんばったね！ 😊",
+                playAgain: "もう一度プレイ",
+                scoreSuffix: "点"
             }
         };
 
@@ -821,7 +831,6 @@
 
             document.getElementById('startBtn').disabled = true;
             document.getElementById('pauseBtn').disabled = false;
-            maxNumberSelect.disabled = true; // ゲーム中は変更不可
 
             // 既存の動物を削除
             gameArea.innerHTML = '';
@@ -838,11 +847,11 @@
             const pauseBtn = document.getElementById('pauseBtn');
             
             if (isPaused) {
-                pauseBtn.textContent = 'さいかい';
+                pauseBtn.textContent = i18n.t('resume');
                 hideInputDisplay();
                 currentInput = '';
             } else {
-                pauseBtn.textContent = 'ポーズ';
+                pauseBtn.textContent = i18n.t('pause');
             }
         }
 
@@ -858,7 +867,6 @@
 
             document.getElementById('startBtn').disabled = false;
             document.getElementById('pauseBtn').disabled = true;
-            maxNumberSelect.disabled = false; // ゲーム終了後は変更可能に
             hideInputDisplay();
 
             sounds.gameOver();
@@ -867,15 +875,14 @@
             let message = '';
             const reachedNumber = caughtAnimals.length > 0 ? caughtAnimals.length - 1 : 0;
             
-            // ゴール達成時のメッセージ
             if (reachedNumber >= maxNumber) {
-                message = `🎊 ゴール達成！ 0から${maxNumber}まで完璧！ 🏆`;
+                message = formatTemplate(i18n.t('goalReached'), { max: maxNumber });
             } else {
-                message = `0から${reachedNumber}まで到達！ がんばったね！ 😊`;
+                message = formatTemplate(i18n.t('goalProgress'), { reached: reachedNumber });
             }
 
-            document.getElementById('finalScore').textContent = score + '点';
-            document.getElementById('caughtCount').textContent = `0 → ${reachedNumber} (ゴール: ${maxNumber})`;
+            document.getElementById('finalScore').textContent = formatTemplate(i18n.t('finalScore'), { score: score + i18n.t('scoreSuffix') });
+            document.getElementById('caughtCount').textContent = formatTemplate(i18n.t('caughtCount'), { reached: reachedNumber, max: maxNumber });
             document.getElementById('resultMessage').textContent = message;
             document.getElementById('gameOverOverlay').style.display = 'flex';
         }
@@ -954,6 +961,38 @@
             if (e.target === this) {
                 this.style.display = 'none';
             }
+        });
+
+        function updateMaxNumberFromSelect() {
+            maxNumber = parseInt(maxNumberSelect.value);
+            const displayNumber = caughtAnimals.length > 0 ? caughtAnimals.length - 1 : '-';
+            caughtDisplay.textContent = `${displayNumber} / ${maxNumber}`;
+
+            if (caughtAnimals.length > maxNumber) {
+                setTimeout(() => endGame(), 200);
+                return;
+            }
+
+            if (isPlaying && !isPaused) {
+                spawnAnimal();
+            }
+        }
+
+        maxNumberSelect.addEventListener('change', updateMaxNumberFromSelect);
+
+        function formatTemplate(text, data) {
+            return text.replace(/\{(\w+)\}/g, (_, key) => {
+                return data[key] !== undefined ? data[key] : `{${key}}`;
+            });
+        }
+
+        function updatePauseButtonLabel() {
+            const pauseBtn = document.getElementById('pauseBtn');
+            pauseBtn.textContent = isPaused ? i18n.t('resume') : i18n.t('pause');
+        }
+
+        window.addEventListener('languageChanged', () => {
+            updatePauseButtonLabel();
         });
     </script>
 </body>
