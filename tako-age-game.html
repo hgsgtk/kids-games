@@ -479,6 +479,7 @@
             margin-top: 10px;
         }
     </style>
+    <script src="assets/i18n.js"></script>
 </head>
 <body>
     <div class="game-container">
@@ -578,6 +579,47 @@
     </div>
 
     <script>
+        // Multi-language support
+        const translations = {
+            en: {
+                title: "🪁 Kite Flying Number Game 🪁",
+                score: "Score",
+                time: "Time",
+                combo: "Combo",
+                seconds: "sec",
+                start: "🎮 Start",
+                reset: "🔄 Reset",
+                easy: "Easy<br>(0-9)",
+                medium: "Normal<br>(0-20)",
+                hard: "Hard<br>(0-50)",
+                expert: "Expert<br>(0-100)",
+                timeAttack: "⏱️ Time Attack<br>(60 seconds)",
+                sequenceMode: "📚 Sequence Mode<br>(No time limit)",
+                ascending: "⬆️ Ascending",
+                descending: "⬇️ Descending"
+            },
+            ja: {
+                title: "🪁 凧揚げ数字ゲーム 🪁",
+                score: "スコア",
+                time: "時間",
+                combo: "連続",
+                seconds: "秒",
+                start: "🎮 スタート",
+                reset: "🔄 リセット",
+                easy: "かんたん<br>(0-9)",
+                medium: "ふつう<br>(0-20)",
+                hard: "むずかしい<br>(0-50)",
+                expert: "超むずかしい<br>(0-100)",
+                timeAttack: "⏱️ タイムアタック<br>(60秒)",
+                sequenceMode: "📚 順番モード<br>(時間制限なし)",
+                ascending: "⬆️ 昇順",
+                descending: "⬇️ 降順"
+            }
+        };
+
+        // Initialize i18n
+        i18n.init(translations, 'takoage');
+
         let score = 0;
         let timeLeft = 60;
         let combo = 0;

@@ -33,22 +33,22 @@
     {
       "file": "elevator-game.html",
       "wait_time": 3,
-      "description": "Elevator Game - Kids Tower 100"
+      "description": "Elevator Game - Kids Tower 100 (Bilingual)"
     },
     {
       "file": "mochitsuki-game.html",
       "wait_time": 2,
-      "description": "Mochitsuki Game (Mochi Pounding)"
+      "description": "Mochitsuki Game (Bilingual)"
     },
     {
       "file": "tako-age-game.html",
       "wait_time": 3,
-      "description": "Tako-age Game (Kite Flying Numbers)"
+      "description": "Kite Flying Number Game (Bilingual)"
     },
     {
       "file": "animal-catch-game.html",
       "wait_time": 2,
-      "description": "Animal Catch Game"
+      "description": "Animal Catch Game (Bilingual)"
     }
   ]
 }

@@ -446,9 +446,10 @@
             }
         }
     </style>
+    <script src="assets/i18n.js"></script>
 </head>
 <body>
-    <h1>🦁 どうぶつキャッチゲーム 🐻</h1>
+    <h1 data-i18n="title">🦁 Animal Catch Game 🐻</h1>
     
     <p class="instruction">⌨️ 0から順番に数字をタイプしよう！上の桁から1桁ずつ入力してね！</p>
     
@@ -503,6 +504,39 @@
     </div>
 
     <script>
+        // Multi-language support
+        const translations = {
+            en: {
+                title: "🦁 Animal Catch Game 🐻",
+                instruction: "⌨️ Type numbers in order from 0! Enter one digit at a time from the highest place!",
+                score: "Score",
+                currentNumber: "Current Number",
+                numberRange: "Number Range:",
+                caughtAnimals: "🏠 Caught Animals",
+                start: "Start",
+                pause: "Pause",
+                gameOver: "🎉 Game Over! 🎉",
+                finalScore: "Final Score:",
+                playAgain: "Play Again"
+            },
+            ja: {
+                title: "🦁 どうぶつキャッチゲーム 🐻",
+                instruction: "⌨️ 0から順番に数字をタイプしよう！上の桁から1桁ずつ入力してね！",
+                score: "スコア",
+                currentNumber: "現在の数字",
+                numberRange: "数字の範囲:",
+                caughtAnimals: "🏠 つかまえた動物",
+                start: "スタート",
+                pause: "ポーズ",
+                gameOver: "🎉 ゲーム終了！ 🎉",
+                finalScore: "最終スコア:",
+                playAgain: "もう一度プレイ"
+            }
+        };
+
+        // Initialize i18n
+        i18n.init(translations, 'animalcatch');
+
         const animals = ['🦁', '🦛', '🐰', '🐻', '🐯', '🐨', '🦊', '🐼', '🐷', '🐮'];
         const gameArea = document.getElementById('gameArea');
         const cage = document.getElementById('cage');

@@ -80,9 +80,26 @@ See [tools/README.md](tools/README.md) for detailed documentation.
 - 🎵 Interactive sound effects and music
 - 🎨 Colorful, kid-friendly designs
 - 📱 Responsive layouts for mobile and desktop
-- 🌏 Multilingual support (English and Japanese)
+- 🌏 **Multilingual support** (English and Japanese) - Select games support language switching
 - 🎮 3D graphics with Three.js
 - 🏆 Progress tracking and achievements
+
+### 🌐 Multi-language Support
+
+All Japanese-themed games now support both English and Japanese with a convenient language switcher button in the top-right corner:
+
+- ✅ **Elevator Game (Kids Tower 100)** - Full bilingual support with comprehensive UI translation
+- ✅ **Mochitsuki Game** - Mochi pounding game with bilingual interface
+- ✅ **Kite Flying Number Game (Tako-age)** - Traditional New Year's game in both languages
+- ✅ **Animal Catch Game** - Number learning game with language options
+
+**Features:**
+- 🔄 Easy language switching with a single click
+- 💾 Language preference is automatically saved
+- 🎯 All UI elements, buttons, and messages are translated
+- 🌍 Seamless experience in both languages
+
+The language preference is saved locally and will be remembered for your next visit!
 
 ## 🧪 Browser Compatibility
 

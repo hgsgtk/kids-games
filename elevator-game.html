@@ -984,9 +984,67 @@
                 font-size: 10px;
             }
         }
+
+        /* Language switcher */
+        .lang-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px;
+            border-radius: 20px;
+            border: 2px solid #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .lang-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: #999;
+            border: 2px solid #333;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .lang-btn:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(145deg, #ffd700, #ffed4e);
+            color: #000;
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .lang-switcher {
+                top: 10px;
+                right: 10px;
+                padding: 5px;
+            }
+            .lang-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body tabindex="0" style="outline: none;">
+    <!-- Language switcher -->
+    <div class="lang-switcher">
+        <button class="lang-btn active" onclick="switchLanguage('en')" data-lang="en">English</button>
+        <button class="lang-btn" onclick="switchLanguage('ja')" data-lang="ja">日本語</button>
+    </div>
+
     <!-- 設定モーダル -->
     <div class="settings-modal" id="settingsModal">
         <div class="settings-content">
@@ -1106,9 +1164,154 @@
 
     <script>
         // ========================================
+        // 🌐 Multi-language support
+        // ========================================
+        let currentLang = localStorage.getItem('elevatorGameLang') || 'en';
+        
+        const translations = {
+            en: {
+                title: "Elevator Game",
+                subtitle: "How many floors do you want?",
+                enterFloors: "Enter max floors",
+                startGame: "Start Game!",
+                buildingTitle: "Kids Tower 100",
+                moving: "Moving",
+                enterNumber: "Enter a number",
+                showAllFloors: "Show All Floors",
+                keyboardControls: "Keyboard Controls",
+                typeNumbers: "Type numbers → Enter to move!",
+                example: "Example: Type \"1\", \"0\", \"0\", then \"Enter\" to go to Floor 100",
+                backspace: "Backspace: Delete | ESC: Cancel",
+                floorInfo: "100 floors! Real photos on all floors",
+                changeFloors: "Change Floors",
+                directInput: "Direct Input",
+                apply: "Apply",
+                floor: "Floor",
+                floors: "Floors",
+                entranceLobby: "Entrance Lobby",
+                rooftopGarden: "Rooftop Sky Garden",
+                topFloor: "Top floor!",
+                ferrieWheel: "Ferris wheel and sky lounge!",
+                sparklingProducts: "Sparkling products everywhere!",
+                errorMin: "⚠️ Please enter 1 or more",
+                errorMax: "⚠️ Please enter 500 or less",
+                current: "Current:"
+            },
+            ja: {
+                title: "エレベーターゲーム",
+                subtitle: "何階建てのビルにしますか？",
+                enterFloors: "最大階数を入力",
+                startGame: "ゲームスタート！",
+                buildingTitle: "キッズタワー100",
+                moving: "移動中",
+                enterNumber: "数字を入力してね",
+                showAllFloors: "すべての階を表示",
+                keyboardControls: "キーボード操作方法",
+                typeNumbers: "数字入力 → Enter で移動！",
+                example: "例：「1」「0」「0」「Enter」で100階へ",
+                backspace: "Backspace: 削除 | ESC: キャンセル",
+                floorInfo: "100階建て！全階に実写背景",
+                changeFloors: "階数変更",
+                directInput: "直接入力",
+                apply: "変更",
+                floor: "階",
+                floors: "階",
+                entranceLobby: "エントランスロビー",
+                rooftopGarden: "屋上スカイガーデン",
+                topFloor: "最上階！",
+                ferriesWheel: "観覧車とスカイラウンジ！",
+                sparklingProducts: "キラキラした商品がいっぱい！",
+                errorMin: "⚠️ 1階以上を入力してください",
+                errorMax: "⚠️ 500階以下にしてください",
+                current: "現在:"
+            }
+        };
+        
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('elevatorGameLang', lang);
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.dataset.lang === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Update all translatable elements
+            updateTranslations();
+        }
+        
+        function updateTranslations() {
+            const t = translations[currentLang];
+            
+            // Modal
+            document.querySelector('.settings-content h1').textContent = `🏢 ${t.title}`;
+            document.querySelector('.settings-content p').textContent = t.subtitle;
+            document.querySelector('label[for="maxFloorInput"]').textContent = t.enterFloors;
+            document.querySelector('.start-button').innerHTML = `🚀 ${t.startGame}`;
+            
+            // Building title
+            document.querySelector('.building-title').textContent = `🏢 ${t.buildingTitle}`;
+            
+            // Moving status
+            const movingStatus = document.getElementById('movingStatus');
+            if (movingStatus) {
+                const arrow = movingStatus.querySelector('.direction-arrow');
+                movingStatus.innerHTML = `${t.moving}<span class="direction-arrow" id="directionArrow">${arrow ? arrow.textContent : '🔼'}</span>`;
+            }
+            
+            // Input display
+            if (document.getElementById('inputDisplay').textContent.includes('Enter') || 
+                document.getElementById('inputDisplay').textContent.includes('数字')) {
+                document.getElementById('inputDisplay').textContent = t.enterNumber;
+            }
+            
+            // Grid toggle
+            const gridToggle = document.querySelector('.grid-toggle span');
+            if (gridToggle) {
+                gridToggle.textContent = t.showAllFloors;
+            }
+            
+            // Instructions
+            const instruction = document.querySelector('.instruction');
+            if (instruction) {
+                instruction.innerHTML = `
+                    ⌨️ ${t.keyboardControls} ⌨️<br>
+                    <strong style="color: #ffd700; font-size: 18px;">${t.typeNumbers}</strong><br>
+                    ${t.example}<br>
+                    ${t.backspace}<br>
+                    <span style="font-size: 14px; color: #95a5a6;">${t.floorInfo}</span>
+                `;
+            }
+            
+            // Floor selector
+            document.querySelector('.floor-selector-title').textContent = `🏢 ${t.changeFloors}`;
+            document.querySelector('label[for="customFloorInput"]').textContent = t.directInput;
+            document.querySelector('.floor-apply-btn').textContent = t.apply;
+            
+            // Update floor buttons
+            const presetButtons = document.querySelectorAll('.preset-button, .floor-preset-btn');
+            presetButtons.forEach(btn => {
+                const match = btn.textContent.match(/\d+/);
+                if (match) {
+                    const num = match[0];
+                    btn.textContent = `${num} ${num === '1' ? t.floor : t.floors}`;
+                }
+            });
+        }
+        
+        // Apply saved language on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            switchLanguage(currentLang);
+        });
+        
+        // ========================================
         // ⚙️ Maximum floor settings
         // ========================================
-        let MAX_FLOOR = 100; // デフォルト値
+        let MAX_FLOOR = 100; // Default value
         
         // ========================================
         // 🔊 Audio settings
@@ -1301,13 +1504,13 @@
             const value = parseInt(input.value);
             const errorMsg = document.getElementById('errorMessage');
 
-            // バリデーション
+            // Validation
             if (isNaN(value) || value < 1) {
-                errorMsg.textContent = '⚠️ 1or more';
+                errorMsg.textContent = translations[currentLang].errorMin;
                 return;
             }
             if (value > 500) {
-                errorMsg.textContent = '⚠️ 500or less';
+                errorMsg.textContent = translations[currentLang].errorMax;
                 return;
             }
 
@@ -1767,23 +1970,19 @@
             const buttonGrid = document.getElementById('buttonGrid');
             
             // クイックアクセスボタンを生成（10階ごと + 最上階 + 1階）
-            const quickFloors = [1]; // 1階は必ず含める
+            const quickFloors = new Set([1]); // 1階は必ず含める
             
-            // 10階ごとに追加
+            // 10階ごとに追加（最上階も含める）
             for (let floor = 10; floor <= MAX_FLOOR; floor += 10) {
-                if (floor !== MAX_FLOOR) {
-                    quickFloors.push(floor);
-                }
+                quickFloors.add(floor);
             }
             
-            // 最上階を追加（10の倍数でない場合）
-            if (MAX_FLOOR % 10 !== 0) {
-                quickFloors.push(MAX_FLOOR);
-            }
+            // 最上階を必ず追加
+            quickFloors.add(MAX_FLOOR);
             
             // クイックアクセスボタンを生成（降順）
-            quickFloors.sort((a, b) => b - a);
-            quickFloors.forEach(floor => {
+            const sortedQuickFloors = Array.from(quickFloors).sort((a, b) => b - a);
+            sortedQuickFloors.forEach(floor => {
                 const button = document.createElement('button');
                 button.className = 'quick-button';
                 button.dataset.floor = floor;
