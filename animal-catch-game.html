@@ -836,6 +836,7 @@
             
             // Read selected maximum number
             maxNumber = parseInt(maxNumberSelect.value);
+            maxNumberSelect.disabled = true;
 
             scoreDisplay.textContent = score;
             caughtDisplay.textContent = `- / ${maxNumber}`;
@@ -868,6 +869,7 @@
 
         function endGame() {
             isPlaying = false;
+            maxNumberSelect.disabled = false;
             
             // Clear all timeouts
             activeAnimals.forEach(data => {
@@ -985,6 +987,11 @@
         });
 
         function updateMaxNumberFromSelect() {
+            if (isPlaying) {
+                maxNumberSelect.value = String(maxNumber);
+                return;
+            }
+
             maxNumber = parseInt(maxNumberSelect.value);
             const displayNumber = caughtAnimals.length > 0 ? caughtAnimals.length - 1 : '-';
             caughtDisplay.textContent = `${displayNumber} / ${maxNumber}`;
