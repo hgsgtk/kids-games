@@ -817,6 +817,33 @@
             opacity: 0.5;
         }
 
+        .theme-toggle {
+            position: fixed;
+            top: 90px;
+            left: 20px;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            color: #ffd700;
+            border: 2px solid #333;
+            padding: 15px 20px;
+            font-size: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.5);
+            border-color: #ffd700;
+        }
+
         .error-message {
             color: #ff6b6b;
             font-size: 18px;
@@ -1036,6 +1063,90 @@
                 font-size: 12px;
             }
         }
+
+        /* Light mode overrides */
+        body.theme-light {
+            background: linear-gradient(135deg, #f7f7f7 0%, #ffffff 50%, #f0f0f0 100%);
+            color: #222;
+        }
+
+        body.theme-light .building,
+        body.theme-light .control-panel,
+        body.theme-light .settings-content,
+        body.theme-light .floor-selector,
+        body.theme-light .lang-switcher {
+            background: linear-gradient(145deg, #ffffff, #f3f3f3);
+            border-color: #ddd;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body.theme-light .elevator-view,
+        body.theme-light .elevator-interior,
+        body.theme-light .elevator-window {
+            background: linear-gradient(to bottom, #ffffff, #f5f5f5);
+            border-color: #e0e0e0;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body.theme-light .floor-info,
+        body.theme-light .quick-access,
+        body.theme-light .button-grid,
+        body.theme-light .grid-toggle,
+        body.theme-light .input-display,
+        body.theme-light .current-floor-display,
+        body.theme-light .elevator-floor-display,
+        body.theme-light .status-indicator {
+            background: #ffffff;
+            color: #222;
+            border-color: #ddd;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        body.theme-light .input-display,
+        body.theme-light .current-floor-display,
+        body.theme-light .elevator-floor-display {
+            color: #333;
+            text-shadow: none;
+        }
+
+        body.theme-light .input-hint {
+            color: #2c7bd8;
+            text-shadow: none;
+        }
+
+        body.theme-light .floor-button,
+        body.theme-light .floor-preset-btn,
+        body.theme-light .preset-button,
+        body.theme-light .grid-toggle,
+        body.theme-light .lang-btn {
+            background: linear-gradient(145deg, #f5f5f5, #ffffff);
+            color: #333;
+            border-color: #ddd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        }
+
+        body.theme-light .quick-button {
+            background: linear-gradient(145deg, #ffe680, #fff4b3);
+            color: #000;
+            border-color: #ffd700;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        body.theme-light .building-title,
+        body.theme-light .floor-info h2,
+        body.theme-light .floor-selector-title {
+            color: #333;
+            text-shadow: none;
+        }
+
+        body.theme-light .instruction {
+            color: #555;
+            text-shadow: none;
+        }
+
+        body.theme-light .settings-modal {
+            background: rgba(255, 255, 255, 0.9);
+        }
     </style>
 </head>
 <body tabindex="0" style="outline: none;">
@@ -1078,6 +1189,11 @@
     <!-- 音声トグルボタン -->
     <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" title="音声のON/OFF">
         🔊
+    </button>
+
+    <!-- Theme toggle button -->
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Switch to Light / ライトへ">
+        🌙
     </button>
 
     <!-- 設定アイコン -->
@@ -1167,6 +1283,7 @@
         // 🌐 Multi-language support
         // ========================================
         let currentLang = localStorage.getItem('elevatorGameLang') || 'en';
+        let currentTheme = localStorage.getItem('elevator-theme') || 'dark';
         
         const translations = {
             en: {
@@ -1174,15 +1291,16 @@
                 subtitle: "How many floors do you want?",
                 enterFloors: "Enter max floors",
                 startGame: "Start Game!",
-                buildingTitle: "Kids Tower 100",
+                buildingTitle: "Kids Tower {max}",
                 moving: "Moving",
                 enterNumber: "Enter a number",
                 showAllFloors: "Show All Floors",
+                hideAllFloors: "Hide All Floors",
                 keyboardControls: "Keyboard Controls",
                 typeNumbers: "Type numbers → Enter to move!",
-                example: "Example: Type \"1\", \"0\", \"0\", then \"Enter\" to go to Floor 100",
+                example: "Example: Type \"1\", \"0\", \"0\", then \"Enter\" to go to Floor {max}",
                 backspace: "Backspace: Delete | ESC: Cancel",
-                floorInfo: "100 floors! Real photos on all floors",
+                floorInfo: "{max} floors! Real photos on all floors",
                 changeFloors: "Change Floors",
                 directInput: "Direct Input",
                 apply: "Apply",
@@ -1195,22 +1313,35 @@
                 sparklingProducts: "Sparkling products everywhere!",
                 errorMin: "⚠️ Please enter 1 or more",
                 errorMax: "⚠️ Please enter 500 or less",
-                current: "Current:"
+                current: "Current:",
+                inputHintEnter: "👉 Press Enter to move!",
+                movingStatus: "Moving...",
+                arrived: "✅ Arrived!",
+                moveToFloor: "Moving to {floor}F!",
+                noSuchFloor: "Floor {floor} does not exist",
+                rangeHint: "Enter a number from 1 to {max}",
+                entranceShort: "Entrance",
+                topFloorShort: "Top floor",
+                inputPlaceholder: "Enter a number",
+                soundOn: "Sound On",
+                soundOff: "Sound Off",
+                settingsTitle: "Change Settings"
             },
             ja: {
                 title: "エレベーターゲーム",
                 subtitle: "何階建てのビルにしますか？",
                 enterFloors: "最大階数を入力",
                 startGame: "ゲームスタート！",
-                buildingTitle: "キッズタワー100",
+                buildingTitle: "キッズタワー{max}",
                 moving: "移動中",
                 enterNumber: "数字を入力してね",
                 showAllFloors: "すべての階を表示",
+                hideAllFloors: "すべての階を非表示",
                 keyboardControls: "キーボード操作方法",
                 typeNumbers: "数字入力 → Enter で移動！",
-                example: "例：「1」「0」「0」「Enter」で100階へ",
+                example: "例：「1」「0」「0」「Enter」で{max}階へ",
                 backspace: "Backspace: 削除 | ESC: キャンセル",
-                floorInfo: "100階建て！全階に実写背景",
+                floorInfo: "{max}階建て！全階に実写背景",
                 changeFloors: "階数変更",
                 directInput: "直接入力",
                 apply: "変更",
@@ -1223,7 +1354,19 @@
                 sparklingProducts: "キラキラした商品がいっぱい！",
                 errorMin: "⚠️ 1階以上を入力してください",
                 errorMax: "⚠️ 500階以下にしてください",
-                current: "現在:"
+                current: "現在:",
+                inputHintEnter: "👉 Enter を押して移動！",
+                movingStatus: "移動中...",
+                arrived: "✅ 到着しました",
+                moveToFloor: "{floor}F に移動します！",
+                noSuchFloor: "{floor}階は存在しません",
+                rangeHint: "1〜{max}の数字を入力してね",
+                entranceShort: "エントランス",
+                topFloorShort: "最上階",
+                inputPlaceholder: "数字を入力してね",
+                soundOn: "音声ON",
+                soundOff: "音声OFF",
+                settingsTitle: "設定を変更"
             }
         };
         
@@ -1242,10 +1385,36 @@
             
             // Update all translatable elements
             updateTranslations();
+            updateQuickAccessLabels();
+            updateDisplay();
+        }
+
+        function updateQuickAccessLabels() {
+            document.querySelectorAll('.quick-button').forEach(btn => {
+                const floor = parseInt(btn.dataset.floor);
+                if (floor === 1) {
+                    btn.textContent = `1F\n${translations[currentLang].entranceShort}`;
+                } else if (floor === MAX_FLOOR) {
+                    btn.textContent = `${floor}F\n${translations[currentLang].topFloorShort}`;
+                } else {
+                    btn.textContent = `${floor}F`;
+                }
+            });
         }
         
+        function formatText(template, params = {}) {
+            return template.replace(/\{(\w+)\}/g, (_, key) => {
+                return params[key] !== undefined ? params[key] : `{${key}}`;
+            });
+        }
+
         function updateTranslations() {
             const t = translations[currentLang];
+            const formatted = {
+                buildingTitle: formatText(t.buildingTitle, { max: MAX_FLOOR }),
+                example: formatText(t.example, { max: MAX_FLOOR }),
+                floorInfo: formatText(t.floorInfo, { max: MAX_FLOOR })
+            };
             
             // Modal
             document.querySelector('.settings-content h1').textContent = `🏢 ${t.title}`;
@@ -1254,7 +1423,7 @@
             document.querySelector('.start-button').innerHTML = `🚀 ${t.startGame}`;
             
             // Building title
-            document.querySelector('.building-title').textContent = `🏢 ${t.buildingTitle}`;
+            document.querySelector('.building-title').textContent = `🏢 ${formatted.buildingTitle}`;
             
             // Moving status
             const movingStatus = document.getElementById('movingStatus');
@@ -1271,8 +1440,10 @@
             
             // Grid toggle
             const gridToggle = document.querySelector('.grid-toggle span');
+            const buttonGrid = document.getElementById('buttonGrid');
             if (gridToggle) {
-                gridToggle.textContent = t.showAllFloors;
+                const isOpen = buttonGrid && buttonGrid.classList.contains('show');
+                gridToggle.textContent = isOpen ? t.hideAllFloors : t.showAllFloors;
             }
             
             // Instructions
@@ -1281,9 +1452,9 @@
                 instruction.innerHTML = `
                     ⌨️ ${t.keyboardControls} ⌨️<br>
                     <strong style="color: #ffd700; font-size: 18px;">${t.typeNumbers}</strong><br>
-                    ${t.example}<br>
+                    ${formatted.example}<br>
                     ${t.backspace}<br>
-                    <span style="font-size: 14px; color: #95a5a6;">${t.floorInfo}</span>
+                    <span style="font-size: 14px; color: #95a5a6;">${formatted.floorInfo}</span>
                 `;
             }
             
@@ -1291,6 +1462,20 @@
             document.querySelector('.floor-selector-title').textContent = `🏢 ${t.changeFloors}`;
             document.querySelector('label[for="customFloorInput"]').textContent = t.directInput;
             document.querySelector('.floor-apply-btn').textContent = t.apply;
+
+            // Button titles and placeholders
+            const soundToggle = document.getElementById('soundToggle');
+            if (soundToggle) {
+                soundToggle.title = isSoundEnabled ? t.soundOff : t.soundOn;
+            }
+            const settingsIcon = document.getElementById('settingsIcon');
+            if (settingsIcon) {
+                settingsIcon.title = t.settingsTitle;
+            }
+            const customFloorInput = document.getElementById('customFloorInput');
+            if (customFloorInput) {
+                customFloorInput.placeholder = `${t.current} ${MAX_FLOOR}${t.floor}`;
+            }
             
             // Update floor buttons
             const presetButtons = document.querySelectorAll('.preset-button, .floor-preset-btn');
@@ -1305,8 +1490,34 @@
         
         // Apply saved language on page load
         document.addEventListener('DOMContentLoaded', () => {
+            applyTheme(currentTheme);
             switchLanguage(currentLang);
         });
+
+        // ========================================
+        // 🎨 Theme support (dark / light)
+        // ========================================
+        function applyTheme(theme) {
+            const isLight = theme === 'light';
+            document.body.classList.toggle('theme-light', isLight);
+
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                if (isLight) {
+                    themeToggle.textContent = '🌞';
+                    themeToggle.title = 'Switch to Dark / ダークへ';
+                } else {
+                    themeToggle.textContent = '🌙';
+                    themeToggle.title = 'Switch to Light / ライトへ';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('elevator-theme', currentTheme);
+            applyTheme(currentTheme);
+        }
         
         // ========================================
         // ⚙️ Maximum floor settings
@@ -1333,11 +1544,11 @@
             if (isSoundEnabled) {
                 toggleBtn.textContent = '🔊';
                 toggleBtn.classList.remove('muted');
-                toggleBtn.title = '音声をOFF';
+                toggleBtn.title = translations[currentLang].soundOff;
             } else {
                 toggleBtn.textContent = '🔇';
                 toggleBtn.classList.add('muted');
-                toggleBtn.title = '音声をON';
+                toggleBtn.title = translations[currentLang].soundOn;
             }
         }
         
@@ -1380,49 +1591,49 @@
 
         // Dynamically generate floor data for 100 floors
         const floorThemes = [
-            {emoji: "🎡", name: "Rooftop Sky Garden", desc: "Ferris wheel and sky lounge!"},
-            {emoji: "🚀", name: "宇宙展望台", desc: "宇宙が見える！"},
-            {emoji: "⭐", name: "スターダストラウンジ", desc: "星空の下でくつろぐ"},
-            {emoji: "🌤️", name: "ヘブンズデッキ", desc: "天国のような眺め！"},
-            {emoji: "🏰", name: "クラウドキャッスル", desc: "雲の城展望台"},
-            {emoji: "🎭", name: "スカイシアター", desc: "空中劇場で映画鑑賞"},
-            {emoji: "🍽️", name: "雲海レストラン", desc: "雲の上で最高の食事"},
-            {emoji: "✨", name: "スターライトバー", desc: "星明りの中でカクテルを"},
-            {emoji: "📖", name: "天空図書館", desc: "雲の中で読書タイム"},
-            {emoji: "🎳", name: "スカイボウリング", desc: "空中でボウリング！"},
-            {emoji: "🧘", name: "エアリアルヨガ", desc: "空中ヨガでリフレッシュ"},
-            {emoji: "🐠", name: "スカイアクアリウム", desc: "空飛ぶ水族館"},
-            {emoji: "☕", name: "クラウドカフェ", desc: "雲の中でコーヒーを"},
-            {emoji: "🏊", name: "スカイプール", desc: "空中プールで泳ごう！"},
-            {emoji: "🚁", name: "ヘリポート", desc: "ヘリコプターが発着！"},
-            {emoji: "🌆", name: "パノラマ展望台", desc: "360度の大パノラマ！"},
-            {emoji: "♨️", name: "天空温泉", desc: "空に浮かぶ温泉"},
-            {emoji: "🍸", name: "天空バー", desc: "夜景を楽しむバー"},
-            {emoji: "🌌", name: "オーロララウンジ", desc: "幻想的な光の空間"},
-            {emoji: "🏨", name: "ホテルスイート", desc: "最高級の宿泊施設"},
-            {emoji: "🌺", name: "スカイガーデン", desc: "空中庭園でリラックス"},
-            {emoji: "🥂", name: "プレミアムレストラン", desc: "特別な日の高級レストラン"},
-            {emoji: "🥽", name: "VRテーマパーク", desc: "最新のVR体験ゾーン！"},
-            {emoji: "🎨", name: "美術館・ギャラリー", desc: "芸術作品を鑑賞しよう"},
-            {emoji: "🎵", name: "音楽ホール", desc: "コンサートを楽しもう！"},
-            {emoji: "🎪", name: "イベントホール", desc: "楽しいイベント開催中！"},
-            {emoji: "🎬", name: "映画館", desc: "最新の映画を楽しもう！"},
-            {emoji: "🎮", name: "Game Center", desc: "Lots of games!"},
-            {emoji: "🎤", name: "カラオケ", desc: "カラオケで歌おう！"},
-            {emoji: "💪", name: "フィットネスジム", desc: "運動して健康に！"},
-            {emoji: "📚", name: "書籍・文具", desc: "本とかわいい文房具"},
-            {emoji: "💻", name: "家電・PC", desc: "最新の電化製品"},
-            {emoji: "🛋️", name: "インテリア・家具", desc: "素敵な家具がいっぱい！"},
-            {emoji: "🐶", name: "ペットショップ", desc: "かわいい動物たち！"},
-            {emoji: "💅", name: "美容・コスメ", desc: "キレイになれる場所！"},
-            {emoji: "🍜", name: "レストラン街", desc: "おいしいごはんがたくさん！"},
-            {emoji: "🍰", name: "カフェ・スイーツ", desc: "甘いお菓子がいっぱい！"},
-            {emoji: "⚽", name: "スポーツ", desc: "スポーツ用品とアウトドア"},
-            {emoji: "🧸", name: "Toys おもちゃ・ホビー Hobbies", desc: "Tons of fun toys!"},
-            {emoji: "👶", name: "こども服・ベビー", desc: "かわいい子供服"},
-            {emoji: "👔", name: "紳士服", desc: "かっこいい服がたくさん"},
-            {emoji: "👗", name: "婦人服・雑貨", desc: "おしゃれな服と小物"},
-            {emoji: "💄", name: "化粧品", desc: "Sparkling products everywhere!"},
+            {emoji: "🎡", nameEn: "Rooftop Sky Garden", nameJa: "屋上スカイガーデン", descEn: "Ferris wheel and sky lounge!", descJa: "観覧車とスカイラウンジ！"},
+            {emoji: "🚀", nameEn: "Space Observatory", nameJa: "宇宙展望台", descEn: "See the universe!", descJa: "宇宙が見える！"},
+            {emoji: "⭐", nameEn: "Stardust Lounge", nameJa: "スターダストラウンジ", descEn: "Relax under the stars.", descJa: "星空の下でくつろぐ"},
+            {emoji: "🌤️", nameEn: "Heaven's Deck", nameJa: "ヘブンズデッキ", descEn: "A view like heaven!", descJa: "天国のような眺め！"},
+            {emoji: "🏰", nameEn: "Cloud Castle", nameJa: "クラウドキャッスル", descEn: "A castle in the clouds.", descJa: "雲の城展望台"},
+            {emoji: "🎭", nameEn: "Sky Theater", nameJa: "スカイシアター", descEn: "Watch a movie in the sky.", descJa: "空中劇場で映画鑑賞"},
+            {emoji: "🍽️", nameEn: "Cloud Sea Restaurant", nameJa: "雲海レストラン", descEn: "A fantastic meal above the clouds.", descJa: "雲の上で最高の食事"},
+            {emoji: "✨", nameEn: "Starlight Bar", nameJa: "スターライトバー", descEn: "Cocktails under starlight.", descJa: "星明りの中でカクテルを"},
+            {emoji: "📖", nameEn: "Sky Library", nameJa: "天空図書館", descEn: "Reading time in the clouds.", descJa: "雲の中で読書タイム"},
+            {emoji: "🎳", nameEn: "Sky Bowling", nameJa: "スカイボウリング", descEn: "Bowling in the sky!", descJa: "空中でボウリング！"},
+            {emoji: "🧘", nameEn: "Aerial Yoga", nameJa: "エアリアルヨガ", descEn: "Refresh with aerial yoga.", descJa: "空中ヨガでリフレッシュ"},
+            {emoji: "🐠", nameEn: "Sky Aquarium", nameJa: "スカイアクアリウム", descEn: "A floating aquarium.", descJa: "空飛ぶ水族館"},
+            {emoji: "☕", nameEn: "Cloud Cafe", nameJa: "クラウドカフェ", descEn: "Coffee in the clouds.", descJa: "雲の中でコーヒーを"},
+            {emoji: "🏊", nameEn: "Sky Pool", nameJa: "スカイプール", descEn: "Swim in a sky pool!", descJa: "空中プールで泳ごう！"},
+            {emoji: "🚁", nameEn: "Heliport", nameJa: "ヘリポート", descEn: "Helicopters take off and land.", descJa: "ヘリコプターが発着！"},
+            {emoji: "🌆", nameEn: "Panorama Deck", nameJa: "パノラマ展望台", descEn: "A 360-degree panorama!", descJa: "360度の大パノラマ！"},
+            {emoji: "♨️", nameEn: "Sky Hot Springs", nameJa: "天空温泉", descEn: "Hot springs floating in the sky.", descJa: "空に浮かぶ温泉"},
+            {emoji: "🍸", nameEn: "Sky Bar", nameJa: "天空バー", descEn: "A bar with night views.", descJa: "夜景を楽しむバー"},
+            {emoji: "🌌", nameEn: "Aurora Lounge", nameJa: "オーロララウンジ", descEn: "A magical light space.", descJa: "幻想的な光の空間"},
+            {emoji: "🏨", nameEn: "Hotel Suite", nameJa: "ホテルスイート", descEn: "The finest accommodations.", descJa: "最高級の宿泊施設"},
+            {emoji: "🌺", nameEn: "Sky Garden", nameJa: "スカイガーデン", descEn: "Relax in a sky garden.", descJa: "空中庭園でリラックス"},
+            {emoji: "🥂", nameEn: "Premium Restaurant", nameJa: "プレミアムレストラン", descEn: "A luxury restaurant for special days.", descJa: "特別な日の高級レストラン"},
+            {emoji: "🥽", nameEn: "VR Theme Park", nameJa: "VRテーマパーク", descEn: "Cutting-edge VR experiences!", descJa: "最新のVR体験ゾーン！"},
+            {emoji: "🎨", nameEn: "Art Gallery", nameJa: "美術館・ギャラリー", descEn: "Enjoy artworks and exhibitions.", descJa: "芸術作品を鑑賞しよう"},
+            {emoji: "🎵", nameEn: "Music Hall", nameJa: "音楽ホール", descEn: "Enjoy live concerts!", descJa: "コンサートを楽しもう！"},
+            {emoji: "🎪", nameEn: "Event Hall", nameJa: "イベントホール", descEn: "Fun events happening now!", descJa: "楽しいイベント開催中！"},
+            {emoji: "🎬", nameEn: "Cinema", nameJa: "映画館", descEn: "Enjoy the latest movies!", descJa: "最新の映画を楽しもう！"},
+            {emoji: "🎮", nameEn: "Game Center", nameJa: "ゲームセンター", descEn: "Lots of games!", descJa: "ゲームがいっぱい！"},
+            {emoji: "🎤", nameEn: "Karaoke", nameJa: "カラオケ", descEn: "Sing your heart out!", descJa: "カラオケで歌おう！"},
+            {emoji: "💪", nameEn: "Fitness Gym", nameJa: "フィットネスジム", descEn: "Get healthy with exercise!", descJa: "運動して健康に！"},
+            {emoji: "📚", nameEn: "Books & Stationery", nameJa: "書籍・文具", descEn: "Books and cute stationery.", descJa: "本とかわいい文房具"},
+            {emoji: "💻", nameEn: "Electronics & PCs", nameJa: "家電・PC", descEn: "The latest electronics.", descJa: "最新の電化製品"},
+            {emoji: "🛋️", nameEn: "Furniture & Interior", nameJa: "インテリア・家具", descEn: "Beautiful furniture everywhere!", descJa: "素敵な家具がいっぱい！"},
+            {emoji: "🐶", nameEn: "Pet Shop", nameJa: "ペットショップ", descEn: "Adorable animals!", descJa: "かわいい動物たち！"},
+            {emoji: "💅", nameEn: "Beauty & Cosmetics", nameJa: "美容・コスメ", descEn: "A place to look your best!", descJa: "キレイになれる場所！"},
+            {emoji: "🍜", nameEn: "Restaurant Street", nameJa: "レストラン街", descEn: "Lots of tasty meals!", descJa: "おいしいごはんがたくさん！"},
+            {emoji: "🍰", nameEn: "Cafe & Sweets", nameJa: "カフェ・スイーツ", descEn: "Sweet treats everywhere!", descJa: "甘いお菓子がいっぱい！"},
+            {emoji: "⚽", nameEn: "Sports", nameJa: "スポーツ", descEn: "Sports gear and outdoor items.", descJa: "スポーツ用品とアウトドア"},
+            {emoji: "🧸", nameEn: "Toys & Hobbies", nameJa: "おもちゃ・ホビー", descEn: "Tons of fun toys!", descJa: "楽しいおもちゃがいっぱい！"},
+            {emoji: "👶", nameEn: "Kids & Baby", nameJa: "こども服・ベビー", descEn: "Cute kids and baby clothes.", descJa: "かわいい子供服"},
+            {emoji: "👔", nameEn: "Men's Fashion", nameJa: "紳士服", descEn: "Cool fashion for men.", descJa: "かっこいい服がたくさん"},
+            {emoji: "👗", nameEn: "Women's Fashion", nameJa: "婦人服・雑貨", descEn: "Stylish clothes and accessories.", descJa: "おしゃれな服と小物"},
+            {emoji: "💄", nameEn: "Cosmetics", nameJa: "化粧品", descEn: "Sparkling products everywhere!", descJa: "キラキラした商品がいっぱい！"}
         ];
 
         const colorPalette = [
@@ -1451,8 +1662,10 @@
             const imageIndex = floor % imageTemplates.length;
             
             floorData[floor] = {
-                name: `${floor}Floor - ${theme.name}`,
-                description: theme.desc,
+                nameEn: `${floor}F - ${theme.nameEn}`,
+                nameJa: `${floor}階 - ${theme.nameJa}`,
+                descriptionEn: theme.descEn,
+                descriptionJa: theme.descJa,
                 emoji: theme.emoji,
                 color: colorPalette[colorIndex],
                 bgImage: imageTemplates[imageIndex]
@@ -1461,16 +1674,20 @@
 
         // Override special floors（Customize only important floors）
         floorData[MAX_FLOOR] = {
-            name: `${MAX_FLOOR}Floor - Rooftop Sky Garden`,
-            description: "Top floor!Ferris wheel and sky lounge!",
+            nameEn: `${MAX_FLOOR}F - Rooftop Sky Garden`,
+            nameJa: `${MAX_FLOOR}階 - 屋上スカイガーデン`,
+            descriptionEn: "Top floor! Ferris wheel and sky lounge!",
+            descriptionJa: "最上階！観覧車とスカイラウンジ！",
             emoji: "🎡",
             color: "linear-gradient(135deg, #00d2ff, #3a7bd5)",
             bgImage: "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800"
         };
         
         floorData[1] = {
-            name: "1Floor - Entrance Lobby",
-            description: "Sparkling products everywhere!",
+            nameEn: "1F - Entrance Lobby",
+            nameJa: "1階 - エントランスロビー",
+            descriptionEn: "Sparkling products everywhere!",
+            descriptionJa: "キラキラした商品がいっぱい！",
             emoji: "💄",
             color: "linear-gradient(135deg, #3498db, #2980b9)",
             bgImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"
@@ -1540,7 +1757,7 @@
             // カスタム入力欄を新しい値で更新
             const customFloorInput = document.getElementById('customFloorInput');
             customFloorInput.value = MAX_FLOOR;
-            customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
+            customFloorInput.placeholder = `${translations[currentLang].current} ${MAX_FLOOR}${translations[currentLang].floor}`;
             
             // ゲームをリセット
             resetGame();
@@ -1555,13 +1772,13 @@
             
             // バリデーション
             if (isNaN(value) || value < 1) {
-                alert('⚠️ 1or more');
+                alert(translations[currentLang].errorMin);
                 input.value = MAX_FLOOR;
                 input.focus();
                 return;
             }
             if (value > 500) {
-                alert('⚠️ 500or less');
+                alert(translations[currentLang].errorMax);
                 input.value = MAX_FLOOR;
                 input.focus();
                 return;
@@ -1580,7 +1797,7 @@
             
             // 入力欄を新しい値で更新
             input.value = MAX_FLOOR;
-            input.placeholder = `Current: ${MAX_FLOOR}階`;
+            input.placeholder = `${translations[currentLang].current} ${MAX_FLOOR}${translations[currentLang].floor}`;
             
             // ゲームをリセット
             resetGame();
@@ -1600,9 +1817,11 @@
                 const colorIndex = floor % colorPalette.length;
                 const imageIndex = floor % imageTemplates.length;
                 
-                floorData[floor] = {
-                    name: `${floor}Floor - ${theme.name}`,
-                    description: theme.desc,
+            floorData[floor] = {
+                nameEn: `${floor}F - ${theme.nameEn}`,
+                nameJa: `${floor}階 - ${theme.nameJa}`,
+                descriptionEn: theme.descEn,
+                descriptionJa: theme.descJa,
                     emoji: theme.emoji,
                     color: colorPalette[colorIndex],
                     bgImage: imageTemplates[imageIndex]
@@ -1611,16 +1830,20 @@
 
             // Override special floors
             floorData[MAX_FLOOR] = {
-                name: `${MAX_FLOOR}Floor - Rooftop Sky Garden`,
-                description: "Top floor!Ferris wheel and sky lounge!",
+                nameEn: `${MAX_FLOOR}F - Rooftop Sky Garden`,
+                nameJa: `${MAX_FLOOR}階 - 屋上スカイガーデン`,
+                descriptionEn: "Top floor! Ferris wheel and sky lounge!",
+                descriptionJa: "最上階！観覧車とスカイラウンジ！",
                 emoji: "🎡",
                 color: "linear-gradient(135deg, #1a1a1a, #0a0a0a)",
                 bgImage: "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=800"
             };
             
             floorData[1] = {
-                name: "1Floor - Entrance Lobby",
-                description: "Sparkling products everywhere!",
+                nameEn: "1F - Entrance Lobby",
+                nameJa: "1階 - エントランスロビー",
+                descriptionEn: "Sparkling products everywhere!",
+                descriptionJa: "キラキラした商品がいっぱい！",
                 emoji: "💄",
                 color: "linear-gradient(135deg, #1a1a1a, #0a0a0a)",
                 bgImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800"
@@ -1642,7 +1865,7 @@
             buttonGrid.classList.remove('show');
             const gridToggle = document.getElementById('gridToggle');
             gridToggle.classList.remove('expanded');
-            gridToggle.querySelector('span:first-child').textContent = 'すべての階を表示';
+            gridToggle.querySelector('span:first-child').textContent = translations[currentLang].showAllFloors;
             
             // アクティブな階数ボタンを更新
             updateActiveFloorButton();
@@ -1672,7 +1895,7 @@
         function showFloorChangeNotification() {
             const notification = document.createElement('div');
             notification.className = 'floor-change-notification';
-            notification.textContent = `🏢 ${MAX_FLOOR}階建てに変更！`;
+            notification.textContent = `🏢 ${MAX_FLOOR}${translations[currentLang].floors} updated / ${MAX_FLOOR}階に変更`;
             document.body.appendChild(notification);
             
             // 1.5秒後に削除
@@ -1741,7 +1964,7 @@
             const totalSteps = 100;
             const stepTime = duration / totalSteps;
 
-            statusIndicator.textContent = `${direction} 移動中...`;
+            statusIndicator.textContent = `${direction} ${translations[currentLang].movingStatus}`;
             statusIndicator.style.color = '#f39c12';
 
             // フロアを通過しながら移動
@@ -1775,7 +1998,7 @@
             
             // 到着処理
             updateDisplay();
-            statusIndicator.textContent = '✅ 到着しました';
+            statusIndicator.textContent = translations[currentLang].arrived;
             statusIndicator.style.color = '#27ae60';
             
             await sleep(2000);
@@ -1800,6 +2023,7 @@
             elevatorFloorDisplay.textContent = label;
 
             const data = floorData[currentFloor];
+            const isLightTheme = document.body.classList.contains('theme-light');
             
             // 窓の風景を更新（階層に応じて変化）
             const cloudCount = Math.min(Math.floor(currentFloor / 15), 6);
@@ -1844,11 +2068,15 @@
                 <div class="window-scenery" style="${data.bgImage ? 'text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(255,255,255,0.5);' : ''}">${data.emoji}</div>
             `;
             
-            floorInfo.style.background = data.color;
+            floorInfo.style.background = isLightTheme
+                ? 'linear-gradient(135deg, #ffffff, #f2f2f2)'
+                : data.color;
+            const floorName = currentLang === 'ja' ? data.nameJa : data.nameEn;
+            const floorDescription = currentLang === 'ja' ? data.descriptionJa : data.descriptionEn;
             floorInfo.innerHTML = `
                 <div class="emoji-display">${data.emoji}</div>
-                <h2>${data.name}</h2>
-                <p>${data.description}</p>
+                <h2>${floorName}</h2>
+                <p>${floorDescription}</p>
             `;
 
             // ボタンの状態を更新（詳細グリッド）
@@ -1891,39 +2119,41 @@
                 const maxDigits = MAX_FLOOR.toString().length;
                 if (inputBuffer.length < maxDigits) {
                     inputBuffer += key;
-                    const displayText = inputBuffer.length === 1 && inputBuffer === '0' ? '入力してね' : `${inputBuffer}階`;
+                    const displayText = inputBuffer.length === 1 && inputBuffer === '0'
+                        ? translations[currentLang].inputPlaceholder
+                        : `${inputBuffer}${translations[currentLang].floor}`;
                     inputDisplay.textContent = displayText;
                     inputDisplay.style.color = '#ffff00';
-                    inputHint.textContent = '👉 Enter を押して移動！';
+                    inputHint.textContent = translations[currentLang].inputHintEnter;
                     inputHint.style.color = '#3498db';
                 }
             } else if (key === 'Backspace' || key === 'Delete') {
                 clearTimeout(inputTimeout);
                 inputBuffer = inputBuffer.slice(0, -1);
-                inputDisplay.textContent = inputBuffer ? `${inputBuffer}階` : '数字を入力してね';
+                inputDisplay.textContent = inputBuffer ? `${inputBuffer}${translations[currentLang].floor}` : translations[currentLang].inputPlaceholder;
                 inputDisplay.style.color = inputBuffer ? '#ffff00' : '#ff6b6b';
-                inputHint.textContent = inputBuffer ? '👉 Enter を押して移動！' : '';
+                inputHint.textContent = inputBuffer ? translations[currentLang].inputHintEnter : '';
             } else if (key === 'Enter' && inputBuffer) {
                 clearTimeout(inputTimeout);
                 const floor = parseInt(inputBuffer);
                 if (floor >= 1 && floor <= MAX_FLOOR && floorData[floor]) {
-                    inputDisplay.textContent = `${floor}F に移動します！`;
+                    inputDisplay.textContent = formatText(translations[currentLang].moveToFloor, { floor });
                     inputDisplay.style.color = '#00ff00';
                     inputHint.textContent = '';
                     setTimeout(() => {
                         goToFloor(floor);
                         inputBuffer = '';
-                        inputDisplay.textContent = '数字を入力してね';
+                        inputDisplay.textContent = translations[currentLang].inputPlaceholder;
                         inputDisplay.style.color = '#ff6b6b';
                     }, 500);
                 } else {
-                    inputDisplay.textContent = `${floor}階は存在しません`;
+                    inputDisplay.textContent = formatText(translations[currentLang].noSuchFloor, { floor });
                     inputDisplay.style.color = '#ff0000';
-                    inputHint.textContent = `1〜${MAX_FLOOR}の数字を入力してね`;
+                    inputHint.textContent = formatText(translations[currentLang].rangeHint, { max: MAX_FLOOR });
                     inputHint.style.color = '#e74c3c';
                     setTimeout(() => {
                         inputBuffer = '';
-                        inputDisplay.textContent = '数字を入力してね';
+                        inputDisplay.textContent = translations[currentLang].inputPlaceholder;
                         inputDisplay.style.color = '#ff6b6b';
                         inputHint.textContent = '';
                     }, 1500);
@@ -1931,7 +2161,7 @@
             } else if (key === 'Escape') {
                 clearTimeout(inputTimeout);
                 inputBuffer = '';
-                inputDisplay.textContent = '数字を入力してね';
+                inputDisplay.textContent = translations[currentLang].inputPlaceholder;
                 inputDisplay.style.color = '#ff6b6b';
                 inputHint.textContent = '';
             }
@@ -1958,9 +2188,9 @@
             gridToggle.classList.toggle('expanded');
             
             if (buttonGrid.classList.contains('show')) {
-                gridToggle.querySelector('span:first-child').textContent = 'すべての階を非表示';
+                gridToggle.querySelector('span:first-child').textContent = translations[currentLang].hideAllFloors;
             } else {
-                gridToggle.querySelector('span:first-child').textContent = 'すべての階を表示';
+                gridToggle.querySelector('span:first-child').textContent = translations[currentLang].showAllFloors;
             }
         }
 
@@ -1988,9 +2218,9 @@
                 button.dataset.floor = floor;
                 
                 if (floor === 1) {
-                    button.textContent = `1F\nエントランス`;
+                    button.textContent = `1F\n${translations[currentLang].entranceShort}`;
                 } else if (floor === MAX_FLOOR) {
-                    button.textContent = `${floor}F\n最上階`;
+                    button.textContent = `${floor}F\n${translations[currentLang].topFloorShort}`;
                 } else {
                     button.textContent = `${floor}F`;
                 }
@@ -1998,12 +2228,12 @@
                 button.addEventListener('click', () => {
                     if (!isMoving) {
                         inputBuffer = '';
-                        inputDisplay.textContent = `${getFloorLabel(floor)} に移動します！`;
+                        inputDisplay.textContent = formatText(translations[currentLang].moveToFloor, { floor });
                         inputDisplay.style.color = '#00ff00';
                         inputHint.textContent = '';
                         setTimeout(() => {
                             goToFloor(floor);
-                            inputDisplay.textContent = '数字を入力してね';
+                            inputDisplay.textContent = translations[currentLang].inputPlaceholder;
                             inputDisplay.style.color = '#ffd700';
                         }, 500);
                     }
@@ -2021,12 +2251,12 @@
                 button.addEventListener('click', () => {
                     if (!isMoving) {
                         inputBuffer = '';
-                        inputDisplay.textContent = `${getFloorLabel(floor)} に移動します！`;
+                        inputDisplay.textContent = formatText(translations[currentLang].moveToFloor, { floor });
                         inputDisplay.style.color = '#00ff00';
                         inputHint.textContent = '';
                         setTimeout(() => {
                             goToFloor(floor);
-                            inputDisplay.textContent = '数字を入力してね';
+                            inputDisplay.textContent = translations[currentLang].inputPlaceholder;
                             inputDisplay.style.color = '#ffd700';
                         }, 500);
                     }
@@ -2037,22 +2267,11 @@
 
         // 初期化
         function initialize() {
-            // タイトルを動的に更新
-            document.querySelector('.building-title').textContent = `🏢 キッズタワー${MAX_FLOOR}`;
-            
-            // 説明文を動的に更新
-            const instructionElement = document.querySelector('.instruction');
-            instructionElement.innerHTML = `
-                ⌨️ キーボード操作方法 ⌨️<br>
-                <strong style="color: #ffd700; font-size: 18px;">数字入力 → Enter で移動！</strong><br>
-                例：「1」「0」「0」「Enter」で${MAX_FLOOR}階へ<br>
-                Backspace: 削除 | ESC: キャンセル<br>
-                <span style="font-size: 14px; color: #888;">💡 大きいボタン：主要階 | 「すべての階を表示」：詳細選択</span>
-            `;
+            updateTranslations();
             
             // カスタム入力欄のプレースホルダーとデフォルト値を更新
             const customFloorInput = document.getElementById('customFloorInput');
-            customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
+            customFloorInput.placeholder = `${translations[currentLang].current} ${MAX_FLOOR}${translations[currentLang].floor}`;
             if (!customFloorInput.value) {
                 customFloorInput.value = MAX_FLOOR;
             }
@@ -2117,7 +2336,7 @@
             
             // カスタム入力欄のプレースホルダーと値を初期化
             const customFloorInput = document.getElementById('customFloorInput');
-            customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
+            customFloorInput.placeholder = `${translations[currentLang].current} ${MAX_FLOOR}${translations[currentLang].floor}`;
             customFloorInput.value = MAX_FLOOR;
             
             if (savedMaxFloor) {
@@ -2125,7 +2344,7 @@
                 if (value >= 1 && value <= 500) {
                     document.getElementById('maxFloorInput').value = value;
                     MAX_FLOOR = value;
-                    customFloorInput.placeholder = `Current: ${MAX_FLOOR}階`;
+                    customFloorInput.placeholder = `${translations[currentLang].current} ${MAX_FLOOR}${translations[currentLang].floor}`;
                     customFloorInput.value = MAX_FLOOR;
                     
                     // 2回目以降の起動なら、モーダルを閉じてゲームを開始
@@ -2138,6 +2357,8 @@
                 // 設定がなくても2回目以降ならモーダルを閉じる
                 document.getElementById('settingsModal').classList.add('hidden');
             }
+
+            updateTranslations();
         });
 
         // ゲーム開始時に設定を保存

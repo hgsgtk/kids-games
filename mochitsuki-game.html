@@ -69,6 +69,33 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
+        .score-box {
+            min-width: 260px;
+        }
+
+        .score-main {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .score-divider {
+            opacity: 0.9;
+        }
+
+        .score-unit {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .score-sub {
+            margin-top: 4px;
+            font-size: 0.9em;
+            opacity: 0.95;
+        }
+
         .settings-btn {
             position: fixed;
             top: 20px;
@@ -395,6 +422,7 @@
             font-weight: bold;
             min-height: 30px;
             animation: bounce 1s infinite;
+            white-space: pre-line;
         }
 
         @keyframes bounce {
@@ -627,11 +655,17 @@
         </div>
 
         <div class="game-info">
-            <div class="info-box">
-                <span data-i18n="score">Score</span>: <span id="score">0</span>
-            </div>
-            <div class="info-box">
-                <span data-i18n="goal">Goal</span>: <span id="goalScore">100</span>
+            <div class="info-box score-box">
+                <div class="score-main">
+                    <span data-i18n="score">Score</span>:
+                    <span id="score">0</span>
+                    <span class="score-divider">/</span>
+                    <span id="goalScore">100</span>
+                    <span class="score-unit" data-i18n="pointsUnit">pts</span>
+                </div>
+                <div class="score-sub">
+                    <span data-i18n="progress">Progress</span>: <span id="scorePercent">0</span>%
+                </div>
             </div>
             <div class="info-box">
                 <span data-i18n="combo">Combo</span>: <span id="combo">0</span>
@@ -692,16 +726,27 @@
                 goalAchieved: "🎉 Goal Achieved! 🎉",
                 level: "Level",
                 score: "Score",
-                goal: "Goal",
+                pointsUnit: "pts",
+                progress: "Progress",
                 combo: "Combo",
                 startMessage: "Press the Start button!",
                 start: "🎮 Start",
+                startAgain: "🎮 Play Again",
                 reset: "🔄 Reset",
                 clickToStart: "Click to pound mochi!",
                 great: "Great!",
                 amazing: "Amazing!",
                 incredible: "Incredible!",
-                unstoppable: "Unstoppable!"
+                unstoppable: "Unstoppable!",
+                goalAimPrefix: "Aim for",
+                goalAchievedMessage: "👏 Goal achieved! Congratulations!",
+                scoreSummary: "Score",
+                levelUpMessage: "Level up!",
+                comboSuffix: "Combo!",
+                poundMochi: "Keep pounding!",
+                minGoalAlert: "Please enter 10 or more.",
+                maxGoalAlert: "Please enter 9999 or less.",
+                pointerLockHint: "Cursor locked during game (Esc to release)."
             },
             ja: {
                 title: "🎍 もちつきゲーム 🎍",
@@ -717,16 +762,27 @@
                 goalAchieved: "🎉 目標達成！ 🎉",
                 level: "レベル",
                 score: "スコア",
-                goal: "目標",
+                pointsUnit: "点",
+                progress: "進捗",
                 combo: "コンボ",
                 startMessage: "スタートボタンを押してね！",
                 start: "🎮 スタート",
+                startAgain: "🎮 もう一度",
                 reset: "🔄 リセット",
                 clickToStart: "クリックしてもちをつこう！",
                 great: "いいね！",
                 amazing: "すごい！",
                 incredible: "最高！",
-                unstoppable: "無敵！"
+                unstoppable: "無敵！",
+                goalAimPrefix: "目標",
+                goalAchievedMessage: "👏 目標達成！おめでとう！",
+                scoreSummary: "スコア",
+                levelUpMessage: "レベルアップ！",
+                comboSuffix: "コンボ！",
+                poundMochi: "もちをついてね！",
+                minGoalAlert: "10点以上の数字を入力してください！",
+                maxGoalAlert: "9999点以下の数字を入力してください！",
+                pointerLockHint: "ゲーム中はカーソル固定（解除はEsc）"
             }
         };
 
@@ -757,13 +813,33 @@
         const settingsPanel = document.getElementById('settingsPanel');
         const settingsOverlay = document.getElementById('settingsOverlay');
         const achievementOverlay = document.getElementById('achievementOverlay');
+        const scorePercent = document.getElementById('scorePercent');
 
         // Sound effects (Web Audio API)
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
         function toggleSettings() {
+            const willOpen = !settingsPanel.classList.contains('open');
             settingsPanel.classList.toggle('open');
             settingsOverlay.classList.toggle('open');
+            if (willOpen) {
+                exitPointerLock();
+            }
+        }
+
+        function lockPointer() {
+            if (document.pointerLockElement === mochiContainer) {
+                return;
+            }
+            if (mochiContainer.requestPointerLock) {
+                mochiContainer.requestPointerLock();
+            }
+        }
+
+        function exitPointerLock() {
+            if (document.pointerLockElement && document.exitPointerLock) {
+                document.exitPointerLock();
+            }
         }
 
         function applyNewGoal(goal) {
@@ -782,6 +858,7 @@
             startBtn.style.opacity = '1';
             startBtn.textContent = i18n.t('start');
             mochi.style.background = 'white';
+            exitPointerLock();
         }
 
         function selectGoal(goal, button) {
@@ -808,13 +885,13 @@
             
             // Validation
             if (isNaN(customValue) || customValue < 10) {
-                alert('10点以上の数字を入力してください！');
+                alert(i18n.t('minGoalAlert'));
                 customGoalInput.value = goalScore;
                 return;
             }
             
             if (customValue > 9999) {
-                alert('9999点以下の数字を入力してください！');
+                alert(i18n.t('maxGoalAlert'));
                 customGoalInput.value = goalScore;
                 return;
             }
@@ -883,31 +960,35 @@
             clickCount = 0;
             
             updateDisplay();
-            message.textContent = `目標 ${goalScore}点を目指そう！`;
+            message.textContent = `${i18n.t('goalAimPrefix')} ${goalScore} ${i18n.t('pointsUnit')}\n${i18n.t('pointerLockHint')}`;
             startBtn.disabled = true;
             startBtn.style.opacity = '0.5';
+            lockPointer();
         }
 
         function endGame() {
             gameActive = false;
             
+            // Release pointer lock immediately when goal is achieved
+            exitPointerLock();
+            
             // Show celebration animation
             showAchievementAnimation();
             
             // Goal achieved!
-            const finalMessage = '👏 目標達成！おめでとう！';
+            const finalMessage = i18n.t('goalAchievedMessage');
             
             // Cap displayed score at goal
             const displayScore = Math.min(score, goalScore);
             
             // Show message after the animation
             setTimeout(() => {
-                message.textContent = `${finalMessage}\n✅ 目標達成！\nスコア: ${displayScore}点 / 目標: ${goalScore}点`;
+                message.textContent = `${finalMessage}\n✅ ${i18n.t('goalAchieved')}\n${i18n.t('scoreSummary')}: ${displayScore} ${i18n.t('pointsUnit')} / ${goalScore} ${i18n.t('pointsUnit')}`;
             }, 2000);
             
             startBtn.disabled = false;
             startBtn.style.opacity = '1';
-            startBtn.textContent = '🎮 もう一度';
+            startBtn.textContent = i18n.t('startAgain');
         }
 
         function resetGame() {
@@ -919,12 +1000,13 @@
             goalScore = 100;
             
             updateDisplay();
-            message.textContent = 'スタートボタンを押してね！';
+            message.textContent = i18n.t('startMessage');
             startBtn.disabled = false;
             startBtn.style.opacity = '1';
-            startBtn.textContent = '🎮 スタート';
+            startBtn.textContent = i18n.t('start');
             mochi.style.background = 'white';
             customGoalInput.value = 100;
+            exitPointerLock();
             
             // Select the default 100-point button
             document.querySelectorAll('.goal-btn').forEach((btn, index) => {
@@ -943,6 +1025,7 @@
             comboDisplay.textContent = combo;
             levelDisplay.textContent = level;
             goalScoreDisplay.textContent = goalScore;
+            scorePercent.textContent = Math.round(Math.min((score / goalScore) * 100, 100));
             
             // Update progress bar
             const progress = Math.min((score / goalScore) * 100, 100);
@@ -966,13 +1049,16 @@
             message.textContent = text;
             setTimeout(() => {
                 if (gameActive) {
-                    message.textContent = 'もちをついてね！';
+                    message.textContent = i18n.t('poundMochi');
                 }
             }, 1500);
         }
 
         mochiContainer.addEventListener('click', (e) => {
             if (!gameActive) return;
+            if (!document.pointerLockElement) {
+                lockPointer();
+            }
             
             // Check click interval
             const currentTime = Date.now();
@@ -1031,7 +1117,7 @@
                 level = newLevel;
                 levelDisplay.textContent = level;
                 playLevelUpSound();
-                showMessage('レベルアップ！🎉');
+                showMessage(`${i18n.t('levelUpMessage')} 🎉`);
                 createConfetti();
             }
             
@@ -1051,7 +1137,7 @@
             
             // Combo display
             if (combo > 0 && combo % 5 === 0) {
-                comboText.textContent = `${combo} コンボ！`;
+                comboText.textContent = `${combo} ${i18n.t('comboSuffix')}`;
                 comboText.classList.add('show');
                 setTimeout(() => {
                     comboText.classList.remove('show');
@@ -1206,11 +1292,22 @@
 
         // Allow keyboard play
         document.addEventListener('keydown', (e) => {
+            if (e.code === 'Escape') {
+                exitPointerLock();
+                return;
+            }
             if (e.code === 'Space' && gameActive) {
                 e.preventDefault();
                 mochiContainer.click();
             }
         });
+
+        // Release pointer lock on scroll (wheel) anywhere during game
+        document.addEventListener('wheel', () => {
+            if (gameActive && document.pointerLockElement) {
+                exitPointerLock();
+            }
+        }, { passive: true });
 
         // Set when Enter is pressed in custom input
         customGoalInput.addEventListener('keypress', (e) => {
