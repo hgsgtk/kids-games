@@ -17,3 +17,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+
+# Local server SQLite DB (click counts)
+game_clicks.db

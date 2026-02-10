@@ -18,16 +18,26 @@ A collection of fun, educational browser-based games for young learners. Feature
 ## 🚀 Getting Started
 
 1. Clone or download this repository
-2. Open `index.html` in a web browser
+2. Open `index.html` in a web browser (or use the optional server below)
 3. Click on any game to start playing!
 
-For development:
+### Optional: Local server (click tracking & popularity order)
+
+To save game click counts in SQLite and show games in **popularity order** on the top page:
 
 ```bash
-# Start a local server
-python3 -m http.server 8000
+pip install -r requirements.txt
+python server.py
+# Open http://127.0.0.1:5000/
+```
 
-# Open in browser
+The server creates `game_clicks.db` (SQLite3) in the project root and updates it when you click a game. The top page loads `/api/stats` and sorts the game cards by click count (most popular first).
+
+For development without click tracking:
+
+```bash
+# Start a simple HTTP server
+python3 -m http.server 8000
 open http://localhost:8000/
 ```
 
@@ -36,15 +46,17 @@ open http://localhost:8000/
 ```
 kids-games/
 ├── index.html              # Main menu page
-├── *.html                  # Individual game files
-├── screenshots/            # Game screenshots for the menu
+├── server.py                # Optional: Flask server for click tracking (SQLite3)
+├── requirements.txt        # Python deps for server (Flask)
+├── *.html                   # Individual game files
+├── screenshots/             # Game screenshots for the menu
 ├── assets/
-│   └── sounds/            # Audio files (door sounds, etc.)
-├── tools/                  # Development tools
-│   ├── take_screenshots.py       # Screenshot automation tool
-│   ├── screenshot_config.json    # Screenshot configuration
-│   └── README.md                 # Tools documentation
-└── venv/                   # Python virtual environment (local only)
+│   └── sounds/              # Audio files (door sounds, etc.)
+├── tools/                   # Development tools
+│   ├── take_screenshots.py  # Screenshot automation tool
+│   ├── screenshot_config.json
+│   └── README.md
+└── venv/                    # Python virtual environment (local only)
 ```
 
 ## 🛠️ Development Tools
