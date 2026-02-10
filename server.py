@@ -12,7 +12,7 @@ from flask import Flask, request, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 BASE = Path(__file__).resolve().parent
-DB_PATH = BASE / "game_clicks.db"
+DB_PATH = BASE / "kids_games.db"
 
 
 def get_db():

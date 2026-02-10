@@ -24,5 +24,5 @@ python server.py
 ## Notes
 
 - The server serves static HTML game files and provides click-tracking APIs (`/api/click`, `/api/stats`).
-- Game click counts are stored in `game_clicks.db` (SQLite); the file is created automatically on first run.
+- Data is stored in `kids_games.db` (SQLite); the file is created automatically on first run.
 - If port 5000 is already in use, check for an existing process and let the user know.

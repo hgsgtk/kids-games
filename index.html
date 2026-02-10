@@ -589,7 +589,7 @@
         }
 
         function applyPopularityOrder() {
-            fetch(API_BASE + '/api/stats')
+            fetch(API_BASE + '/api/stats', { cache: 'no-store' })
                 .then(function (r) { return r.json(); })
                 .then(function (stats) {
                     var clicksMap = {};
@@ -615,6 +615,14 @@
         });
 
         applyPopularityOrder();
+
+        // Re-fetch stats when returning to this page and periodically
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                applyPopularityOrder();
+            }
+        });
+        setInterval(applyPopularityOrder, 30000);
 
         // Add subtle particle effect
         function createParticle() {

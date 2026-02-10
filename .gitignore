@@ -18,5 +18,5 @@ Thumbs.db
 *.tmp
 *.log
 
-# Local server SQLite DB (click counts)
-game_clicks.db
+# Local server SQLite DB
+kids_games.db
