@@ -1015,8 +1015,8 @@
         /* Language switcher */
         .lang-switcher {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 20px;
+            left: 20px;
             z-index: 10000;
             display: flex;
             gap: 5px;
@@ -1054,8 +1054,8 @@
 
         @media (max-width: 768px) {
             .lang-switcher {
-                top: 10px;
-                right: 10px;
+                bottom: 10px;
+                left: 10px;
                 padding: 5px;
             }
             .lang-btn {
@@ -1895,7 +1895,10 @@
         function showFloorChangeNotification() {
             const notification = document.createElement('div');
             notification.className = 'floor-change-notification';
-            notification.textContent = `🏢 ${MAX_FLOOR}${translations[currentLang].floors} updated / ${MAX_FLOOR}階に変更`;
+            const msg = currentLang === 'ja'
+                ? `🏢 ${MAX_FLOOR}階に変更しました`
+                : `🏢 Changed to ${MAX_FLOOR} floors`;
+            notification.textContent = msg;
             document.body.appendChild(notification);
             
             // 1.5秒後に削除
@@ -2169,6 +2172,10 @@
 
         // イベントリスナー
         document.addEventListener('keydown', (e) => {
+            // Skip game key handling when an input field is focused
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
             console.log('Key pressed:', e.key);
             handleKeyPress(e.key);
             if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
@@ -2298,9 +2305,11 @@
         
         initialize();
 
-        // Keep focus even on click
-        document.addEventListener('click', () => {
-            document.body.focus();
+        // Keep focus on body for keyboard controls, but not when clicking inputs
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                document.body.focus();
+            }
         });
 
         // Handle Enter in settings modal
