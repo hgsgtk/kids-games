@@ -26,19 +26,24 @@ A collection of fun, educational browser-based games for young learners. Feature
 To save game click counts in SQLite and show games in **popularity order** on the top page:
 
 ```bash
-pip install -r requirements.txt
-python server.py
+npm install
+npm start
 # Open http://127.0.0.1:5000/
 ```
 
-The server creates `game_clicks.db` (SQLite3) in the project root and updates it when you click a game. The top page loads `/api/stats` and sorts the game cards by click count (most popular first).
+Or with auto-reload during development:
+
+```bash
+npm run dev
+```
+
+The server (Hono + better-sqlite3) creates `kids_games.db` (SQLite3) in the project root and updates it when you click a game. The top page loads `/api/stats` and sorts the game cards by click count (most popular first).
 
 For development without click tracking:
 
 ```bash
 # Start a simple HTTP server
-python3 -m http.server 8000
-open http://localhost:8000/
+npx serve .
 ```
 
 ## 📁 Project Structure
@@ -46,17 +51,16 @@ open http://localhost:8000/
 ```
 kids-games/
 ├── index.html              # Main menu page
-├── server.py                # Optional: Flask server for click tracking (SQLite3)
-├── requirements.txt        # Python deps for server (Flask)
+├── server.js               # Optional: Hono server for click tracking (SQLite3)
+├── package.json            # Node.js deps (Hono, better-sqlite3)
 ├── *.html                   # Individual game files
 ├── screenshots/             # Game screenshots for the menu
 ├── assets/
 │   └── sounds/              # Audio files (door sounds, etc.)
-├── tools/                   # Development tools
-│   ├── take_screenshots.py  # Screenshot automation tool
-│   ├── screenshot_config.json
-│   └── README.md
-└── venv/                    # Python virtual environment (local only)
+└── tools/                   # Development tools
+    ├── take_screenshots.py  # Screenshot automation tool
+    ├── screenshot_config.json
+    └── README.md
 ```
 
 ## 🛠️ Development Tools
@@ -65,7 +69,7 @@ kids-games/
 
 Automated tool for capturing game screenshots:
 
-```bash
+```bashc
 # Activate virtual environment
 source venv/bin/activate
 

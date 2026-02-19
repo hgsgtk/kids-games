@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>おくすりゲーム 💊</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Hiragino Kaku Gothic Pro', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .scene {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.4;
+            animation: floatCloud 20s linear infinite;
+        }
+
+        @keyframes floatCloud {
+            from { transform: translateX(-100px); }
+            to { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        .room-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(0deg, #f5e6d3 0%, #faf0e6 100%);
+            border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+        }
+
+        .character-area {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .character {
+            font-size: min(25vw, 150px);
+            transition: transform 0.3s;
+            cursor: pointer;
+            position: relative;
+            line-height: 1;
+        }
+
+        .character.sick {
+            animation: sickSway 2s ease-in-out infinite;
+        }
+
+        .character.drinking {
+            animation: drinkBounce 0.5s ease-in-out;
+        }
+
+        .character.happy {
+            animation: happyJump 0.6s ease-in-out infinite;
+        }
+
+        @keyframes sickSway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        @keyframes drinkBounce {
+            0% { transform: scale(1); }
+            30% { transform: scale(0.9) rotate(-10deg); }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes happyJump {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(-5deg); }
+            75% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 25px;
+            padding: 15px 25px;
+            font-size: min(6vw, 28px);
+            font-weight: bold;
+            color: #555;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            position: relative;
+            text-align: center;
+            max-width: 80vw;
+            animation: fadeInBubble 0.5s ease-out;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 15px solid white;
+        }
+
+        @keyframes fadeInBubble {
+            from { opacity: 0; transform: scale(0.8) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .medicine-area {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .medicine-btn {
+            font-size: min(18vw, 100px);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: medicineFloat 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        .medicine-btn:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .medicine-btn:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes medicineFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .medicine-btn:active {
+            transform: scale(1.3) !important;
+        }
+
+        .medicine-btn .label {
+            display: block;
+            font-size: min(4vw, 18px);
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .medicine-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,200,50,0.4) 0%, transparent 70%);
+            animation: glowPulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+        }
+
+        .progress-bar {
+            position: relative;
+            z-index: 10;
+            width: min(80vw, 400px);
+            height: 30px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 50%, #ffecd2 100%);
+            border-radius: 15px;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '⭐';
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+        }
+
+        .progress-label {
+            text-align: center;
+            font-size: min(4vw, 16px);
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .effect-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .star-effect {
+            position: absolute;
+            font-size: 2rem;
+            animation: starBurst 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes starBurst {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.5) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        .praise-text {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: min(12vw, 60px);
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 3px 3px 0 #ffd93d, -1px -1px 0 #ffd93d;
+            animation: praiseAnim 1.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 200;
+            white-space: nowrap;
+        }
+
+        @keyframes praiseAnim {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+            60% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -80%) scale(1); opacity: 0; }
+        }
+
+        .next-btn {
+            position: relative;
+            z-index: 10;
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: min(6vw, 28px);
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s;
+            display: none;
+            font-family: inherit;
+        }
+
+        .next-btn:active {
+            transform: scale(0.95);
+        }
+
+        .next-btn.visible {
+            display: block;
+            animation: fadeInBubble 0.5s ease-out;
+        }
+
+        .score-display {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: min(5vw, 22px);
+            font-weight: bold;
+            color: #ff6b6b;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .home-btn:active {
+            transform: scale(0.9);
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .celebration.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .celebration-text {
+            font-size: min(10vw, 50px);
+            font-weight: bold;
+            color: #ff6b6b;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .celebration-characters {
+            font-size: min(20vw, 100px);
+            margin: 20px 0;
+            animation: happyJump 0.6s ease-in-out infinite;
+        }
+
+        .confetti {
+            position: absolute;
+            font-size: 2rem;
+            animation: confettiFall linear forwards;
+            pointer-events: none;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .instruction-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 300;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .instruction-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 85vw;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .instruction-card h2 {
+            font-size: min(8vw, 36px);
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        .instruction-card p {
+            font-size: min(5vw, 22px);
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .instruction-card .big-emoji {
+            font-size: min(20vw, 80px);
+            display: block;
+            margin: 15px 0;
+        }
+
+        .start-btn {
+            margin-top: 20px;
+            padding: 18px 50px;
+            font-size: min(7vw, 32px);
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 154, 158, 0.4);
+            font-family: inherit;
+            animation: medicineFloat 2s ease-in-out infinite;
+        }
+
+        .start-btn:active {
+            transform: scale(0.95);
+        }
+
+        .thermometer {
+            display: inline-block;
+            font-size: min(8vw, 40px);
+            margin: 0 5px;
+            vertical-align: middle;
+        }
+
+        .medicine-flying {
+            position: fixed;
+            font-size: min(12vw, 60px);
+            z-index: 100;
+            pointer-events: none;
+            animation: flyToCharacter 0.6s ease-in forwards;
+        }
+
+        @keyframes flyToCharacter {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(0.3); opacity: 0; }
+        }
+
+        .face-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .sick-effect {
+            position: absolute;
+            top: -10px;
+            right: -15px;
+            font-size: min(8vw, 40px);
+            animation: sickPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes sickPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+            50% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-btn">🏠</a>
+    <div class="score-display">⭐ <span id="score">0</span></div>
+
+    <div class="instruction-overlay" id="instructionOverlay">
+        <div class="instruction-card">
+            <h2>おくすりゲーム 💊</h2>
+            <span class="big-emoji">🐻</span>
+            <p>どうぶつさんが<br>かぜをひいちゃった！<span class="thermometer">🤒</span></p>
+            <p>おくすりをあげて<br>げんきにしてあげよう！</p>
+            <p>おくすりを<strong>タップ</strong>してね！👆</p>
+            <button class="start-btn" id="startBtn">はじめる！🎮</button>
+        </div>
+    </div>
+
+    <div class="bg-decoration" id="bgDecoration"></div>
+
+    <div class="scene" id="gameScene">
+        <div class="speech-bubble" id="speechBubble">おなかいたいよ〜 🤒</div>
+
+        <div class="character-area">
+            <div class="character sick" id="character">
+                🐻
+                <span class="sick-effect" id="sickEffect">💫</span>
+            </div>
+        </div>
+
+        <div class="medicine-area" id="medicineArea">
+            <button class="medicine-btn" id="medicine1" onclick="giveMedicine(0)">
+                <div class="medicine-glow"></div>
+                🥄
+                <span class="label">シロップ</span>
+            </button>
+            <button class="medicine-btn" id="medicine2" onclick="giveMedicine(1)">
+                <div class="medicine-glow"></div>
+                💊
+                <span class="label">おくすり</span>
+            </button>
+            <button class="medicine-btn" id="medicine3" onclick="giveMedicine(2)">
+                <div class="medicine-glow"></div>
+                🧃
+                <span class="label">おくすりジュース</span>
+            </button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="progress-label" id="progressLabel">あと3かい のもうね！</div>
+
+        <button class="next-btn" id="nextBtn" onclick="nextCharacter()">つぎのどうぶつさん 🐾</button>
+    </div>
+
+    <div class="effect-container" id="effectContainer"></div>
+
+    <div class="celebration" id="celebration">
+        <div class="celebration-text" id="celebrationText">みんなげんきになったよ！🎉</div>
+        <div class="celebration-characters" id="celebrationCharacters"></div>
+        <button class="start-btn" onclick="restartGame()">もういっかい！🔄</button>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const characters = [
+            { emoji: '🐻', name: 'くまさん', sickMsg: 'おなかいたいよ〜 🤒', drinkMsg: 'ゴクゴク... 😮', happyMsg: 'げんきになったー！😊', doses: 3 },
+            { emoji: '🐰', name: 'うさぎさん', sickMsg: 'あたまがいたいの〜 🤕', drinkMsg: 'んっ... ゴクッ 😣', happyMsg: 'やったー！げんき！🥰', doses: 3 },
+            { emoji: '🐱', name: 'ねこさん', sickMsg: 'おねつがあるの〜 🌡️', drinkMsg: 'にがいけど... がんばる！', happyMsg: 'すっかりげんき！😸', doses: 3 },
+            { emoji: '🐶', name: 'いぬさん', sickMsg: 'のどがいたいワン 😢', drinkMsg: 'ゴクゴクゴク... 🥤', happyMsg: 'げんきワン！ありがとう！🐕', doses: 3 },
+            { emoji: '🐼', name: 'パンダさん', sickMsg: 'おはながでるの〜 🤧', drinkMsg: 'ゴクッ... あまい？', happyMsg: 'もうだいじょうぶ！🎋', doses: 3 },
+        ];
+
+        const praises = [
+            'すごーい！ 🌟',
+            'じょうず！ 👏',
+            'えらい！ 💪',
+            'がんばったね！ ✨',
+            'やったね！ 🎉',
+            'すばらしい！ 🏆',
+            'いいこだね！ 💖',
+            'おくすりのめたね！ 🌈',
+        ];
+
+        let currentCharIndex = 0;
+        let currentDose = 0;
+        let score = 0;
+        let isAnimating = false;
+        let gameStarted = false;
+
+        const speechBubble = document.getElementById('speechBubble');
+        const character = document.getElementById('character');
+        const sickEffect = document.getElementById('sickEffect');
+        const progressFill = document.getElementById('progressFill');
+        const progressLabel = document.getElementById('progressLabel');
+        const nextBtn = document.getElementById('nextBtn');
+        const effectContainer = document.getElementById('effectContainer');
+        const scoreDisplay = document.getElementById('score');
+        const celebration = document.getElementById('celebration');
+        const instructionOverlay = document.getElementById('instructionOverlay');
+        const gameScene = document.getElementById('gameScene');
+
+        function playSound(type) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'drink') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'happy') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.15);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                } else if (type === 'praise') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'celebration') {
+                    const notes = [523, 587, 659, 784, 880, 1047];
+                    notes.forEach((freq, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'sine';
+                        o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.1);
+                        g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + i * 0.1 + 0.2);
+                        o.start(audioCtx.currentTime + i * 0.1);
+                        o.stop(audioCtx.currentTime + i * 0.1 + 0.2);
+                    });
+                } else if (type === 'tap') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                }
+            } catch (e) {}
+        }
+
+        function spawnStars(x, y, count) {
+            const emojis = ['⭐', '🌟', '✨', '💖', '🎵', '💫'];
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-effect';
+                star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                star.style.left = (x + (Math.random() - 0.5) * 100) + 'px';
+                star.style.top = (y + (Math.random() - 0.5) * 100) + 'px';
+                star.style.animationDelay = (Math.random() * 0.3) + 's';
+                effectContainer.appendChild(star);
+                setTimeout(() => star.remove(), 1200);
+            }
+        }
+
+        function showPraise() {
+            const praise = document.createElement('div');
+            praise.className = 'praise-text';
+            praise.textContent = praises[Math.floor(Math.random() * praises.length)];
+            document.body.appendChild(praise);
+            playSound('praise');
+            setTimeout(() => praise.remove(), 1500);
+        }
+
+        function spawnConfetti() {
+            const emojis = ['🎊', '🎉', '⭐', '🌟', '💖', '🎵', '🌈', '✨', '🎀', '💫'];
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDuration = (2 + Math.random() * 3) + 's';
+                    celebration.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 100);
+            }
+        }
+
+        function updateDisplay() {
+            const ch = characters[currentCharIndex];
+            const remaining = ch.doses - currentDose;
+            const pct = (currentDose / ch.doses) * 100;
+            progressFill.style.width = pct + '%';
+            progressLabel.textContent = remaining > 0
+                ? 'あと' + remaining + 'かい のもうね！'
+                : 'ぜんぶのめたね！🎉';
+        }
+
+        function setCharacter() {
+            const ch = characters[currentCharIndex];
+            character.textContent = ch.emoji;
+            character.className = 'character sick';
+            sickEffect.style.display = 'inline';
+            character.appendChild(sickEffect);
+            speechBubble.textContent = ch.sickMsg;
+            speechBubble.style.animation = 'none';
+            void speechBubble.offsetWidth;
+            speechBubble.style.animation = 'fadeInBubble 0.5s ease-out';
+            currentDose = 0;
+            nextBtn.classList.remove('visible');
+            document.getElementById('medicineArea').style.display = 'flex';
+            updateDisplay();
+        }
+
+        function giveMedicine(type) {
+            if (isAnimating) return;
+            if (currentDose >= characters[currentCharIndex].doses) return;
+
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            isAnimating = true;
+            playSound('tap');
+
+            const ch = characters[currentCharIndex];
+            currentDose++;
+            score += 10;
+            scoreDisplay.textContent = score;
+
+            character.className = 'character drinking';
+            sickEffect.style.display = 'none';
+            speechBubble.textContent = ch.drinkMsg;
+            speechBubble.style.animation = 'none';
+            void speechBubble.offsetWidth;
+            speechBubble.style.animation = 'fadeInBubble 0.5s ease-out';
+            playSound('drink');
+
+            const rect = character.getBoundingClientRect();
+            spawnStars(rect.left + rect.width / 2, rect.top + rect.height / 2, 5);
+
+            updateDisplay();
+
+            setTimeout(() => {
+                if (currentDose >= ch.doses) {
+                    character.className = 'character happy';
+                    speechBubble.textContent = ch.happyMsg;
+                    speechBubble.style.animation = 'none';
+                    void speechBubble.offsetWidth;
+                    speechBubble.style.animation = 'fadeInBubble 0.5s ease-out';
+                    playSound('happy');
+                    showPraise();
+                    score += 20;
+                    scoreDisplay.textContent = score;
+
+                    const r = character.getBoundingClientRect();
+                    spawnStars(r.left + r.width / 2, r.top, 12);
+
+                    document.getElementById('medicineArea').style.display = 'none';
+
+                    if (currentCharIndex < characters.length - 1) {
+                        nextBtn.classList.add('visible');
+                    } else {
+                        setTimeout(() => showCelebration(), 1500);
+                    }
+                } else {
+                    character.className = 'character sick';
+                    sickEffect.style.display = 'inline';
+                    character.appendChild(sickEffect);
+
+                    const remaining = ch.doses - currentDose;
+                    const encourageMessages = [
+                        'もうちょっとだよ！がんばれ！',
+                        'あと' + remaining + 'かいだよ！',
+                        'いいぞいいぞ！🌟',
+                        'もうすこし！がんばって！',
+                    ];
+                    speechBubble.textContent = encourageMessages[Math.floor(Math.random() * encourageMessages.length)];
+                    speechBubble.style.animation = 'none';
+                    void speechBubble.offsetWidth;
+                    speechBubble.style.animation = 'fadeInBubble 0.5s ease-out';
+                }
+                isAnimating = false;
+            }, 800);
+        }
+
+        function nextCharacter() {
+            currentCharIndex++;
+            if (currentCharIndex < characters.length) {
+                setCharacter();
+                showPraise();
+            }
+        }
+
+        function showCelebration() {
+            playSound('celebration');
+            celebration.classList.add('active');
+            const allEmojis = characters.map(c => c.emoji).join(' ');
+            document.getElementById('celebrationCharacters').textContent = allEmojis;
+            document.getElementById('celebrationText').textContent =
+                'みんなげんきになったよ！🎉\nスコア: ⭐' + score;
+            spawnConfetti();
+        }
+
+        function restartGame() {
+            currentCharIndex = 0;
+            currentDose = 0;
+            score = 0;
+            scoreDisplay.textContent = 0;
+            celebration.classList.remove('active');
+            setCharacter();
+        }
+
+        function startGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            instructionOverlay.style.display = 'none';
+            gameStarted = true;
+            setCharacter();
+        }
+
+        function createBgClouds() {
+            const bg = document.getElementById('bgDecoration');
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                cloud.textContent = '☁️';
+                cloud.style.top = (10 + Math.random() * 40) + '%';
+                cloud.style.animationDuration = (15 + Math.random() * 20) + 's';
+                cloud.style.animationDelay = (-Math.random() * 20) + 's';
+                cloud.style.fontSize = (2 + Math.random() * 2) + 'rem';
+                bg.appendChild(cloud);
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('startBtn').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            startGame();
+        });
+
+        createBgClouds();
+    </script>
+</body>
+</html>

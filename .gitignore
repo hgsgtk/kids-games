@@ -1,5 +1,9 @@
-# Python virtual environment
+# Node
+node_modules/
+
+# Python (tools only)
 venv/
+.venv/
 __pycache__/
 *.pyc
 *.pyo

@@ -71,6 +71,71 @@
             transition: all 0.1s ease-out;
         }
 
+        .ball-canvas.pointer-locked {
+            cursor: none;
+        }
+
+        .crosshair-indicator {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+
+        .crosshair-indicator::before,
+        .crosshair-indicator::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 50, 50, 0.8);
+            border-radius: 2px;
+        }
+
+        .crosshair-indicator::before {
+            width: 4px;
+            height: 40px;
+            left: 18px;
+            top: 0;
+        }
+
+        .crosshair-indicator::after {
+            width: 40px;
+            height: 4px;
+            left: 0;
+            top: 18px;
+        }
+
+        .crosshair-indicator.active {
+            display: block;
+            animation: crosshair-pulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes crosshair-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        .lock-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .lock-hint.visible {
+            opacity: 1;
+        }
+
         .lyrics-display {
             background: white;
             border-radius: 25px;
@@ -174,7 +239,10 @@
     <div class="container">
         <h1>🎵 ABC Song with Bouncing Balls! 🎵</h1>
 
-        <div class="ball-canvas" id="ballCanvas"></div>
+        <div class="ball-canvas" id="ballCanvas">
+            <div class="crosshair-indicator" id="crosshair"></div>
+            <div class="lock-hint" id="lockHint">🔒 カーソル固定中 - Escで解除</div>
+        </div>
 
         <div class="lyrics-display">
             <div class="current-letter" id="currentLetter">🎵</div>
@@ -189,7 +257,8 @@
 
         <p class="instruction">
             🎈 Watch the balls bounce to the ABC song! 🎈<br>
-            Tap the canvas to create more bouncing balls!
+            Tap the canvas to create more bouncing balls!<br>
+            🖱️ Click to lock cursor &amp; rapid-fire! (Esc to unlock)
         </p>
     </div>
 
@@ -544,11 +613,14 @@
             }
         }
 
-        // Tap to create ball
-        ballCanvas.addEventListener('click', (e) => {
-            const rect = ballCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            
+        // Pointer lock for rapid clicking
+        const crosshair = document.getElementById('crosshair');
+        const lockHint = document.getElementById('lockHint');
+        let isPointerLocked = false;
+        let lockedX = 0;
+        let lockedY = 0; // Y position relative to canvas bottom
+
+        function spawnBallAtPosition(x) {
             const emoji = ['🎈', '⭐', '💖', '🌈', '🎨', '🦋'][Math.floor(Math.random() * 6)];
             const color = ballColors[Math.floor(Math.random() * ballColors.length)];
             
@@ -569,34 +641,58 @@
             
             // Play fun sound
             playNote(440 + Math.random() * 440, 0.3);
+        }
+
+        // Handle pointer lock change
+        document.addEventListener('pointerlockchange', () => {
+            isPointerLocked = document.pointerLockElement === ballCanvas;
+            
+            if (isPointerLocked) {
+                ballCanvas.classList.add('pointer-locked');
+                crosshair.classList.add('active');
+                lockHint.classList.add('visible');
+                // Position crosshair at locked position
+                crosshair.style.left = (lockedX - 20) + 'px';
+                crosshair.style.top = (lockedY - 20) + 'px';
+                
+                // Hide hint after 2 seconds
+                setTimeout(() => {
+                    lockHint.classList.remove('visible');
+                }, 2000);
+            } else {
+                ballCanvas.classList.remove('pointer-locked');
+                crosshair.classList.remove('active');
+                lockHint.classList.remove('visible');
+            }
         });
 
-        // Touch support
+        // Tap to create ball / activate pointer lock
+        ballCanvas.addEventListener('click', (e) => {
+            if (isPointerLocked) {
+                // While locked, spawn ball at the fixed position
+                spawnBallAtPosition(lockedX);
+                return;
+            }
+            
+            // First click: lock the pointer and spawn a ball
+            const rect = ballCanvas.getBoundingClientRect();
+            lockedX = e.clientX - rect.left;
+            lockedY = e.clientY - rect.top;
+            
+            spawnBallAtPosition(lockedX);
+            
+            // Request pointer lock for rapid clicking
+            ballCanvas.requestPointerLock();
+        });
+
+        // Touch support (no pointer lock needed on touch devices)
         ballCanvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             const touch = e.touches[0];
             const rect = ballCanvas.getBoundingClientRect();
             const x = touch.clientX - rect.left;
             
-            const emoji = ['🎈', '⭐', '💖', '🌈', '🎨', '🦋'][Math.floor(Math.random() * 6)];
-            const color = ballColors[Math.floor(Math.random() * ballColors.length)];
-            
-            const ball = createBall(emoji, color, false);
-            ball.style.left = (x - 40) + 'px';
-            ball.style.bottom = '0px';
-            
-            const ballData = {
-                element: ball,
-                x: x - 40,
-                y: 0,
-                vx: (Math.random() - 0.5) * 4,
-                vy: 18 + Math.random() * 5,
-                color: color,
-                letter: emoji
-            };
-            balls.push(ballData);
-            
-            playNote(440 + Math.random() * 440, 0.3);
+            spawnBallAtPosition(x);
         });
 
         // Load voices

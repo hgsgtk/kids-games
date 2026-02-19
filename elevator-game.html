@@ -1147,6 +1147,342 @@
         body.theme-light .settings-modal {
             background: rgba(255, 255, 255, 0.9);
         }
+
+        /* Purple mode overrides */
+        body.theme-purple {
+            background: linear-gradient(135deg, #0d0015 0%, #1a0a2e 50%, #0a0010 100%);
+        }
+
+        body.theme-purple .building,
+        body.theme-purple .control-panel {
+            background: linear-gradient(145deg, #150825, #1a0a2e);
+            border-color: #4a1a6b;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(168, 85, 247, 0.2);
+        }
+
+        body.theme-purple .building-title {
+            color: #c084fc;
+            text-shadow: 0 0 10px rgba(192, 132, 252, 0.8), 3px 3px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        body.theme-purple .elevator-view {
+            background: linear-gradient(to bottom, #0a0010, #150825);
+            border-color: #2d1045;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), inset 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        body.theme-purple .elevator-interior {
+            background: linear-gradient(to bottom, #0a0010, #150825);
+        }
+
+        body.theme-purple .elevator-interior::before {
+            background: linear-gradient(to right, #0a0010, #150825);
+        }
+
+        body.theme-purple .elevator-interior::after {
+            background: linear-gradient(to left, #0a0010, #150825);
+        }
+
+        body.theme-purple .elevator-window {
+            border-color: #2d1045;
+        }
+
+        body.theme-purple .elevator-floor-display {
+            color: #c084fc;
+            box-shadow: inset 0 0 40px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.4);
+            border-color: #2d1045;
+            text-shadow: 0 0 20px rgba(192, 132, 252, 0.8);
+        }
+
+        body.theme-purple .current-floor-display {
+            color: #c084fc;
+            box-shadow: inset 0 0 30px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.3);
+            border-color: #2d1045;
+        }
+
+        body.theme-purple .moving-status {
+            color: #c084fc;
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.4);
+            border-color: #a855f7;
+        }
+
+        body.theme-purple .floor-info {
+            background: linear-gradient(135deg, #1a0a2e, #150825);
+            border-color: #4a1a6b;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9), 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        body.theme-purple .floor-info h2 {
+            color: #e9d5ff;
+        }
+
+        body.theme-purple .floor-info p {
+            color: #d8b4fe;
+        }
+
+        body.theme-purple .quick-access {
+            background: rgba(13, 0, 21, 0.7);
+            border-color: #2d1045;
+        }
+
+        body.theme-purple .quick-button {
+            background: linear-gradient(145deg, #a855f7, #c084fc);
+            color: #fff;
+            border-color: #a855f7;
+            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4), inset 0 2px 8px rgba(255, 255, 255, 0.2);
+        }
+
+        body.theme-purple .quick-button:hover {
+            box-shadow: 0 12px 30px rgba(168, 85, 247, 0.6), inset 0 2px 8px rgba(255, 255, 255, 0.3);
+        }
+
+        body.theme-purple .button-grid {
+            background: rgba(13, 0, 21, 0.7);
+            border-color: #2d1045;
+            scrollbar-color: #a855f7 #0a0010;
+        }
+
+        body.theme-purple .button-grid::-webkit-scrollbar-track {
+            background: #0a0010;
+        }
+
+        body.theme-purple .button-grid::-webkit-scrollbar-thumb {
+            background: #a855f7;
+        }
+
+        body.theme-purple .button-grid::-webkit-scrollbar-thumb:hover {
+            background: #c084fc;
+        }
+
+        body.theme-purple .grid-toggle {
+            background: linear-gradient(145deg, #1a0a2e, #150825);
+            color: #c084fc;
+            border-color: #4a1a6b;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        body.theme-purple .grid-toggle:hover {
+            border-color: #a855f7;
+            box-shadow: 0 6px 15px rgba(168, 85, 247, 0.3);
+        }
+
+        body.theme-purple .floor-button {
+            background: linear-gradient(145deg, #1a0a2e, #150825);
+            color: #c084fc;
+            border-color: #4a1a6b;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9), inset 0 1px 5px rgba(168, 85, 247, 0.2);
+        }
+
+        body.theme-purple .floor-button::before {
+            background: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+        }
+
+        body.theme-purple .floor-button:hover {
+            box-shadow: 0 12px 30px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.4);
+            background: linear-gradient(145deg, #2d1045, #1a0a2e);
+            border-color: #a855f7;
+        }
+
+        body.theme-purple .floor-button.current {
+            background: linear-gradient(145deg, #a855f7, #c084fc);
+            color: #fff;
+            border-color: #a855f7;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 60px rgba(168, 85, 247, 0.4);
+        }
+
+        body.theme-purple .floor-button.current::before {
+            background: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 1);
+        }
+
+        body.theme-purple .input-display {
+            color: #c084fc;
+            border-color: #4a1a6b;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        body.theme-purple .input-hint {
+            color: #c084fc;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        body.theme-purple .instruction {
+            color: #9b7cb8;
+        }
+
+        body.theme-purple .instruction strong {
+            color: #c084fc !important;
+        }
+
+        body.theme-purple .status-indicator {
+            color: #d8b4fe;
+        }
+
+        body.theme-purple .settings-content {
+            background: linear-gradient(145deg, #150825, #1a0a2e);
+            border-color: #a855f7;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(168, 85, 247, 0.3);
+        }
+
+        body.theme-purple .settings-content h1 {
+            color: #c084fc;
+        }
+
+        body.theme-purple .settings-content p {
+            color: #e9d5ff;
+        }
+
+        body.theme-purple .floor-input-group label {
+            color: #c084fc;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        body.theme-purple .floor-input {
+            border-color: #4a1a6b;
+            background: #0a0010;
+            color: #c084fc;
+            box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.3), 0 0 20px rgba(168, 85, 247, 0.5);
+        }
+
+        body.theme-purple .floor-input:focus {
+            border-color: #a855f7;
+            box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.7);
+        }
+
+        body.theme-purple .start-button {
+            background: linear-gradient(145deg, #a855f7, #c084fc);
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+
+        body.theme-purple .start-button:hover {
+            box-shadow: 0 15px 40px rgba(168, 85, 247, 0.7), 0 0 50px rgba(168, 85, 247, 0.5);
+        }
+
+        body.theme-purple .preset-button {
+            background: linear-gradient(145deg, #1a0a2e, #150825);
+            color: #c084fc;
+            border-color: #4a1a6b;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.8), 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
+        body.theme-purple .preset-button:hover {
+            background: linear-gradient(145deg, #2d1045, #1a0a2e);
+            border-color: #a855f7;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.9), 0 0 25px rgba(168, 85, 247, 0.4);
+        }
+
+        body.theme-purple .settings-icon,
+        body.theme-purple .sound-toggle,
+        body.theme-purple .theme-toggle {
+            background: linear-gradient(145deg, #1a0a2e, #150825);
+            color: #c084fc;
+            border-color: #4a1a6b;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9), 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        body.theme-purple .settings-icon:hover,
+        body.theme-purple .sound-toggle:hover,
+        body.theme-purple .theme-toggle:hover {
+            border-color: #a855f7;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9), 0 0 30px rgba(168, 85, 247, 0.5);
+        }
+
+        body.theme-purple .floor-selector {
+            background: linear-gradient(135deg, #1a0a2e, #150825);
+            border-color: #4a1a6b;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9), 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        body.theme-purple .floor-selector-title {
+            color: #c084fc;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        body.theme-purple .floor-preset-btn {
+            background: linear-gradient(145deg, #2d1045, #1a0a2e);
+            color: #c084fc;
+            border-color: #4a1a6b;
+        }
+
+        body.theme-purple .floor-preset-btn:hover {
+            border-color: #a855f7;
+            box-shadow: 0 6px 15px rgba(168, 85, 247, 0.4);
+            background: linear-gradient(145deg, #3d1a5b, #2d1045);
+        }
+
+        body.theme-purple .floor-preset-btn.active {
+            background: linear-gradient(145deg, #a855f7, #c084fc);
+            color: #fff;
+            border-color: #a855f7;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
+        }
+
+        body.theme-purple .floor-custom-input label {
+            color: #c084fc;
+        }
+
+        body.theme-purple .floor-custom-input {
+            border-top-color: #4a1a6b;
+        }
+
+        body.theme-purple .floor-input-field {
+            border-color: #4a1a6b;
+            background: #0a0010;
+            color: #c084fc;
+            box-shadow: inset 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+
+        body.theme-purple .floor-input-field:focus {
+            border-color: #a855f7;
+            box-shadow: inset 0 0 10px rgba(168, 85, 247, 0.3), 0 0 10px rgba(168, 85, 247, 0.4);
+        }
+
+        body.theme-purple .floor-apply-btn {
+            background: linear-gradient(145deg, #2d1045, #1a0a2e);
+            color: #c084fc;
+            border-color: #4a1a6b;
+        }
+
+        body.theme-purple .floor-apply-btn:hover {
+            border-color: #a855f7;
+            background: linear-gradient(145deg, #3d1a5b, #2d1045);
+            box-shadow: 0 6px 15px rgba(168, 85, 247, 0.4);
+        }
+
+        body.theme-purple .lang-switcher {
+            background: rgba(13, 0, 21, 0.9);
+            border-color: #4a1a6b;
+        }
+
+        body.theme-purple .lang-btn {
+            background: linear-gradient(145deg, #2d1045, #1a0a2e);
+            color: #9b7cb8;
+            border-color: #4a1a6b;
+        }
+
+        body.theme-purple .lang-btn:hover {
+            border-color: #a855f7;
+            color: #c084fc;
+        }
+
+        body.theme-purple .lang-btn.active {
+            background: linear-gradient(145deg, #a855f7, #c084fc);
+            color: #fff;
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+        }
+
+        body.theme-purple .settings-modal {
+            background: rgba(13, 0, 21, 0.95);
+        }
+
+        body.theme-purple .floor-change-notification {
+            background: linear-gradient(145deg, #a855f7, #c084fc);
+            color: #fff;
+            box-shadow: 0 20px 60px rgba(168, 85, 247, 0.8), 0 0 100px rgba(168, 85, 247, 0.6);
+        }
     </style>
 </head>
 <body tabindex="0" style="outline: none;">
@@ -1195,6 +1531,34 @@
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Switch to Light / ライトへ">
         🌙
     </button>
+
+    <!-- Purple theme keyframe overrides (must be outside style block for dynamic glow-current) -->
+    <style>
+        body.theme-purple .floor-button.current {
+            animation: glow-current-purple 2s ease-in-out infinite;
+        }
+        @keyframes glow-current-purple {
+            0%, 100% {
+                box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 60px rgba(168, 85, 247, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(168, 85, 247, 1), 0 0 80px rgba(168, 85, 247, 0.6);
+            }
+        }
+        body.theme-purple .elevator-view.moving .moving-status {
+            animation: pulse-glow-purple 1s ease-in-out infinite;
+        }
+        @keyframes pulse-glow-purple {
+            0%, 100% {
+                box-shadow: 0 10px 40px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.4);
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                box-shadow: 0 15px 60px rgba(168, 85, 247, 0.9), 0 0 50px rgba(168, 85, 247, 0.6);
+                transform: translateX(-50%) scale(1.05);
+            }
+        }
+    </style>
 
     <!-- 設定アイコン -->
     <button class="settings-icon" id="settingsIcon" onclick="openSettings()" title="設定を変更">
@@ -1497,14 +1861,23 @@
         // ========================================
         // 🎨 Theme support (dark / light)
         // ========================================
+        const themeOrder = ['dark', 'light', 'purple'];
+
         function applyTheme(theme) {
-            const isLight = theme === 'light';
-            document.body.classList.toggle('theme-light', isLight);
+            document.body.classList.remove('theme-light', 'theme-purple');
+            if (theme === 'light') {
+                document.body.classList.add('theme-light');
+            } else if (theme === 'purple') {
+                document.body.classList.add('theme-purple');
+            }
 
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
-                if (isLight) {
+                if (theme === 'light') {
                     themeToggle.textContent = '🌞';
+                    themeToggle.title = 'Switch to Purple / パープルへ';
+                } else if (theme === 'purple') {
+                    themeToggle.textContent = '🔮';
                     themeToggle.title = 'Switch to Dark / ダークへ';
                 } else {
                     themeToggle.textContent = '🌙';
@@ -1514,7 +1887,8 @@
         }
 
         function toggleTheme() {
-            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const currentIndex = themeOrder.indexOf(currentTheme);
+            currentTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
             localStorage.setItem('elevator-theme', currentTheme);
             applyTheme(currentTheme);
         }

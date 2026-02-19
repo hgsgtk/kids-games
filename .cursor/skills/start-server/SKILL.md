@@ -10,13 +10,19 @@ description: Start the local development server for the Kids Games project. Use 
 1. Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+npm install
 ```
 
-2. Start the Flask server in the background:
+2. Start the Hono server in the background:
 
 ```bash
-python server.py
+npm start
+```
+
+Or with auto-reload:
+
+```bash
+npm run dev
 ```
 
 3. The server runs at **http://127.0.0.1:5000/**. Let the user know it is ready.
@@ -24,5 +30,6 @@ python server.py
 ## Notes
 
 - The server serves static HTML game files and provides click-tracking APIs (`/api/click`, `/api/stats`).
-- Data is stored in `kids_games.db` (SQLite); the file is created automatically on first run.
+- Data is stored in `kids_games.db` (SQLite via better-sqlite3); the file is created automatically on first run.
 - If port 5000 is already in use, check for an existing process and let the user know.
+- Set `PORT` env var to use a different port.
