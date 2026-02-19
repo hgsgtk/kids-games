@@ -52,54 +52,59 @@
             color: #667eea;
         }
 
-        .input-container {
-            position: absolute;
-            bottom: 80px;
+        .input-display {
+            position: fixed;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            pointer-events: all;
-        }
-
-        #numberInput {
-            width: 300px;
-            padding: 20px;
-            font-size: 3rem;
-            text-align: center;
-            border: 5px solid #667eea;
-            border-radius: 20px;
-            outline: none;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.98);
+            padding: 30px 50px;
+            border-radius: 30px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.4);
+            font-size: clamp(3.5rem, 8vw, 6rem);
             font-weight: bold;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
-            transition: all 0.3s;
+            color: #667eea;
+            min-width: 2.6em;
+            text-align: center;
+            display: none;
+            z-index: 500;
+            border: 8px solid #667eea;
+            animation: pulseInput 0.3s ease-out;
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
         }
 
-        #numberInput:focus {
-            border-color: #ff6b9d;
-            box-shadow: 0 10px 40px rgba(255, 107, 157, 0.7);
-            transform: scale(1.05);
+        @keyframes pulseInput {
+            0% { transform: translate(-50%, -50%) scale(0.8); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
         }
 
-        #numberInput.correct {
+        .input-display.show {
+            display: block;
+        }
+
+        .input-display.correct {
+            color: #4CAF50;
             border-color: #4CAF50;
             background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-            animation: bounce 0.5s;
         }
 
-        #numberInput.incorrect {
-            border-color: #ff6b9d;
+        .input-display.wrong {
+            color: #f44336;
+            border-color: #f44336;
             background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
             animation: shake 0.5s;
         }
 
         @keyframes bounce {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-20px) scale(1.1); }
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.15); }
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+            0%, 100% { transform: translate(-50%, -50%); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-48%, -50%); }
+            20%, 40%, 60%, 80% { transform: translate(-52%, -50%); }
         }
 
         .controls-panel {
@@ -310,11 +315,6 @@
             <button class="control-btn" id="resetBtn">🔄 Reset</button>
         </div>
 
-        <!-- Input -->
-        <div class="input-container">
-            <input type="text" id="numberInput" placeholder="Type number" disabled inputmode="numeric">
-        </div>
-
         <!-- Message -->
         <div class="message" id="message"></div>
 
@@ -323,6 +323,9 @@
             Use arrow keys ← → to navigate | Type the number shown above!
         </div>
     </div>
+
+    <!-- Input Display Overlay -->
+    <div class="input-display" id="inputDisplay"></div>
 
     <!-- Start Screen -->
     <div class="start-screen" id="startScreen">
@@ -364,11 +367,16 @@
         let stars = [];
         let collectibles = [];
 
+        // Input state
+        let currentInput = '';
+        let remainingDigits = [];
+        let inputTimeout = null;
+
         // DOM elements
         const progressEl = document.getElementById('progress');
         const targetNumberEl = document.getElementById('targetNumber');
         const modeDisplayEl = document.getElementById('modeDisplay');
-        const numberInput = document.getElementById('numberInput');
+        const inputDisplay = document.getElementById('inputDisplay');
         const messageEl = document.getElementById('message');
         const startScreen = document.getElementById('startScreen');
         const completeScreen = document.getElementById('completeScreen');
@@ -566,10 +574,10 @@
             gameState.currentNumber = gameState.startNumber;
             
             startScreen.classList.add('hidden');
-            numberInput.disabled = false;
-            numberInput.focus();
             
             create3DNumber(gameState.currentNumber);
+            resetInput();
+            hideInputDisplay();
             updateUI();
             
             showMessage("Let's Go! 🚀", 2000);
@@ -594,49 +602,75 @@
             }, duration);
         }
 
-        // Check input
-        function checkInput() {
-            if (!gameState.isPlaying) return;
-            
-            const userValue = numberInput.value.trim();
-            const targetNumber = gameState.currentNumber.toString();
-            
-            if (userValue === targetNumber) {
-                // Correct!
-                numberInput.className = 'correct';
-                showMessage('Perfect! ⭐', 1000);
-                
-                // Collect all spheres animation
-                collectibles.forEach((sphere, index) => {
-                    setTimeout(() => {
-                        animateCollect(sphere);
-                    }, index * 50);
-                });
-                
-                gameState.currentNumber++;
-                
-                setTimeout(() => {
-                    numberInput.value = '';
-                    numberInput.className = '';
-                    
-                    if (gameState.currentNumber > gameState.endNumber) {
-                        completeGame();
-                    } else {
-                        create3DNumber(gameState.currentNumber);
-                        updateUI();
-                        numberInput.focus();
-                    }
-                }, 1500);
-            } else if (userValue.length >= targetNumber.length) {
-                // Wrong
-                numberInput.className = 'incorrect';
-                showMessage('Try Again! 💪', 1000);
-                
-                setTimeout(() => {
-                    numberInput.value = '';
-                    numberInput.className = '';
-                }, 1000);
+        function resetInput() {
+            currentInput = '';
+            remainingDigits = gameState.currentNumber.toString().split('');
+        }
+
+        // Input display functions
+        function showInputDisplay(text, isCorrect = null, keepVisible = false) {
+            inputDisplay.textContent = text || '_';
+            inputDisplay.className = 'input-display show';
+
+            if (isCorrect === true) {
+                inputDisplay.classList.add('correct');
+            } else if (isCorrect === false) {
+                inputDisplay.classList.add('wrong');
             }
+
+            if (inputTimeout) {
+                clearTimeout(inputTimeout);
+            }
+
+            if (keepVisible) return;
+
+            inputTimeout = setTimeout(() => {
+                inputDisplay.classList.remove('show');
+            }, 2000);
+        }
+
+        function hideInputDisplay() {
+            inputDisplay.classList.remove('show');
+            if (inputTimeout) {
+                clearTimeout(inputTimeout);
+            }
+        }
+
+        // Handle correct answer
+        function handleCorrectAnswer() {
+            showInputDisplay(gameState.currentNumber.toString(), true);
+            showMessage('Perfect! ⭐', 1000);
+
+            collectibles.forEach((sphere, index) => {
+                setTimeout(() => {
+                    animateCollect(sphere);
+                }, index * 50);
+            });
+
+            gameState.currentNumber++;
+
+            setTimeout(() => {
+                hideInputDisplay();
+
+                if (gameState.currentNumber > gameState.endNumber) {
+                    completeGame();
+                } else {
+                    create3DNumber(gameState.currentNumber);
+                    resetInput();
+                    updateUI();
+                }
+            }, 1500);
+        }
+
+        // Handle wrong answer
+        function handleWrongAnswer(wrongText) {
+            showInputDisplay(wrongText, false);
+            showMessage('Try Again! 💪', 1000);
+
+            setTimeout(() => {
+                resetInput();
+                hideInputDisplay();
+            }, 800);
         }
 
         // Animate collectible collection
@@ -665,7 +699,8 @@
         // Complete game
         function completeGame() {
             gameState.isPlaying = false;
-            numberInput.disabled = true;
+            currentInput = '';
+            hideInputDisplay();
             
             const rangeText = gameState.mode === '0-100' ? '0 to 100' : '101 to 200';
             document.getElementById('completionStats').textContent = 
@@ -750,9 +785,9 @@
             if (gameState.currentNumber > gameState.startNumber) {
                 gameState.currentNumber--;
                 create3DNumber(gameState.currentNumber);
+                resetInput();
+                hideInputDisplay();
                 updateUI();
-                numberInput.value = '';
-                numberInput.focus();
             }
         }
 
@@ -761,9 +796,9 @@
             if (gameState.currentNumber < gameState.endNumber) {
                 gameState.currentNumber++;
                 create3DNumber(gameState.currentNumber);
+                resetInput();
+                hideInputDisplay();
                 updateUI();
-                numberInput.value = '';
-                numberInput.focus();
             }
         }
 
@@ -771,9 +806,9 @@
             if (!gameState.isPlaying) return;
             gameState.currentNumber = gameState.startNumber;
             create3DNumber(gameState.currentNumber);
+            resetInput();
+            hideInputDisplay();
             updateUI();
-            numberInput.value = '';
-            numberInput.focus();
         }
 
         // Animation loop
@@ -825,32 +860,58 @@
         }
 
         // Event listeners
-        numberInput.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-            if (e.target.value.length > 3) {
-                e.target.value = e.target.value.slice(0, 3);
-            }
-            const numValue = parseInt(e.target.value);
-            if (numValue > 200) {
-                e.target.value = '200';
-            }
-            checkInput();
-        });
-
         prevBtn.addEventListener('click', goToPrevious);
         nextBtn.addEventListener('click', goToNext);
         resetBtn.addEventListener('click', resetToStart);
 
-        // Keyboard controls
+        // Keyboard input: any-order digit matching
         document.addEventListener('keydown', (e) => {
             if (!gameState.isPlaying) return;
-            
+
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 goToPrevious();
+                return;
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
                 goToNext();
+                return;
+            }
+
+            if (e.key === 'Backspace') {
+                if (currentInput.length > 0) {
+                    const removed = currentInput[currentInput.length - 1];
+                    currentInput = currentInput.slice(0, -1);
+                    remainingDigits.push(removed);
+                    if (currentInput.length > 0) {
+                        showInputDisplay(currentInput, null, true);
+                    } else {
+                        hideInputDisplay();
+                    }
+                }
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                resetInput();
+                hideInputDisplay();
+                return;
+            }
+
+            if (e.key >= '0' && e.key <= '9') {
+                const idx = remainingDigits.indexOf(e.key);
+
+                if (idx !== -1) {
+                    remainingDigits.splice(idx, 1);
+                    currentInput += e.key;
+                    showInputDisplay(currentInput, null, true);
+
+                    if (remainingDigits.length === 0) {
+                        handleCorrectAnswer();
+                    }
+                } else {
+                    handleWrongAnswer(currentInput + e.key);
+                }
             }
         });
 
