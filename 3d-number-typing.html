@@ -300,8 +300,8 @@
             <div class="hud-item">
                 📊 Progress: <span id="progress">0/101</span>
             </div>
-            <div class="hud-item">
-                🎯 Target: <span id="targetNumber">0</span>
+            <div class="hud-item" id="targetHud" style="cursor: pointer; pointer-events: all;" title="Click to hear again">
+                🎯 Target: <span id="targetNumber">0</span> 🔊
             </div>
             <div class="hud-item">
                 🎮 Mode: <span id="modeDisplay">0-100</span>
@@ -359,6 +359,37 @@
             startNumber: 0,
             endNumber: 100
         };
+
+        // Audio
+        const numberAudioCache = {};
+        let currentAudio = null;
+
+        function preloadAudio(number) {
+            if (numberAudioCache[number]) return;
+            const audio = new Audio(`assets/audio/numbers/${number}.mp3`);
+            audio.preload = 'auto';
+            numberAudioCache[number] = audio;
+        }
+
+        function playNumberAudio(number) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            if (!numberAudioCache[number]) {
+                preloadAudio(number);
+            }
+            const audio = numberAudioCache[number];
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+            currentAudio = audio;
+        }
+
+        function preloadRange(start, count) {
+            for (let i = start; i < Math.min(start + count, 201); i++) {
+                preloadAudio(i);
+            }
+        }
 
         // Three.js variables
         let scene, camera, renderer;
@@ -575,7 +606,9 @@
             
             startScreen.classList.add('hidden');
             
+            preloadRange(gameState.startNumber, 10);
             create3DNumber(gameState.currentNumber);
+            playNumberAudio(gameState.currentNumber);
             resetInput();
             hideInputDisplay();
             updateUI();
@@ -656,6 +689,8 @@
                     completeGame();
                 } else {
                     create3DNumber(gameState.currentNumber);
+                    playNumberAudio(gameState.currentNumber);
+                    preloadRange(gameState.currentNumber + 1, 5);
                     resetInput();
                     updateUI();
                 }
@@ -785,6 +820,7 @@
             if (gameState.currentNumber > gameState.startNumber) {
                 gameState.currentNumber--;
                 create3DNumber(gameState.currentNumber);
+                playNumberAudio(gameState.currentNumber);
                 resetInput();
                 hideInputDisplay();
                 updateUI();
@@ -796,6 +832,8 @@
             if (gameState.currentNumber < gameState.endNumber) {
                 gameState.currentNumber++;
                 create3DNumber(gameState.currentNumber);
+                playNumberAudio(gameState.currentNumber);
+                preloadRange(gameState.currentNumber + 1, 5);
                 resetInput();
                 hideInputDisplay();
                 updateUI();
@@ -806,6 +844,7 @@
             if (!gameState.isPlaying) return;
             gameState.currentNumber = gameState.startNumber;
             create3DNumber(gameState.currentNumber);
+            playNumberAudio(gameState.currentNumber);
             resetInput();
             hideInputDisplay();
             updateUI();
@@ -863,6 +902,12 @@
         prevBtn.addEventListener('click', goToPrevious);
         nextBtn.addEventListener('click', goToNext);
         resetBtn.addEventListener('click', resetToStart);
+
+        document.getElementById('targetHud').addEventListener('click', () => {
+            if (gameState.isPlaying) {
+                playNumberAudio(gameState.currentNumber);
+            }
+        });
 
         // Keyboard input: any-order digit matching
         document.addEventListener('keydown', (e) => {

@@ -24,3 +24,5 @@ Thumbs.db
 
 # Local server SQLite DB
 kids_games.db
+kids_games.db-shm
+kids_games.db-wal
