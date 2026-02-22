@@ -1,0 +1,8 @@
+/*.html
+  Cache-Control: public, max-age=3600
+
+/assets/*
+  Cache-Control: public, max-age=86400
+
+/screenshots/*
+  Cache-Control: public, max-age=86400

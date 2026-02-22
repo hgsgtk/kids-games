@@ -26,3 +26,7 @@ Thumbs.db
 kids_games.db
 kids_games.db-shm
 kids_games.db-wal
+
+# Cloudflare
+.wrangler/
+dist/
