@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alphabet Typing A→Z 🔤</title>
     <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --success: #4CAF50;
+            --error: #f5576c;
+            --bg-start: #667eea;
+            --bg-mid: #764ba2;
+            --bg-end: #f093fb;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --text-light: #666;
+        }
+
+        .dark-mode {
+            --card-bg: #1e1e2e;
+            --text-color: #e0e0e0;
+            --text-light: #aaa;
+            --bg-start: #0f0c29;
+            --bg-mid: #302b63;
+            --bg-end: #24243e;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,13 +36,16 @@
 
         body {
             font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+            background-size: 300% 300%;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 30px;
+            padding: 20px;
             animation: backgroundShift 10s ease infinite;
+            transition: background 0.5s ease;
+            overflow-x: hidden;
         }
 
         @keyframes backgroundShift {
@@ -27,50 +53,317 @@
             50% { background-position: 100% 50%; }
         }
 
+        /* Floating background letters */
+        .floating-letters {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-letter {
+            position: absolute;
+            font-size: 3em;
+            font-weight: bold;
+            opacity: 0.08;
+            color: white;
+            animation: floatUp linear infinite;
+            user-select: none;
+        }
+
+        .dark-mode .floating-letter {
+            opacity: 0.05;
+            color: #f093fb;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.08; }
+            90% { opacity: 0.08; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Confetti canvas */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
         .container {
-            background: white;
+            background: var(--card-bg);
             border-radius: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            max-width: 1200px;
+            padding: 25px;
+            max-width: 1300px;
             width: 100%;
             display: grid;
-            grid-template-columns: 1fr 400px;
-            grid-template-rows: auto 1fr auto;
-            gap: 25px;
+            grid-template-columns: 1fr 380px;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+            transition: background 0.3s ease;
+        }
+
+        /* Header area */
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
-            grid-column: 1 / -1;
             text-align: center;
-            color: #667eea;
+            color: var(--primary);
             margin: 0;
-            font-size: 2.5em;
+            font-size: 2.2em;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+
+        .dark-mode h1 { color: #f093fb; }
+
+        .theme-toggle {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg) scale(1.1);
+        }
+
+        /* Progress bar */
+        .progress-section {
+            grid-column: 1 / -1;
+        }
+
+        .progress-bar-container {
+            background: rgba(102, 126, 234, 0.15);
+            border-radius: 15px;
+            height: 30px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid var(--primary);
+        }
+
+        .dark-mode .progress-bar-container {
+            background: rgba(240, 147, 251, 0.1);
+            border-color: #f093fb;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #81C784, #A5D6A7, #C8E6C9, #FFD54F, #FFB74D, #FF8A65, #EF5350, #AB47BC, #7E57C2);
+            background-size: 200% 100%;
+            border-radius: 12px;
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: rainbowShift 3s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            min-width: 0;
+        }
+
+        @keyframes rainbowShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .progress-text {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-weight: bold;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        /* Alphabet grid tracker */
+        .alphabet-grid {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+        }
+
+        .dark-mode .alphabet-grid {
+            background: rgba(240, 147, 251, 0.05);
+        }
+
+        .grid-letter {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid #ddd;
+            color: #ccc;
+            background: transparent;
+        }
+
+        .dark-mode .grid-letter {
+            border-color: #444;
+            color: #555;
+        }
+
+        .grid-letter.completed {
+            background: linear-gradient(135deg, #4CAF50, #81C784);
+            color: white;
+            border-color: #4CAF50;
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .grid-letter.current {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+            animation: currentPulse 1s ease-in-out infinite;
+            box-shadow: 0 2px 12px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes currentPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .grid-letter.skipped {
+            background: rgba(255, 152, 0, 0.15);
+            border-color: #FF9800;
+            color: #FF9800;
         }
 
         .left-panel {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .right-panel {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
+        }
+
+        /* Streak & Combo display */
+        .combo-display {
+            background: linear-gradient(135deg, #FF6B35, #F7C948);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            text-align: center;
+            border: 4px solid #FF6B35;
+            box-shadow: 0 6px 15px rgba(255, 107, 53, 0.3);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .combo-display.on-fire {
+            animation: fireGlow 0.5s ease infinite alternate;
+        }
+
+        @keyframes fireGlow {
+            0% { box-shadow: 0 6px 15px rgba(255, 107, 53, 0.3); }
+            100% { box-shadow: 0 6px 30px rgba(255, 107, 53, 0.7), 0 0 60px rgba(247, 201, 72, 0.4); }
+        }
+
+        .combo-item {
+            text-align: center;
+        }
+
+        .combo-label {
+            font-size: 0.85em;
+            font-weight: bold;
+            opacity: 0.9;
+        }
+
+        .combo-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .combo-divider {
+            width: 2px;
+            height: 40px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 1px;
+        }
+
+        /* Timer display */
+        .timer-display {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #00ff88;
+            padding: 12px 20px;
+            border-radius: 20px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 2em;
+            font-weight: bold;
+            border: 4px solid #00ff88;
+            box-shadow: 0 6px 15px rgba(0, 255, 136, 0.2);
+            letter-spacing: 3px;
+            display: none;
+        }
+
+        .timer-display.active {
+            display: block;
+            animation: timerGlow 1s ease infinite alternate;
+        }
+
+        @keyframes timerGlow {
+            0% { box-shadow: 0 6px 15px rgba(0, 255, 136, 0.2); }
+            100% { box-shadow: 0 6px 25px rgba(0, 255, 136, 0.4); }
         }
 
         .stats {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .stat-box {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px 25px;
+            padding: 15px 20px;
             border-radius: 20px;
             text-align: center;
             border: 4px solid #f093fb;
@@ -78,60 +371,89 @@
         }
 
         .stat-label {
-            font-size: 1.3em;
+            font-size: 1.1em;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .stat-value {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: bold;
         }
 
         .letter-display {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             border-radius: 25px;
-            padding: 40px;
+            padding: 30px;
             text-align: center;
-            min-height: 350px;
+            min-height: 320px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             border: 5px solid #667eea;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Letter color themes */
+        .letter-display[data-theme="warm"] {
+            background: linear-gradient(135deg, #ff6b6b, #ffa06b);
+        }
+        .letter-display[data-theme="cool"] {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        .letter-display[data-theme="nature"] {
+            background: linear-gradient(135deg, #56ab2f, #a8e063);
+        }
+        .letter-display[data-theme="ocean"] {
+            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+        }
+        .letter-display[data-theme="sunset"] {
+            background: linear-gradient(135deg, #ee9ca7, #ffdde1);
+        }
+        .letter-display[data-theme="candy"] {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+        .letter-display[data-theme="night"] {
+            background: linear-gradient(135deg, #0f0c29, #302b63);
+        }
+        .letter-display[data-theme="tropical"] {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
         }
 
         .emoji-display {
-            font-size: 8em;
-            margin-bottom: 20px;
+            font-size: 7em;
+            margin-bottom: 15px;
             animation: bounce 2s ease-in-out infinite;
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
         }
 
         .target-letter {
-            font-size: 10em;
+            font-size: 9em;
             font-weight: bold;
             color: white;
             letter-spacing: 10px;
             text-shadow: 5px 5px 15px rgba(0,0,0,0.3);
             animation: pulse 1.5s ease-in-out infinite;
+            line-height: 1;
         }
 
         .letter-word {
-            font-size: 2.5em;
+            font-size: 2.2em;
             font-weight: bold;
             color: white;
-            margin-top: 15px;
+            margin-top: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
         .case-indicator {
-            font-size: 1.5em;
+            font-size: 1.3em;
             font-weight: bold;
             color: rgba(255, 255, 255, 0.8);
-            margin-top: 10px;
-            padding: 8px 16px;
+            margin-top: 8px;
+            padding: 6px 14px;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 15px;
         }
@@ -146,23 +468,37 @@
             50% { transform: translateY(-20px); }
         }
 
+        /* Correct answer sparkle effect */
+        @keyframes sparkle {
+            0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+            25% { transform: scale(1.3) rotate(5deg); filter: brightness(1.5); }
+            50% { transform: scale(1) rotate(-5deg); filter: brightness(1); }
+            75% { transform: scale(1.2) rotate(3deg); filter: brightness(1.3); }
+            100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+        }
+
+        .letter-display.sparkle {
+            animation: sparkle 0.6s ease;
+        }
+
         .input-area {
             width: 100%;
         }
 
         #userInput {
             width: 100%;
-            padding: 25px;
-            font-size: 5em;
+            padding: 20px;
+            font-size: 4.5em;
             text-align: center;
-            border: 5px solid #667eea;
+            border: 5px solid var(--primary);
             border-radius: 20px;
             outline: none;
             transition: all 0.3s;
-            letter-spacing: 0px;
             font-weight: bold;
             text-transform: uppercase;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            color: var(--text-color);
         }
 
         #userInput:focus {
@@ -174,13 +510,31 @@
         #userInput.correct {
             border-color: #4CAF50;
             background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-            animation: bounce 0.5s;
+            color: #2E7D32;
+            animation: correctBounce 0.5s;
+        }
+
+        .dark-mode #userInput.correct {
+            background: linear-gradient(135deg, #1b3a1b 0%, #2d4a2d 100%);
+            color: #81C784;
         }
 
         #userInput.incorrect {
             border-color: #ff6b9d;
             background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+            color: #C62828;
             animation: shake 0.5s;
+        }
+
+        .dark-mode #userInput.incorrect {
+            background: linear-gradient(135deg, #3a1b1b 0%, #4a2d2d 100%);
+            color: #EF9A9A;
+        }
+
+        @keyframes correctBounce {
+            0%, 100% { transform: scale(1); }
+            30% { transform: scale(1.08); }
+            60% { transform: scale(0.95); }
         }
 
         @keyframes shake {
@@ -192,12 +546,12 @@
         .controls {
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 12px;
         }
 
         .jump-controls {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 20px;
+            padding: 15px;
             border-radius: 20px;
             border: 4px solid #667eea;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
@@ -206,20 +560,20 @@
         .jump-label {
             font-weight: bold;
             color: white;
-            font-size: 1.2em;
-            margin-bottom: 10px;
+            font-size: 1.1em;
+            margin-bottom: 8px;
             text-align: center;
         }
 
         .jump-buttons {
             display: flex;
-            flex-direction: column;
             gap: 10px;
         }
 
         .jump-btn {
-            padding: 12px;
-            font-size: 1.1em;
+            flex: 1;
+            padding: 10px;
+            font-size: 1em;
             font-weight: bold;
             background: white;
             color: #667eea;
@@ -241,8 +595,8 @@
 
         button {
             width: 100%;
-            padding: 18px;
-            font-size: 1.4em;
+            padding: 14px;
+            font-size: 1.2em;
             font-weight: bold;
             border: 4px solid #333;
             border-radius: 20px;
@@ -263,7 +617,7 @@
         }
 
         .start-btn:hover:not(:disabled) {
-            transform: translateY(-5px) scale(1.02);
+            transform: translateY(-4px) scale(1.02);
             box-shadow: 0 15px 35px rgba(76, 175, 80, 0.5);
         }
 
@@ -277,12 +631,8 @@
         }
 
         .repeat-btn:hover:not(:disabled) {
-            transform: translateY(-5px) scale(1.02);
+            transform: translateY(-4px) scale(1.02);
             box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
-        }
-
-        .repeat-btn:active:not(:disabled) {
-            transform: scale(0.98);
         }
 
         .reset-btn {
@@ -291,17 +641,13 @@
         }
 
         .reset-btn:hover {
-            transform: translateY(-5px) scale(1.02);
+            transform: translateY(-4px) scale(1.02);
             box-shadow: 0 15px 35px rgba(245, 87, 108, 0.5);
-        }
-
-        .reset-btn:active {
-            transform: scale(0.98);
         }
 
         .settings {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 25px;
+            padding: 20px;
             border-radius: 20px;
             border: 4px solid #667eea;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
@@ -310,21 +656,25 @@
         .setting-row {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .setting-row:last-child {
             margin-bottom: 0;
         }
 
         .setting-label {
             font-weight: bold;
             color: white;
-            font-size: 1.2em;
+            font-size: 1.1em;
         }
 
         select {
-            padding: 12px 15px;
+            padding: 10px 14px;
             border-radius: 15px;
             border: 3px solid white;
-            font-size: 1.1em;
+            font-size: 1em;
             cursor: pointer;
             outline: none;
             font-weight: bold;
@@ -340,13 +690,17 @@
 
         .message {
             text-align: center;
-            font-size: 2em;
-            color: #667eea;
-            min-height: 50px;
+            font-size: 1.8em;
+            color: var(--primary);
+            min-height: 45px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .dark-mode .message {
+            color: #f093fb;
         }
 
         .message.success {
@@ -364,14 +718,251 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
         }
+
+        /* Completion screen */
+        .completion-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 500;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .completion-overlay.show {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .completion-card {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .completion-trophy {
+            font-size: 5em;
+            margin-bottom: 15px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .completion-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .dark-mode .completion-title {
+            color: #f093fb;
+        }
+
+        .completion-subtitle {
+            font-size: 1.3em;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .star-rating {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .star-rating .star {
+            display: inline-block;
+            transition: all 0.3s;
+            opacity: 0.2;
+            filter: grayscale(1);
+        }
+
+        .star-rating .star.earned {
+            opacity: 1;
+            filter: grayscale(0);
+            animation: starPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes starPop {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .completion-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .completion-stat {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 15px;
+            padding: 12px;
+        }
+
+        .dark-mode .completion-stat {
+            background: rgba(240, 147, 251, 0.1);
+        }
+
+        .completion-stat-label {
+            font-size: 0.9em;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .completion-stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .dark-mode .completion-stat-value {
+            color: #f093fb;
+        }
+
+        .play-again-btn {
+            background: linear-gradient(135deg, #4CAF50, #81C784);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.5);
+        }
+
+        /* Floating score popup */
+        .score-popup {
+            position: fixed;
+            pointer-events: none;
+            font-size: 2em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            z-index: 999;
+            animation: scoreFloat 1.5s ease-out forwards;
+        }
+
+        @keyframes scoreFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            50% { opacity: 1; transform: translateY(-50px) scale(1.3); }
+            100% { opacity: 0; transform: translateY(-120px) scale(0.8); }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+            }
+
+            .header {
+                grid-column: 1;
+            }
+
+            .progress-section {
+                grid-column: 1;
+            }
+
+            .alphabet-grid {
+                grid-column: 1;
+            }
+
+            .target-letter {
+                font-size: 6em;
+            }
+
+            .emoji-display {
+                font-size: 5em;
+            }
+
+            #userInput {
+                font-size: 3em;
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.6em;
+            }
+        }
     </style>
 </head>
 <body>
+    <canvas id="confettiCanvas"></canvas>
+
+    <div class="floating-letters" id="floatingLetters"></div>
+
     <div class="container">
-        <h1>🔤 Alphabet Typing A→Z! 🎉</h1>
+        <div class="header">
+            <h1>🔤 Alphabet Typing A→Z! 🎉</h1>
+            <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">🌙</button>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-section">
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBar" style="width: 0%">
+                    <span class="progress-text" id="progressText"></span>
+                </div>
+            </div>
+            <div class="progress-labels">
+                <span>A</span>
+                <span>Z</span>
+            </div>
+        </div>
+
+        <!-- Alphabet grid tracker -->
+        <div class="alphabet-grid" id="alphabetGrid"></div>
         
         <div class="left-panel">
-            <div class="letter-display">
+            <!-- Combo display -->
+            <div class="combo-display" id="comboDisplay">
+                <div class="combo-item">
+                    <div class="combo-label">🔥 Streak</div>
+                    <div class="combo-value" id="streakValue">0</div>
+                </div>
+                <div class="combo-divider"></div>
+                <div class="combo-item">
+                    <div class="combo-label">⚡ Combo</div>
+                    <div class="combo-value" id="comboValue">x1</div>
+                </div>
+                <div class="combo-divider"></div>
+                <div class="combo-item">
+                    <div class="combo-label">🎯 Accuracy</div>
+                    <div class="combo-value" id="accuracyValue">100%</div>
+                </div>
+            </div>
+
+            <!-- Timer -->
+            <div class="timer-display" id="timerDisplay">00:00</div>
+
+            <div class="letter-display" id="letterDisplay">
                 <div class="emoji-display" id="emojiDisplay">🎯</div>
                 <div class="target-letter" id="targetLetter">Ready?</div>
                 <div class="letter-word" id="letterWord"></div>
@@ -379,7 +970,7 @@
             </div>
 
             <div class="input-area">
-                <input type="text" id="userInput" placeholder="Type letter" disabled maxlength="1">
+                <input type="text" id="userInput" placeholder="Type letter" disabled maxlength="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
 
             <div class="message" id="message"></div>
@@ -395,6 +986,10 @@
                     <div class="stat-label">🎯 Current</div>
                     <div class="stat-value" id="currentDisplay">A</div>
                 </div>
+                <div class="stat-box">
+                    <div class="stat-label">⭐ Best Streak</div>
+                    <div class="stat-value" id="bestStreak">0</div>
+                </div>
             </div>
 
             <div class="controls">
@@ -406,8 +1001,8 @@
             <div class="jump-controls">
                 <div class="jump-label">Navigate:</div>
                 <div class="jump-buttons">
-                    <button class="jump-btn" id="prevBtn" disabled>⬅️ Previous Letter</button>
-                    <button class="jump-btn" id="nextBtn" disabled>Next Letter ➡️</button>
+                    <button class="jump-btn" id="prevBtn" disabled>⬅️ Prev</button>
+                    <button class="jump-btn" id="nextBtn" disabled>Next ➡️</button>
                 </div>
             </div>
 
@@ -420,12 +1015,62 @@
                         <option value="both">Both Cases</option>
                     </select>
                 </div>
+                <div class="setting-row">
+                    <span class="setting-label">🔀 Order:</span>
+                    <select id="orderSelect">
+                        <option value="sequential" selected>A → Z (Sequential)</option>
+                        <option value="random">🎲 Random Shuffle</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">⏱️ Challenge:</span>
+                    <select id="challengeSelect">
+                        <option value="none" selected>No Timer (Relaxed)</option>
+                        <option value="timer">⏱️ Timed Mode</option>
+                        <option value="speed">⚡ Speed Challenge (60s)</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Completion overlay -->
+    <div class="completion-overlay" id="completionOverlay">
+        <div class="completion-card">
+            <div class="completion-trophy">🏆</div>
+            <div class="completion-title">Amazing!</div>
+            <div class="completion-subtitle" id="completionSubtitle">You completed A to Z!</div>
+            <div class="star-rating" id="starRating">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+            </div>
+            <div class="completion-stats">
+                <div class="completion-stat">
+                    <div class="completion-stat-label">⏱️ Time</div>
+                    <div class="completion-stat-value" id="completionTime">0:00</div>
+                </div>
+                <div class="completion-stat">
+                    <div class="completion-stat-label">🎯 Accuracy</div>
+                    <div class="completion-stat-value" id="completionAccuracy">100%</div>
+                </div>
+                <div class="completion-stat">
+                    <div class="completion-stat-label">🔥 Best Streak</div>
+                    <div class="completion-stat-value" id="completionStreak">0</div>
+                </div>
+                <div class="completion-stat">
+                    <div class="completion-stat-label">⚡ Max Combo</div>
+                    <div class="completion-stat-value" id="completionCombo">x1</div>
+                </div>
+            </div>
+            <button class="play-again-btn" id="playAgainBtn">🎮 Play Again! 🎮</button>
+        </div>
+    </div>
+
     <script>
-        // Alphabet data with words and emojis
+        // =============================================
+        // ALPHABET DATA
+        // =============================================
         const alphabetData = [
             { letter: 'A', word: 'Apple', emoji: '🍎' },
             { letter: 'B', word: 'Ball', emoji: '⚽' },
@@ -455,264 +1100,724 @@
             { letter: 'Z', word: 'Zebra', emoji: '🦓' }
         ];
 
-        // Game state
+        const letterThemes = ['warm', 'cool', 'nature', 'ocean', 'sunset', 'candy', 'tropical', 'cool'];
+
+        // =============================================
+        // SOUND EFFECTS (Web Audio API)
+        // =============================================
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            try {
+                if (!audioCtx && AudioCtx) {
+                    audioCtx = new AudioCtx();
+                }
+            } catch(e) {
+                console.warn('Audio context not available:', e);
+            }
+        }
+
+        function playTone(freq, duration, type = 'sine', volume = 0.3) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {
+                // Silent fail - audio not critical
+            }
+        }
+
+        function playCorrectSound() {
+            // Happy ascending arpeggio
+            playTone(523, 0.15, 'sine', 0.25);
+            setTimeout(() => playTone(659, 0.15, 'sine', 0.25), 80);
+            setTimeout(() => playTone(784, 0.2, 'sine', 0.25), 160);
+            setTimeout(() => playTone(1047, 0.3, 'sine', 0.2), 240);
+        }
+
+        function playWrongSound() {
+            playTone(200, 0.3, 'sawtooth', 0.15);
+            setTimeout(() => playTone(180, 0.3, 'sawtooth', 0.12), 150);
+        }
+
+        function playComboSound(combo) {
+            const baseFreq = 440 + (combo * 50);
+            playTone(baseFreq, 0.1, 'sine', 0.2);
+            setTimeout(() => playTone(baseFreq * 1.25, 0.1, 'sine', 0.2), 60);
+            setTimeout(() => playTone(baseFreq * 1.5, 0.15, 'sine', 0.2), 120);
+        }
+
+        function playCompletionFanfare() {
+            const notes = [523, 659, 784, 1047, 784, 1047, 1318];
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 0.3, 'sine', 0.2), i * 150);
+            });
+        }
+
+        function playCountdownBeep() {
+            playTone(880, 0.1, 'square', 0.15);
+        }
+
+        // =============================================
+        // CONFETTI SYSTEM
+        // =============================================
+        const confettiCanvas = document.getElementById('confettiCanvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+        let confettiPieces = [];
+        let confettiAnimating = false;
+
+        function resizeConfetti() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+        resizeConfetti();
+        window.addEventListener('resize', resizeConfetti);
+
+        function launchConfetti(x, y, count = 30) {
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ffb86b', '#6bfff1'];
+            for (let i = 0; i < count; i++) {
+                confettiPieces.push({
+                    x: x || confettiCanvas.width / 2,
+                    y: y || confettiCanvas.height / 2,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: (Math.random() - 1) * 12 - 3,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 15,
+                    gravity: 0.25,
+                    life: 1,
+                    decay: 0.008 + Math.random() * 0.008,
+                    shape: Math.random() > 0.5 ? 'rect' : 'circle'
+                });
+            }
+            if (!confettiAnimating) {
+                confettiAnimating = true;
+                animateConfetti();
+            }
+        }
+
+        function launchFullConfetti() {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    launchConfetti(Math.random() * confettiCanvas.width, -20, 50);
+                }, i * 200);
+            }
+        }
+
+        function animateConfetti() {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            
+            confettiPieces = confettiPieces.filter(p => p.life > 0);
+            
+            confettiPieces.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.vx *= 0.99;
+                p.rotation += p.rotSpeed;
+                p.life -= p.decay;
+                
+                confettiCtx.save();
+                confettiCtx.translate(p.x, p.y);
+                confettiCtx.rotate(p.rotation * Math.PI / 180);
+                confettiCtx.globalAlpha = p.life;
+                confettiCtx.fillStyle = p.color;
+                
+                if (p.shape === 'rect') {
+                    confettiCtx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                } else {
+                    confettiCtx.beginPath();
+                    confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                    confettiCtx.fill();
+                }
+                
+                confettiCtx.restore();
+            });
+            
+            if (confettiPieces.length > 0) {
+                requestAnimationFrame(animateConfetti);
+            } else {
+                confettiAnimating = false;
+                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            }
+        }
+
+        // =============================================
+        // FLOATING BACKGROUND LETTERS
+        // =============================================
+        function createFloatingLetters() {
+            const container = document.getElementById('floatingLetters');
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            
+            for (let i = 0; i < 20; i++) {
+                const div = document.createElement('div');
+                div.className = 'floating-letter';
+                div.textContent = letters[Math.floor(Math.random() * 26)];
+                div.style.left = Math.random() * 100 + '%';
+                div.style.fontSize = (2 + Math.random() * 4) + 'em';
+                div.style.animationDuration = (8 + Math.random() * 15) + 's';
+                div.style.animationDelay = (Math.random() * 10) + 's';
+                container.appendChild(div);
+            }
+        }
+        createFloatingLetters();
+
+        // =============================================
+        // GAME STATE
+        // =============================================
         let gameState = {
             isPlaying: false,
             currentIndex: 0,
-            mode: 'uppercase'
+            completedCount: 0,
+            mode: 'uppercase',
+            order: 'sequential',
+            challenge: 'none',
+            streak: 0,
+            bestStreak: 0,
+            combo: 1,
+            maxCombo: 1,
+            totalAttempts: 0,
+            correctAttempts: 0,
+            startTime: null,
+            elapsedSeconds: 0,
+            timerInterval: null,
+            speedTimeLeft: 60,
+            speedInterval: null,
+            shuffledOrder: [],
+            completedLetters: new Set(),
+            isDarkMode: false
         };
 
-        // DOM elements
+        // =============================================
+        // DOM ELEMENTS
+        // =============================================
         const targetLetterEl = document.getElementById('targetLetter');
         const emojiDisplayEl = document.getElementById('emojiDisplay');
         const letterWordEl = document.getElementById('letterWord');
         const caseIndicatorEl = document.getElementById('caseIndicator');
+        const letterDisplayEl = document.getElementById('letterDisplay');
         const userInputEl = document.getElementById('userInput');
         const scoreEl = document.getElementById('score');
         const currentDisplayEl = document.getElementById('currentDisplay');
+        const bestStreakEl = document.getElementById('bestStreak');
         const messageEl = document.getElementById('message');
         const startBtn = document.getElementById('startBtn');
         const repeatBtn = document.getElementById('repeatBtn');
         const resetBtn = document.getElementById('resetBtn');
         const modeSelect = document.getElementById('modeSelect');
+        const orderSelect = document.getElementById('orderSelect');
+        const challengeSelect = document.getElementById('challengeSelect');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const streakValueEl = document.getElementById('streakValue');
+        const comboValueEl = document.getElementById('comboValue');
+        const accuracyValueEl = document.getElementById('accuracyValue');
+        const comboDisplayEl = document.getElementById('comboDisplay');
+        const timerDisplayEl = document.getElementById('timerDisplay');
+        const completionOverlay = document.getElementById('completionOverlay');
+        const playAgainBtn = document.getElementById('playAgainBtn');
 
-        // Celebratory emojis
+        // Celebratory emojis & messages
         const celebrationEmojis = ['🎉', '🎊', '⭐', '🌟', '✨', '🎈', '🎁', '🏆', '👏', '🎯', '💫', '🌈'];
         const encouragementMessages = [
-            'Yay! 🎉',
-            'Good Job! ⭐',
-            'You Did It! 🌟',
-            'Wow! 🎊',
-            'Super! 🏆',
-            'Great! ✨',
-            'Yes! 👏',
-            'Perfect! 💫',
-            'Awesome! 🎈',
-            'Amazing! 🌈'
+            'Yay! 🎉', 'Good Job! ⭐', 'You Did It! 🌟', 'Wow! 🎊',
+            'Super! 🏆', 'Great! ✨', 'Yes! 👏', 'Perfect! 💫',
+            'Awesome! 🎈', 'Amazing! 🌈', 'Brilliant! 💎', 'Fantastic! 🚀'
         ];
 
-        // Text-to-Speech function
+        const comboMessages = [
+            '', '', 'Nice Streak! 🔥', 'On Fire! 🔥🔥', 'Unstoppable! 🔥🔥🔥',
+            'LEGENDARY! ⚡🔥⚡', 'GODLIKE! 🌟⚡🔥⚡🌟'
+        ];
+
+        // =============================================
+        // ALPHABET GRID
+        // =============================================
+        function createAlphabetGrid() {
+            const grid = document.getElementById('alphabetGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 26; i++) {
+                const div = document.createElement('div');
+                div.className = 'grid-letter';
+                div.id = `grid-${i}`;
+                div.textContent = String.fromCharCode(65 + i);
+                grid.appendChild(div);
+            }
+        }
+        createAlphabetGrid();
+
+        function updateAlphabetGrid() {
+            for (let i = 0; i < 26; i++) {
+                const el = document.getElementById(`grid-${i}`);
+                el.className = 'grid-letter';
+                
+                const actualIndex = gameState.order === 'random' 
+                    ? gameState.shuffledOrder.indexOf(i) 
+                    : i;
+                
+                if (gameState.completedLetters.has(i)) {
+                    el.classList.add('completed');
+                } else if (gameState.isPlaying && getActualLetterIndex() === i) {
+                    el.classList.add('current');
+                }
+            }
+        }
+
+        function getActualLetterIndex() {
+            if (gameState.order === 'random') {
+                return gameState.shuffledOrder[gameState.currentIndex];
+            }
+            return gameState.currentIndex;
+        }
+
+        // =============================================
+        // TEXT-TO-SPEECH
+        // =============================================
         function speak(text, rate = 0.8) {
             window.speechSynthesis.cancel();
-            
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = rate;
             utterance.pitch = 1.1;
             utterance.volume = 1.0;
-            
             const voices = window.speechSynthesis.getVoices();
-            const preferredVoice = voices.find(voice => 
-                voice.lang.startsWith('en') && 
+            const preferredVoice = voices.find(voice =>
+                voice.lang.startsWith('en') &&
                 (voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Karen'))
             );
-            if (preferredVoice) {
-                utterance.voice = preferredVoice;
-            }
-            
+            if (preferredVoice) utterance.voice = preferredVoice;
             window.speechSynthesis.speak(utterance);
         }
 
-        // Load voices
-        window.speechSynthesis.onvoiceschanged = () => {
-            window.speechSynthesis.getVoices();
-        };
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 
-        // Get current letter based on mode
+        // =============================================
+        // GAME LOGIC
+        // =============================================
+
         function getCurrentLetter() {
-            const data = alphabetData[gameState.currentIndex];
-            if (gameState.mode === 'lowercase') {
-                return data.letter.toLowerCase();
-            } else if (gameState.mode === 'both') {
-                // Alternate between uppercase and lowercase
-                return gameState.currentIndex % 2 === 0 
-                    ? data.letter.toUpperCase() 
-                    : data.letter.toLowerCase();
+            const idx = getActualLetterIndex();
+            const data = alphabetData[idx];
+            if (gameState.mode === 'lowercase') return data.letter.toLowerCase();
+            if (gameState.mode === 'both') {
+                return gameState.currentIndex % 2 === 0 ? data.letter.toUpperCase() : data.letter.toLowerCase();
             }
             return data.letter.toUpperCase();
         }
 
-        // Display current letter
         function displayLetter() {
-            const data = alphabetData[gameState.currentIndex];
+            const idx = getActualLetterIndex();
+            const data = alphabetData[idx];
             const displayLetter = getCurrentLetter();
             const isUppercase = displayLetter === displayLetter.toUpperCase();
-            
+
+            // Set color theme
+            const themeIndex = idx % letterThemes.length;
+            letterDisplayEl.setAttribute('data-theme', letterThemes[themeIndex]);
+
             emojiDisplayEl.textContent = data.emoji;
             targetLetterEl.textContent = displayLetter;
             letterWordEl.textContent = data.word;
-            
-            // Show case indicator
-            if (gameState.mode === 'lowercase') {
-                caseIndicatorEl.textContent = '📝 Lowercase';
-                caseIndicatorEl.style.display = 'block';
-            } else if (gameState.mode === 'both') {
+
+            // Case indicator
+            if (gameState.mode === 'both') {
                 caseIndicatorEl.textContent = isUppercase ? '📝 Uppercase' : '📝 Lowercase';
-                caseIndicatorEl.style.display = 'block';
+            } else if (gameState.mode === 'lowercase') {
+                caseIndicatorEl.textContent = '📝 Lowercase';
             } else {
                 caseIndicatorEl.textContent = '📝 Uppercase';
-                caseIndicatorEl.style.display = 'block';
             }
-            
-            // Speak the letter and word with case information
+            caseIndicatorEl.style.display = 'block';
+
+            // Speak
             let speechText;
             if (gameState.mode === 'lowercase') {
                 speechText = `Lowercase ${data.letter.toLowerCase()}, ${data.word}`;
             } else if (gameState.mode === 'both') {
-                const caseType = isUppercase ? 'Uppercase' : 'Lowercase';
-                speechText = `${caseType} ${displayLetter}, ${data.word}`;
+                speechText = `${isUppercase ? 'Uppercase' : 'Lowercase'} ${displayLetter}, ${data.word}`;
             } else {
                 speechText = `Uppercase ${data.letter} for ${data.word}`;
             }
-            
             speak(speechText);
-            
+
             userInputEl.value = '';
             userInputEl.className = '';
             messageEl.textContent = 'Type the letter!';
             messageEl.className = 'message';
-            
+
             updateStats();
+            updateAlphabetGrid();
         }
 
-        // Update stats display
         function updateStats() {
-            scoreEl.textContent = `${gameState.currentIndex}/26`;
+            scoreEl.textContent = `${gameState.completedCount}/26`;
             currentDisplayEl.textContent = getCurrentLetter();
+            bestStreakEl.textContent = gameState.bestStreak;
+
+            // Progress bar
+            const pct = (gameState.completedCount / 26) * 100;
+            progressBar.style.width = pct + '%';
+            progressText.textContent = pct >= 10 ? `${Math.round(pct)}%` : '';
+
+            // Combo display
+            streakValueEl.textContent = gameState.streak;
+            comboValueEl.textContent = `x${gameState.combo}`;
+            const accuracy = gameState.totalAttempts > 0
+                ? Math.round((gameState.correctAttempts / gameState.totalAttempts) * 100)
+                : 100;
+            accuracyValueEl.textContent = accuracy + '%';
+
+            // Fire effect on combo >= 3
+            if (gameState.combo >= 3) {
+                comboDisplayEl.classList.add('on-fire');
+            } else {
+                comboDisplayEl.classList.remove('on-fire');
+            }
         }
 
-        // Show celebration
+        // Floating score popup
+        function showScorePopup(text, x, y) {
+            const popup = document.createElement('div');
+            popup.className = 'score-popup';
+            popup.textContent = text;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1500);
+        }
+
         function showCelebration() {
             const emoji = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
-            const message = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+            let message = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+
+            // Combo message
+            if (gameState.combo >= 3) {
+                const comboIdx = Math.min(gameState.combo - 1, comboMessages.length - 1);
+                if (comboMessages[comboIdx]) {
+                    message = comboMessages[comboIdx];
+                }
+            }
+
             messageEl.textContent = `${message} ${emoji}`;
             messageEl.className = 'message success';
-            
-            const cleanMessage = message.replace(/[🎉🎊⭐🌟✨🎈🎁🏆👏🎯💫🌈]/g, '').trim();
+
+            const cleanMessage = message.replace(/[🎉🎊⭐🌟✨🎈🎁🏆👏🎯💫🌈💎🚀🔥⚡]/g, '').trim();
             speak(cleanMessage, 1.0);
         }
 
-        // Repeat current letter
         function repeatCurrentLetter() {
             if (!gameState.isPlaying) return;
-            
-            const data = alphabetData[gameState.currentIndex];
+            const idx = getActualLetterIndex();
+            const data = alphabetData[idx];
             const displayLetter = getCurrentLetter();
             const isUppercase = displayLetter === displayLetter.toUpperCase();
-            
+
             let speechText;
             if (gameState.mode === 'lowercase') {
                 speechText = `Lowercase ${data.letter.toLowerCase()}, ${data.word}`;
             } else if (gameState.mode === 'both') {
-                const caseType = isUppercase ? 'Uppercase' : 'Lowercase';
-                speechText = `${caseType} ${displayLetter}, ${data.word}`;
+                speechText = `${isUppercase ? 'Uppercase' : 'Lowercase'} ${displayLetter}, ${data.word}`;
             } else {
                 speechText = `${data.letter} for ${data.word}`;
             }
-            
             speak(speechText);
         }
 
-        // Start game
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // =============================================
+        // TIMER
+        // =============================================
+        function startTimer() {
+            gameState.startTime = Date.now();
+            gameState.elapsedSeconds = 0;
+
+            if (gameState.challenge === 'timer' || gameState.challenge === 'none') {
+                timerDisplayEl.classList.toggle('active', gameState.challenge === 'timer');
+                gameState.timerInterval = setInterval(() => {
+                    gameState.elapsedSeconds = Math.floor((Date.now() - gameState.startTime) / 1000);
+                    const m = Math.floor(gameState.elapsedSeconds / 60);
+                    const s = gameState.elapsedSeconds % 60;
+                    timerDisplayEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                }, 250);
+            } else if (gameState.challenge === 'speed') {
+                timerDisplayEl.classList.add('active');
+                gameState.speedTimeLeft = 60;
+                timerDisplayEl.textContent = '01:00';
+                gameState.speedInterval = setInterval(() => {
+                    gameState.speedTimeLeft--;
+                    const m = Math.floor(gameState.speedTimeLeft / 60);
+                    const s = gameState.speedTimeLeft % 60;
+                    timerDisplayEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+                    if (gameState.speedTimeLeft <= 10 && gameState.speedTimeLeft > 0) {
+                        playCountdownBeep();
+                        timerDisplayEl.style.color = '#ff4444';
+                    }
+
+                    if (gameState.speedTimeLeft <= 0) {
+                        endGameComplete(true);
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopTimers() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            if (gameState.speedInterval) {
+                clearInterval(gameState.speedInterval);
+                gameState.speedInterval = null;
+            }
+        }
+
+        function getTimeString() {
+            const total = gameState.challenge === 'speed'
+                ? 60 - gameState.speedTimeLeft
+                : gameState.elapsedSeconds;
+            const m = Math.floor(total / 60);
+            const s = total % 60;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        // =============================================
+        // START / END / RESET
+        // =============================================
         function startGame() {
             gameState.isPlaying = true;
             gameState.currentIndex = 0;
+            gameState.completedCount = 0;
             gameState.mode = modeSelect.value;
-            
+            gameState.order = orderSelect.value;
+            gameState.challenge = challengeSelect.value;
+            gameState.streak = 0;
+            gameState.bestStreak = 0;
+            gameState.combo = 1;
+            gameState.maxCombo = 1;
+            gameState.totalAttempts = 0;
+            gameState.correctAttempts = 0;
+            gameState.completedLetters = new Set();
+
+            if (gameState.order === 'random') {
+                gameState.shuffledOrder = shuffleArray(Array.from({ length: 26 }, (_, i) => i));
+            }
+
             userInputEl.disabled = false;
             userInputEl.focus();
             startBtn.disabled = true;
             repeatBtn.disabled = false;
             modeSelect.disabled = true;
+            orderSelect.disabled = true;
+            challengeSelect.disabled = true;
             prevBtn.disabled = false;
             nextBtn.disabled = false;
-            
+
             messageEl.textContent = "Let's Go! 🚀";
             messageEl.className = 'message success';
             speak("Let's learn the alphabet!", 1.0);
-            
+
+            startTimer();
+
             setTimeout(() => {
                 messageEl.textContent = '';
                 displayLetter();
             }, 1500);
         }
 
-        // End game
-        function endGameComplete() {
+        function endGameComplete(timeUp = false) {
             gameState.isPlaying = false;
-            
+            stopTimers();
+
             userInputEl.disabled = true;
             startBtn.disabled = false;
             repeatBtn.disabled = true;
             modeSelect.disabled = false;
+            orderSelect.disabled = false;
+            challengeSelect.disabled = false;
             prevBtn.disabled = true;
             nextBtn.disabled = true;
-            
-            targetLetterEl.textContent = '🏆';
-            emojiDisplayEl.textContent = '🎉';
-            letterWordEl.textContent = 'Complete!';
-            messageEl.textContent = `Amazing! You completed A to Z! 🎉`;
-            messageEl.className = 'message success';
-            
-            speak(`Amazing! You completed all letters from A to Z! Congratulations!`, 0.9);
+
+            // Calculate stars
+            const accuracy = gameState.totalAttempts > 0
+                ? (gameState.correctAttempts / gameState.totalAttempts) * 100 : 100;
+            let stars = 1;
+            if (accuracy >= 80) stars = 2;
+            if (accuracy >= 95) stars = 3;
+            if (timeUp && gameState.completedCount < 26) {
+                stars = Math.min(stars, Math.ceil(gameState.completedCount / 13));
+            }
+
+            // Show completion overlay
+            const overlay = completionOverlay;
+            document.getElementById('completionSubtitle').textContent =
+                timeUp && gameState.completedCount < 26
+                    ? `You got ${gameState.completedCount}/26 letters!`
+                    : 'You completed A to Z!';
+            document.getElementById('completionTime').textContent = getTimeString();
+            document.getElementById('completionAccuracy').textContent = Math.round(accuracy) + '%';
+            document.getElementById('completionStreak').textContent = gameState.bestStreak;
+            document.getElementById('completionCombo').textContent = 'x' + gameState.maxCombo;
+
+            // Stars animation
+            const starEls = document.querySelectorAll('#starRating .star');
+            starEls.forEach((s, i) => {
+                s.classList.remove('earned');
+                if (i < stars) {
+                    setTimeout(() => s.classList.add('earned'), 300 + i * 400);
+                }
+            });
+
+            overlay.classList.add('show');
+
+            // Effects
+            playCompletionFanfare();
+            launchFullConfetti();
+
+            const completedText = timeUp && gameState.completedCount < 26
+                ? `Time's up! You got ${gameState.completedCount} out of 26 letters!`
+                : `Amazing! You completed all letters! Congratulations!`;
+            speak(completedText, 0.9);
         }
 
-        // Reset game
         function resetGame() {
             gameState.isPlaying = false;
             gameState.currentIndex = 0;
+            gameState.completedCount = 0;
+            gameState.streak = 0;
+            gameState.bestStreak = 0;
+            gameState.combo = 1;
+            gameState.maxCombo = 1;
+            gameState.totalAttempts = 0;
+            gameState.correctAttempts = 0;
+            gameState.completedLetters = new Set();
             gameState.mode = modeSelect.value;
-            
+
+            stopTimers();
+
             userInputEl.disabled = true;
             userInputEl.value = '';
             userInputEl.className = '';
             startBtn.disabled = false;
             repeatBtn.disabled = true;
             modeSelect.disabled = false;
+            orderSelect.disabled = false;
+            challengeSelect.disabled = false;
             prevBtn.disabled = true;
             nextBtn.disabled = true;
-            
+
             targetLetterEl.textContent = 'Ready?';
             emojiDisplayEl.textContent = '🎯';
             letterWordEl.textContent = '';
             caseIndicatorEl.style.display = 'none';
+            letterDisplayEl.removeAttribute('data-theme');
             messageEl.textContent = '';
             messageEl.className = 'message';
-            
+
+            timerDisplayEl.classList.remove('active');
+            timerDisplayEl.style.color = '#00ff88';
+            timerDisplayEl.textContent = '00:00';
+
+            completionOverlay.classList.remove('show');
+
+            progressBar.style.width = '0%';
+            progressText.textContent = '';
+
             updateStats();
+            updateAlphabetGrid();
         }
 
-        // Check user input
+        // =============================================
+        // INPUT HANDLING
+        // =============================================
         function checkInput() {
             if (!gameState.isPlaying) return;
-            
+
             const userValue = userInputEl.value.trim();
             const targetLetter = getCurrentLetter();
-            
+
             if (userValue.length === 0) return;
-            
-            // Check if input matches (case-insensitive in both mode)
+
+            gameState.totalAttempts++;
+
             if (userValue.toUpperCase() === targetLetter.toUpperCase()) {
+                // CORRECT!
+                gameState.correctAttempts++;
+                gameState.streak++;
+                if (gameState.streak > gameState.bestStreak) gameState.bestStreak = gameState.streak;
+
+                // Combo scaling (every 3 streak = +1 combo)
+                gameState.combo = 1 + Math.floor(gameState.streak / 3);
+                if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+
                 userInputEl.className = 'correct';
+                letterDisplayEl.classList.add('sparkle');
+                setTimeout(() => letterDisplayEl.classList.remove('sparkle'), 600);
+
                 showCelebration();
-                
+                playCorrectSound();
+
+                if (gameState.combo >= 3) {
+                    playComboSound(gameState.combo);
+                }
+
+                // Confetti at input position
+                const rect = userInputEl.getBoundingClientRect();
+                launchConfetti(rect.left + rect.width / 2, rect.top, 15 + gameState.combo * 5);
+
+                // Score popup
+                const points = gameState.combo;
+                showScorePopup(`+${points} ⭐`, rect.left + rect.width / 2 - 30, rect.top - 20);
+
+                // Mark completed
+                const idx = getActualLetterIndex();
+                gameState.completedLetters.add(idx);
+                gameState.completedCount++;
                 gameState.currentIndex++;
-                
+
                 setTimeout(() => {
-                    if (gameState.currentIndex >= 26) {
+                    if (gameState.completedCount >= 26) {
+                        endGameComplete();
+                    } else if (gameState.currentIndex >= 26) {
+                        // All positions exhausted in random mode
                         endGameComplete();
                     } else if (gameState.isPlaying) {
                         displayLetter();
                         userInputEl.focus();
                     }
-                }, 1500);
+                }, 1200);
             } else {
+                // WRONG
+                gameState.streak = 0;
+                gameState.combo = 1;
+
                 userInputEl.className = 'incorrect';
                 messageEl.textContent = 'Oops! Try Again! 💪';
                 messageEl.className = 'message error';
+                playWrongSound();
                 speak('Try again!', 1.0);
-                
+
                 setTimeout(() => {
                     userInputEl.value = '';
                     userInputEl.className = '';
@@ -722,71 +1827,72 @@
                     }
                 }, 1000);
             }
+
+            updateStats();
         }
 
-        // Jump to previous
         function goToPrevious() {
-            if (!gameState.isPlaying) return;
-            if (gameState.currentIndex > 0) {
-                gameState.currentIndex--;
-                displayLetter();
-                userInputEl.focus();
-            }
+            if (!gameState.isPlaying || gameState.currentIndex <= 0) return;
+            gameState.currentIndex--;
+            displayLetter();
+            userInputEl.focus();
         }
 
-        // Jump to next
         function goToNext() {
-            if (!gameState.isPlaying) return;
-            if (gameState.currentIndex < 25) {
-                gameState.currentIndex++;
-                displayLetter();
-                userInputEl.focus();
-            }
+            if (!gameState.isPlaying || gameState.currentIndex >= 25) return;
+            gameState.currentIndex++;
+            displayLetter();
+            userInputEl.focus();
         }
 
-        // Event listeners
-        startBtn.addEventListener('click', startGame);
+        // =============================================
+        // DARK MODE
+        // =============================================
+        function toggleDarkMode() {
+            gameState.isDarkMode = !gameState.isDarkMode;
+            document.body.classList.toggle('dark-mode', gameState.isDarkMode);
+            themeToggle.textContent = gameState.isDarkMode ? '☀️' : '🌙';
+        }
+
+        // =============================================
+        // EVENT LISTENERS
+        // =============================================
+        startBtn.addEventListener('click', () => { 
+            try { initAudio(); } catch(e) { console.log('Audio init skipped'); }
+            startGame(); 
+        });
         repeatBtn.addEventListener('click', repeatCurrentLetter);
         resetBtn.addEventListener('click', resetGame);
         prevBtn.addEventListener('click', goToPrevious);
         nextBtn.addEventListener('click', goToNext);
+        themeToggle.addEventListener('click', toggleDarkMode);
+        playAgainBtn.addEventListener('click', () => { resetGame(); startGame(); });
 
-        // Mode change handler
-        modeSelect.addEventListener('change', () => {
-            resetGame();
-        });
+        modeSelect.addEventListener('change', resetGame);
+        orderSelect.addEventListener('change', resetGame);
+        challengeSelect.addEventListener('change', resetGame);
 
-        // Allow only letters
         userInputEl.addEventListener('keypress', (e) => {
             const isValid = /[a-zA-Z]/.test(e.key);
-            
             if (!isValid && e.key !== 'Enter' && e.key !== 'Backspace') {
                 e.preventDefault();
             }
         });
 
-        // Check input on change
         userInputEl.addEventListener('input', (e) => {
             e.target.value = e.target.value.slice(0, 1);
             checkInput();
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (!gameState.isPlaying) return;
-            
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                goToPrevious();
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                goToNext();
-            }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); goToPrevious(); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); goToNext(); }
         });
 
-        // Initialize display
+        // Initialize
         updateStats();
+        updateAlphabetGrid();
     </script>
 </body>
 </html>
-

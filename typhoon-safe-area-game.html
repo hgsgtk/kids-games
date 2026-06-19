@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌀 Typhoon Safe Area Game 🏠</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Comic Sans MS', sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Sky background that darkens as typhoon approaches */
+        .sky {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 50%, #90EE90 100%);
+            transition: background 2s ease;
+            z-index: 0;
+        }
+
+        .sky.stormy {
+            background: linear-gradient(180deg, #2c3e50 0%, #4a6741 50%, #5a7a52 100%);
+        }
+
+        .sky.typhoon {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #3a4a3e 100%);
+        }
+
+        /* Rain effect */
+        .rain-container {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .rain-container.active {
+            opacity: 1;
+        }
+
+        .raindrop {
+            position: absolute;
+            width: 3px;
+            background: linear-gradient(transparent, rgba(174, 194, 224, 0.6));
+            border-radius: 0 0 2px 2px;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-20px) rotate(15deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(100vh) rotate(15deg); opacity: 0.3; }
+        }
+
+        /* Wind effect */
+        .wind-lines {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 49;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .wind-lines.active {
+            opacity: 1;
+        }
+
+        .wind-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: wind linear infinite;
+        }
+
+        @keyframes wind {
+            0% { transform: translateX(-200px); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translateX(100vw); opacity: 0; }
+        }
+
+        /* Game header */
+        .header {
+            position: relative;
+            z-index: 100;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .header h1 {
+            font-size: clamp(1.4rem, 4vw, 2.5rem);
+            color: #fff;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            background: rgba(255,255,255,0.9);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .timer { color: #e74c3c; }
+        .score { color: #27ae60; }
+        .level-display { color: #8e44ad; }
+        .areas-count { color: #3498db; }
+
+        /* Game area */
+        .game-area {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: calc(100vh - 90px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: none;
+        }
+
+        /* Custom big cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease;
+        }
+
+        .custom-cursor .cursor-circle {
+            width: 100%;
+            height: 100%;
+            border: 4px solid rgba(46, 204, 113, 0.8);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(46, 204, 113, 0.3) 0%, rgba(46, 204, 113, 0.1) 50%, transparent 70%);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.6), inset 0 0 15px rgba(46, 204, 113, 0.4);
+            animation: cursorPulse 1.5s ease-in-out infinite;
+        }
+
+        .custom-cursor .cursor-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+        }
+
+        .custom-cursor .cursor-crosshair-h,
+        .custom-cursor .cursor-crosshair-v {
+            position: absolute;
+            background: rgba(46, 204, 113, 0.6);
+        }
+
+        .custom-cursor .cursor-crosshair-h {
+            top: 50%;
+            left: 8px;
+            right: 8px;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        .custom-cursor .cursor-crosshair-v {
+            left: 50%;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+
+        @keyframes cursorPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .custom-cursor.clicking .cursor-circle {
+            border-color: rgba(241, 196, 15, 1);
+            background: radial-gradient(circle, rgba(241, 196, 15, 0.4) 0%, rgba(241, 196, 15, 0.2) 50%, transparent 70%);
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.8), inset 0 0 20px rgba(241, 196, 15, 0.6);
+            animation: cursorClick 0.3s ease;
+        }
+
+        .custom-cursor.clicking .cursor-center {
+            background: #f39c12;
+            box-shadow: 0 0 15px rgba(241, 196, 15, 1);
+        }
+
+        @keyframes cursorClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* Cursor auto-move animation */
+        .custom-cursor.auto-moving {
+            transition: left 0.6s ease-in-out, top 0.6s ease-in-out;
+        }
+
+        .custom-cursor.auto-moving .cursor-circle {
+            border-color: rgba(241, 196, 15, 0.9);
+            background: radial-gradient(circle, rgba(241, 196, 15, 0.3) 0%, transparent 70%);
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.7);
+            animation: cursorAutoMove 0.4s ease-in-out infinite alternate;
+        }
+
+        @keyframes cursorAutoMove {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2); }
+        }
+
+        /* Safe area (protective square) */
+        .safe-area {
+            position: absolute;
+            border: 4px dashed rgba(46, 204, 113, 0.8);
+            background: rgba(46, 204, 113, 0.15);
+            border-radius: 12px;
+            pointer-events: none;
+            z-index: 15;
+            animation: areaAppear 0.3s ease;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4), inset 0 0 30px rgba(46, 204, 113, 0.2);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .safe-area.empty {
+            border-color: rgba(231, 76, 60, 0.6);
+            background: rgba(231, 76, 60, 0.1);
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .safe-area.removing {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .safe-area::before {
+            content: '🛡️';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        @keyframes areaAppear {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Characters to protect */
+        .character {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            z-index: 30;
+            transition: all 0.3s ease;
+        }
+
+        .character .emoji {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            line-height: 1;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+            animation: charBounce 2s ease-in-out infinite;
+        }
+
+        .character .label {
+            font-size: clamp(0.6rem, 1.8vw, 0.9rem);
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 8px;
+            border-radius: 8px;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        @keyframes charBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .character.protected {
+            animation: charBounce 1s ease-in-out infinite, protectedGlow 2s ease-in-out infinite;
+        }
+
+        .character.protected .emoji::after {
+            content: '✨';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 1.2rem;
+            animation: sparkle 1s ease-in-out infinite;
+        }
+
+        @keyframes protectedGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(46, 204, 113, 0.6)); }
+            50% { filter: drop-shadow(0 0 20px rgba(46, 204, 113, 0.9)); }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1) rotate(180deg); }
+        }
+
+        .character.danger {
+            animation: dangerShake 0.5s ease infinite;
+        }
+
+        @keyframes dangerShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .character.lost {
+            animation: fadeOut 0.5s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: scale(0.5); }
+        }
+
+        /* Click hint */
+        .click-hint {
+            position: absolute;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            animation: hintPulse 1.5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 40;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Screens */
+        .screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .start-screen {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .start-screen h1 {
+            font-size: clamp(2rem, 6vw, 4rem);
+            color: #fff;
+            text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .start-screen .subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .start-screen .instructions {
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            text-align: center;
+            max-width: 420px;
+        }
+
+        .start-screen .instructions p {
+            color: #fff;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            margin: 8px 0;
+        }
+
+        .start-screen .demo-emoji {
+            font-size: 3rem;
+            margin: 4px;
+            display: inline-block;
+            animation: charBounce 1.5s ease-in-out infinite;
+        }
+
+        .start-screen .demo-area {
+            display: inline-block;
+            margin: 12px auto;
+            padding: 20px 30px;
+            border: 4px dashed rgba(46, 204, 113, 0.8);
+            background: rgba(46, 204, 113, 0.2);
+            border-radius: 12px;
+            font-size: 2rem;
+        }
+
+        .btn {
+            padding: 16px 48px;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            color: white;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .result-screen {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .result-box h2 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: 12px;
+        }
+
+        .result-box .result-emoji {
+            font-size: 4rem;
+            margin: 8px 0;
+        }
+
+        .result-box p {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            color: #555;
+            margin: 8px 0;
+        }
+
+        .stars {
+            font-size: 2.5rem;
+            margin: 12px 0;
+        }
+
+        .progress-bar {
+            width: 80%;
+            height: 14px;
+            background: #ddd;
+            border-radius: 7px;
+            margin: 8px auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            border-radius: 7px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            color: #fff;
+            margin-top: 4px;
+        }
+
+        /* Lightning flash */
+        .lightning {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.8);
+            z-index: 60;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .lightning.flash {
+            animation: lightningFlash 0.3s ease;
+        }
+
+        @keyframes lightningFlash {
+            0% { opacity: 0.9; }
+            20% { opacity: 0; }
+            40% { opacity: 0.6; }
+            100% { opacity: 0; }
+        }
+
+        /* Feedback toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 500;
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            font-weight: bold;
+            padding: 16px 32px;
+            border-radius: 20px;
+            pointer-events: none;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .toast.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: rgba(46, 204, 113, 0.95);
+            color: white;
+        }
+
+        .toast.warning {
+            background: rgba(241, 196, 15, 0.95);
+            color: #333;
+        }
+
+        .toast.danger {
+            background: rgba(231, 76, 60, 0.95);
+            color: white;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Back button */
+        .back-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">🏠</a>
+    <div class="sky" id="sky"></div>
+    <div class="rain-container" id="rainContainer"></div>
+    <div class="wind-lines" id="windLines"></div>
+    <div class="lightning" id="lightning"></div>
+    <div class="toast" id="toast"></div>
+
+    <!-- Start Screen -->
+    <div class="screen start-screen" id="startScreen">
+        <h1>🌀 たいふうから まもろう！🏠</h1>
+        <p class="subtitle">Typhoon Safe Area Game</p>
+        <div class="instructions">
+            <p>たいふうが くるよ！🌀💨</p>
+            <p>みんなを まもるため</p>
+            <p><strong>👆クリックして あんぜんエリアを つくろう！</strong></p>
+            <div class="demo-area">
+                👨‍👩‍👧‍👦 🐕 🧸
+            </div>
+            <p>⬆ こんな しかくい エリアが できるよ！</p>
+            <p>みんなが エリアに はいると あんぜん！✨</p>
+            <p>⚠️ だれも いない エリアは きえちゃうよ！</p>
+        </div>
+        <button class="btn btn-start" id="startBtn">あそぶ！🎮</button>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="screen result-screen hidden" id="resultScreen">
+        <div class="result-box">
+            <div class="result-emoji" id="resultEmoji">🎉</div>
+            <h2 id="resultTitle">すごい！</h2>
+            <div class="stars" id="resultStars">⭐⭐⭐</div>
+            <p id="resultMessage">みんな あんぜん！</p>
+            <p id="resultScore"></p>
+            <br>
+            <button class="btn btn-next" id="nextBtn">つぎへ！ ▶</button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="header hidden" id="gameHeader">
+        <h1 id="levelTitle">🌀 たいふうが くるよ！</h1>
+        <div class="status-bar">
+            <div class="status-item timer" id="timerDisplay">⏰ 30</div>
+            <div class="status-item areas-count" id="areasCount">🛡️ 0</div>
+            <div class="status-item score" id="scoreDisplay">⭐ 0</div>
+            <div class="status-item level-display" id="levelDisplay">🌀 レベル 1</div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div class="progress-text" id="progressText">0 / 0 あんぜん！</div>
+    </div>
+
+    <div class="game-area hidden" id="gameArea"></div>
+
+    <!-- Custom Cursor -->
+    <div class="custom-cursor" id="customCursor">
+        <div class="cursor-circle"></div>
+        <div class="cursor-crosshair-h"></div>
+        <div class="cursor-crosshair-v"></div>
+        <div class="cursor-center"></div>
+    </div>
+
+    <script>
+        // ==================== Game Config ====================
+        const LEVELS = [
+            {
+                title: "🌀 かぞくを まもろう！",
+                time: 45,
+                characters: [
+                    { emoji: "👶", label: "あかちゃん" },
+                    { emoji: "👧", label: "おねえちゃん" },
+                    { emoji: "🐕", label: "わんこ" },
+                ],
+                areaSize: 180,
+                stormDelay: 15,
+            },
+            {
+                title: "🌧️ もっと まもろう！",
+                time: 50,
+                characters: [
+                    { emoji: "👶", label: "あかちゃん" },
+                    { emoji: "👦", label: "おにいちゃん" },
+                    { emoji: "👧", label: "おねえちゃん" },
+                    { emoji: "🐈", label: "ねこ" },
+                    { emoji: "🧸", label: "くまさん" },
+                ],
+                areaSize: 160,
+                stormDelay: 12,
+            },
+            {
+                title: "💨 かぜが つよいよ！",
+                time: 55,
+                characters: [
+                    { emoji: "👴", label: "おじいちゃん" },
+                    { emoji: "👵", label: "おばあちゃん" },
+                    { emoji: "🐕", label: "わんこ" },
+                    { emoji: "🐈", label: "ねこ" },
+                    { emoji: "🧸", label: "くまさん" },
+                ],
+                areaSize: 150,
+                stormDelay: 10,
+            },
+            {
+                title: "🌀🌀 おおきい たいふう！",
+                time: 60,
+                characters: [
+                    { emoji: "👶", label: "あかちゃん" },
+                    { emoji: "👧", label: "おねえちゃん" },
+                    { emoji: "👦", label: "おにいちゃん" },
+                    { emoji: "👴", label: "おじいちゃん" },
+                    { emoji: "👵", label: "おばあちゃん" },
+                    { emoji: "🐕", label: "わんこ" },
+                    { emoji: "🐈", label: "ねこ" },
+                    { emoji: "🧸", label: "くまさん" },
+                ],
+                areaSize: 140,
+                stormDelay: 8,
+            },
+            {
+                title: "🌀🌀🌀 スーパー たいふう！",
+                time: 65,
+                characters: [
+                    { emoji: "👶", label: "あかちゃん" },
+                    { emoji: "👧", label: "おねえちゃん" },
+                    { emoji: "👦", label: "おにいちゃん" },
+                    { emoji: "👴", label: "おじいちゃん" },
+                    { emoji: "👵", label: "おばあちゃん" },
+                    { emoji: "🐕", label: "わんこ" },
+                    { emoji: "🐈", label: "ねこ" },
+                    { emoji: "🐦", label: "ことり" },
+                    { emoji: "🧸", label: "くまさん" },
+                    { emoji: "🎒", label: "ランドセル" },
+                ],
+                areaSize: 130,
+                stormDelay: 6,
+            },
+        ];
+
+        const PRAISE = ["すごい！👏", "やったね！🎉", "えらい！💪", "さすが！✨", "ナイス！🌟"];
+
+        // ==================== State ====================
+        let currentLevel = 0;
+        let score = 0;
+        let timeLeft = 0;
+        let timerInterval = null;
+        let protectedCount = 0;
+        let totalCharacters = 0;
+        let stormStarted = false;
+        let stormTimeout = null;
+        let lightningInterval = null;
+        let gameActive = false;
+        let characters = [];
+        let safeAreas = [];
+        let areaCheckInterval = null;
+        let cursorX = 0;
+        let cursorY = 0;
+
+        // Miss-click tracking for auto-move
+        let missClicks = [];           // {x, y, time}
+        const MISS_RADIUS = 100;       // px — clicks within this radius count as "same spot"
+        const MISS_THRESHOLD = 2;      // 2 misses triggers auto-move
+        const MISS_WINDOW = 5000;      // ms — only count recent misses
+        let autoGuideActive = false;
+
+        // ==================== Audio ====================
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let bgMusic = null;
+        let isMusicPlaying = false;
+
+        // Sound effect helper
+        function playSound(type) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            switch(type) {
+                case 'click':
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'protected':
+                    oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.05);
+                    oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+                case 'complete':
+                    [523, 659, 784, 1047].forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.15, audioContext.currentTime + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.2);
+                        osc.start(audioContext.currentTime + i * 0.1);
+                        osc.stop(audioContext.currentTime + i * 0.1 + 0.2);
+                    });
+                    break;
+                case 'storm':
+                    // Gentle wind sound (soft descending tones)
+                    [600, 500, 400].forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.05, audioContext.currentTime + i * 0.15);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3);
+                        osc.start(audioContext.currentTime + i * 0.15);
+                        osc.stop(audioContext.currentTime + i * 0.15 + 0.3);
+                    });
+                    break;
+                case 'lightning':
+                    // Cute sparkle sound instead of scary crack
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(1200, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+                case 'autoguide':
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'warn':
+                    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(250, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+            }
+        }
+
+        // Background music (simple cheerful loop)
+        function startBackgroundMusic() {
+            if (isMusicPlaying) return;
+            isMusicPlaying = true;
+
+            const melody = [523, 587, 659, 587, 523, 587, 659, 784]; // C D E D C D E G
+            let noteIndex = 0;
+
+            function playNote() {
+                if (!isMusicPlaying) return;
+
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'sine';
+                osc.frequency.value = melody[noteIndex % melody.length];
+                gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.4);
+
+                noteIndex++;
+                setTimeout(playNote, 500);
+            }
+
+            playNote();
+        }
+
+        function stopBackgroundMusic() {
+            isMusicPlaying = false;
+        }
+
+        // ==================== DOM ====================
+        const sky = document.getElementById("sky");
+        const rainContainer = document.getElementById("rainContainer");
+        const windLines = document.getElementById("windLines");
+        const lightning = document.getElementById("lightning");
+        const toast = document.getElementById("toast");
+        const startScreen = document.getElementById("startScreen");
+        const resultScreen = document.getElementById("resultScreen");
+        const gameHeader = document.getElementById("gameHeader");
+        const gameArea = document.getElementById("gameArea");
+        const timerDisplay = document.getElementById("timerDisplay");
+        const areasCountDisplay = document.getElementById("areasCount");
+        const scoreDisplay = document.getElementById("scoreDisplay");
+        const levelDisplay = document.getElementById("levelDisplay");
+        const levelTitle = document.getElementById("levelTitle");
+        const progressFill = document.getElementById("progressFill");
+        const progressText = document.getElementById("progressText");
+        const startBtn = document.getElementById("startBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const resultEmoji = document.getElementById("resultEmoji");
+        const resultTitle = document.getElementById("resultTitle");
+        const resultStars = document.getElementById("resultStars");
+        const resultMessage = document.getElementById("resultMessage");
+        const resultScore = document.getElementById("resultScore");
+        const customCursor = document.getElementById("customCursor");
+
+        // ==================== Weather Effects ====================
+        function createRain() {
+            rainContainer.innerHTML = "";
+            for (let i = 0; i < 80; i++) {
+                const drop = document.createElement("div");
+                drop.className = "raindrop";
+                drop.style.left = Math.random() * 100 + "%";
+                drop.style.height = (Math.random() * 20 + 10) + "px";
+                drop.style.animationDuration = (Math.random() * 0.5 + 0.4) + "s";
+                drop.style.animationDelay = Math.random() * 2 + "s";
+                rainContainer.appendChild(drop);
+            }
+        }
+
+        function createWind() {
+            windLines.innerHTML = "";
+            for (let i = 0; i < 15; i++) {
+                const line = document.createElement("div");
+                line.className = "wind-line";
+                line.style.top = Math.random() * 100 + "%";
+                line.style.width = (Math.random() * 150 + 80) + "px";
+                line.style.animationDuration = (Math.random() * 1 + 0.8) + "s";
+                line.style.animationDelay = Math.random() * 3 + "s";
+                windLines.appendChild(line);
+            }
+        }
+
+        function startStorm() {
+            stormStarted = true;
+            sky.classList.add("stormy");
+            rainContainer.classList.add("active");
+            createRain();
+            playSound('storm');
+
+            setTimeout(() => {
+                sky.classList.remove("stormy");
+                sky.classList.add("typhoon");
+                windLines.classList.add("active");
+                createWind();
+                startLightning();
+            }, 5000);
+        }
+
+        function startLightning() {
+            lightningInterval = setInterval(() => {
+                if (!gameActive) return;
+                lightning.classList.add("flash");
+                // Cute sparkle sound, not every time to avoid overwhelming
+                if (Math.random() > 0.5) playSound('lightning');
+                setTimeout(() => lightning.classList.remove("flash"), 400);
+            }, Math.random() * 4000 + 3000);
+        }
+
+        function stopWeather() {
+            sky.className = "sky";
+            rainContainer.className = "rain-container";
+            windLines.className = "wind-lines";
+            rainContainer.innerHTML = "";
+            windLines.innerHTML = "";
+            stormStarted = false;
+            if (lightningInterval) clearInterval(lightningInterval);
+        }
+
+        // ==================== Toast ====================
+        function showToast(text, type = "success") {
+            toast.textContent = text;
+            toast.className = "toast " + type + " show";
+            setTimeout(() => toast.className = "toast", 1200);
+        }
+
+        // ==================== Area Creation & Management ====================
+        function createSafeArea(x, y, size) {
+            const area = document.createElement("div");
+            area.className = "safe-area";
+            area.style.width = size + "px";
+            area.style.height = size + "px";
+            area.style.left = (x - size / 2) + "px";
+            area.style.top = (y - size / 2) + "px";
+
+            gameArea.appendChild(area);
+            const areaData = {
+                element: area,
+                x: x - size / 2,
+                y: y - size / 2,
+                width: size,
+                height: size,
+                protectingCount: 0,
+                emptyTime: 0,
+            };
+            safeAreas.push(areaData);
+
+            playSound('click');
+            updateUI();
+            checkProtection();
+
+            // Visual feedback
+            const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+            showToast(praise, "success");
+        }
+
+        function removeEmptyAreas() {
+            const areasToRemove = [];
+            
+            safeAreas.forEach((area, index) => {
+                if (area.protectingCount === 0) {
+                    area.emptyTime++;
+                    area.element.classList.add("empty");
+                    
+                    // Remove after 2 seconds of being empty (4 checks * 0.5s = 2s)
+                    if (area.emptyTime >= 4) {
+                        areasToRemove.push(index);
+                        area.element.classList.add("removing");
+                    }
+                } else {
+                    area.emptyTime = 0;
+                    area.element.classList.remove("empty");
+                }
+            });
+
+            // Remove areas in reverse order to maintain indices
+            for (let i = areasToRemove.length - 1; i >= 0; i--) {
+                const idx = areasToRemove[i];
+                const area = safeAreas[idx];
+                setTimeout(() => {
+                    if (area.element.parentNode) {
+                        area.element.remove();
+                    }
+                }, 300);
+                safeAreas.splice(idx, 1);
+            }
+
+            if (areasToRemove.length > 0) {
+                updateUI();
+            }
+        }
+
+        function getProtectingArea(charX, charY) {
+            for (const area of safeAreas) {
+                if (
+                    charX >= area.x &&
+                    charX <= area.x + area.width &&
+                    charY >= area.y &&
+                    charY <= area.y + area.height
+                ) {
+                    return area;
+                }
+            }
+            return null;
+        }
+
+        function checkProtection() {
+            let newProtectedCount = 0;
+
+            // Reset all area counts
+            safeAreas.forEach(area => area.protectingCount = 0);
+
+            characters.forEach(char => {
+                const charRect = char.element.getBoundingClientRect();
+                const gameRect = gameArea.getBoundingClientRect();
+                const charX = charRect.left - gameRect.left + charRect.width / 2;
+                const charY = charRect.top - gameRect.top + charRect.height / 2;
+
+                const wasProtected = char.protected;
+                const protectingArea = getProtectingArea(charX, charY);
+                char.protected = protectingArea !== null;
+
+                if (char.protected) {
+                    newProtectedCount++;
+                    if (protectingArea) protectingArea.protectingCount++;
+                    char.element.classList.add("protected");
+                    char.element.classList.remove("danger");
+                    if (!wasProtected) {
+                        score += 10;
+                        playSound('protected');
+                    }
+                } else {
+                    char.element.classList.remove("protected");
+                    if (stormStarted) {
+                        char.element.classList.add("danger");
+                    }
+                }
+            });
+
+            protectedCount = newProtectedCount;
+            updateUI();
+
+            if (protectedCount >= totalCharacters) {
+                // All protected!
+                score += timeLeft * 2;
+                playSound('complete');
+                setTimeout(() => endLevel(true), 800);
+            }
+        }
+
+        // ==================== Cursor Management ====================
+        function updateCursorPosition(clientX, clientY) {
+            cursorX = clientX;
+            cursorY = clientY;
+            customCursor.style.left = clientX + 'px';
+            customCursor.style.top = clientY + 'px';
+        }
+
+        function showCursor() {
+            customCursor.style.display = 'block';
+        }
+
+        function hideCursor() {
+            customCursor.style.display = 'none';
+        }
+
+        function animateClickCursor() {
+            customCursor.classList.add('clicking');
+            setTimeout(() => customCursor.classList.remove('clicking'), 300);
+        }
+
+        // ==================== Miss-Click Tracking & Auto-Guide ====================
+        function findNearestUnprotectedCharacter(clickX, clickY) {
+            const gameRect = gameArea.getBoundingClientRect();
+            let nearest = null;
+            let nearestDist = Infinity;
+
+            characters.forEach(char => {
+                if (char.protected) return;
+                const charRect = char.element.getBoundingClientRect();
+                const cx = charRect.left - gameRect.left + charRect.width / 2;
+                const cy = charRect.top - gameRect.top + charRect.height / 2;
+                const dist = Math.hypot(cx - clickX, cy - clickY);
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearest = { x: cx, y: cy, char };
+                }
+            });
+            return nearest;
+        }
+
+        function isClickEffective(clickX, clickY, areaSize) {
+            // Would this area protect at least one unprotected character?
+            const ax = clickX - areaSize / 2;
+            const ay = clickY - areaSize / 2;
+            const gameRect = gameArea.getBoundingClientRect();
+
+            for (const char of characters) {
+                if (char.protected) continue;
+                const charRect = char.element.getBoundingClientRect();
+                const cx = charRect.left - gameRect.left + charRect.width / 2;
+                const cy = charRect.top - gameRect.top + charRect.height / 2;
+                if (cx >= ax && cx <= ax + areaSize && cy >= ay && cy <= ay + areaSize) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function trackMissClick(clickX, clickY) {
+            const now = Date.now();
+            // Purge old misses
+            missClicks = missClicks.filter(m => now - m.time < MISS_WINDOW);
+            missClicks.push({ x: clickX, y: clickY, time: now });
+
+            // Count misses near this spot
+            const nearby = missClicks.filter(m => Math.hypot(m.x - clickX, m.y - clickY) < MISS_RADIUS);
+
+            if (nearby.length >= MISS_THRESHOLD) {
+                // Trigger auto-guide!
+                missClicks = []; // reset
+                autoGuideCursor(clickX, clickY);
+            }
+        }
+
+        function autoGuideCursor(fromX, fromY) {
+            const nearest = findNearestUnprotectedCharacter(fromX, fromY);
+            if (!nearest) return;
+
+            autoGuideActive = true;
+            const gameRect = gameArea.getBoundingClientRect();
+            const targetClientX = gameRect.left + nearest.x;
+            const targetClientY = gameRect.top + nearest.y;
+
+            playSound('autoguide');
+
+            // Animate cursor to the target
+            customCursor.classList.add('auto-moving');
+            requestAnimationFrame(() => {
+                updateCursorPosition(targetClientX, targetClientY);
+            });
+
+            // After cursor arrives, auto-place an area
+            setTimeout(() => {
+                if (!gameActive) return;
+                customCursor.classList.remove('auto-moving');
+
+                // Place area at the target
+                const level = LEVELS[currentLevel];
+                createSafeArea(nearest.x, nearest.y, level.areaSize);
+                animateClickCursor();
+
+                autoGuideActive = false;
+            }, 700);
+        }
+
+        // ==================== Game Click Handler ====================
+        function handleGameClick(clickX, clickY) {
+            if (!gameActive || autoGuideActive) return;
+
+            const level = LEVELS[currentLevel];
+
+            // Check if this click would protect someone
+            const effective = isClickEffective(clickX, clickY, level.areaSize);
+
+            if (effective) {
+                missClicks = []; // reset misses on a good click
+            } else {
+                trackMissClick(clickX, clickY);
+            }
+
+            animateClickCursor();
+            createSafeArea(clickX, clickY, level.areaSize);
+        }
+
+        function onGameAreaClick(e) {
+            if (!gameActive) return;
+            const rect = gameArea.getBoundingClientRect();
+            handleGameClick(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function onGameAreaTouch(e) {
+            if (!gameActive) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = gameArea.getBoundingClientRect();
+            handleGameClick(touch.clientX - rect.left, touch.clientY - rect.top);
+        }
+
+        // ==================== Game Logic ====================
+        function startGame() {
+            currentLevel = 0;
+            score = 0;
+            startScreen.classList.add("hidden");
+            resultScreen.classList.add("hidden");
+            startBackgroundMusic();
+            startLevel();
+        }
+
+        function startLevel() {
+            const level = LEVELS[currentLevel];
+            if (!level) {
+                showFinalResult();
+                return;
+            }
+
+            // Reset
+            gameActive = true;
+            protectedCount = 0;
+            totalCharacters = level.characters.length;
+            timeLeft = level.time;
+            stormStarted = false;
+            stopWeather();
+            characters = [];
+            safeAreas = [];
+            missClicks = [];
+            autoGuideActive = false;
+
+            // Show game UI
+            gameHeader.classList.remove("hidden");
+            gameArea.classList.remove("hidden");
+            resultScreen.classList.add("hidden");
+
+            levelTitle.textContent = level.title;
+            levelDisplay.textContent = "🌀 レベル " + (currentLevel + 1);
+            updateUI();
+
+            // Clear old elements
+            gameArea.innerHTML = "";
+
+            // Place characters randomly
+            const areaRect = gameArea.getBoundingClientRect();
+            const margin = 80;
+
+            level.characters.forEach((charData, i) => {
+                const el = document.createElement("div");
+                el.className = "character";
+                el.innerHTML = `<span class="emoji">${charData.emoji}</span><span class="label">${charData.label}</span>`;
+
+                // Random position
+                const x = margin + Math.random() * (areaRect.width - margin * 2);
+                const y = margin + Math.random() * (areaRect.height - margin * 2);
+
+                el.style.left = x + "px";
+                el.style.top = y + "px";
+
+                gameArea.appendChild(el);
+                characters.push({
+                    element: el,
+                    protected: false,
+                });
+            });
+
+            // Show click hints for first level
+            if (currentLevel === 0) {
+                const hint = document.createElement("div");
+                hint.className = "click-hint";
+                hint.textContent = "👆 クリック！";
+                hint.style.left = "50%";
+                hint.style.top = "50%";
+                hint.style.transform = "translate(-50%, -50%)";
+                gameArea.appendChild(hint);
+                setTimeout(() => hint.remove(), 3000);
+            }
+
+            // Add event listeners
+            gameArea.addEventListener("click", onGameAreaClick);
+            gameArea.addEventListener("touchstart", onGameAreaTouch, { passive: false });
+
+            // Start timer
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                timeLeft--;
+                timerDisplay.textContent = "⏰ " + timeLeft;
+
+                if (!stormStarted && timeLeft <= level.time - level.stormDelay) {
+                    startStorm();
+                    checkProtection(); // Start showing danger
+                }
+
+                if (timeLeft <= 10) {
+                    timerDisplay.style.color = "#e74c3c";
+                    timerDisplay.style.animation = "hintPulse 0.5s ease infinite alternate";
+                    if (timeLeft === 10) playSound('warn');
+                }
+
+                if (timeLeft <= 0) {
+                    endLevel(protectedCount >= totalCharacters);
+                }
+            }, 1000);
+
+            // Start area check interval (every 0.5 seconds)
+            if (areaCheckInterval) clearInterval(areaCheckInterval);
+            areaCheckInterval = setInterval(() => {
+                if (!gameActive) return;
+                removeEmptyAreas();
+            }, 500);
+
+            // Storm countdown
+            stormTimeout = setTimeout(() => {
+                if (gameActive && !stormStarted) startStorm();
+            }, level.stormDelay * 1000);
+        }
+
+        function endLevel(success) {
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            if (areaCheckInterval) clearInterval(areaCheckInterval);
+            if (stormTimeout) clearTimeout(stormTimeout);
+            stopWeather();
+            stopBackgroundMusic();
+
+            const pct = protectedCount / totalCharacters;
+            let stars, emoji, title, message;
+
+            if (pct >= 1) {
+                stars = "⭐⭐⭐";
+                emoji = "🎉🛡️🎉";
+                title = "かんぺき！";
+                message = "みんな あんぜんだよ！";
+            } else if (pct >= 0.6) {
+                stars = "⭐⭐";
+                emoji = "😊🛡️";
+                title = "がんばったね！";
+                message = protectedCount + "にん あんぜん！";
+            } else {
+                stars = "⭐";
+                emoji = "💪🛡️";
+                title = "もういっかい！";
+                message = "もっと まもれるよ！";
+            }
+
+            resultEmoji.textContent = emoji;
+            resultTitle.textContent = title;
+            resultStars.textContent = stars;
+            resultMessage.textContent = message;
+            resultScore.textContent = "スコア: " + score;
+
+            if (currentLevel < LEVELS.length - 1 && pct >= 0.6) {
+                nextBtn.textContent = "つぎのレベル ▶";
+            } else if (pct < 0.6) {
+                nextBtn.textContent = "もういっかい 🔄";
+            } else {
+                nextBtn.textContent = "もういちど あそぶ 🎮";
+            }
+
+            gameHeader.classList.add("hidden");
+            gameArea.classList.add("hidden");
+            resultScreen.classList.remove("hidden");
+        }
+
+        function showFinalResult() {
+            resultEmoji.textContent = "🏆🎉🏆";
+            resultTitle.textContent = "おめでとう！！";
+            resultStars.textContent = "🌟⭐🌟⭐🌟";
+            resultMessage.textContent = "ぜんぶ クリア！みんな あんぜん！";
+            resultScore.textContent = "トータル スコア: " + score;
+            nextBtn.textContent = "もういちど あそぶ 🎮";
+            currentLevel = LEVELS.length;
+
+            gameHeader.classList.add("hidden");
+            gameArea.classList.add("hidden");
+            resultScreen.classList.remove("hidden");
+        }
+
+        function updateUI() {
+            scoreDisplay.textContent = "⭐ " + score;
+            timerDisplay.textContent = "⏰ " + timeLeft;
+            areasCountDisplay.textContent = "🛡️ " + safeAreas.length;
+            const pct = totalCharacters > 0 ? (protectedCount / totalCharacters) * 100 : 0;
+            progressFill.style.width = pct + "%";
+            progressText.textContent = protectedCount + " / " + totalCharacters + " あんぜん！";
+        }
+
+        // ==================== Event Listeners ====================
+        startBtn.addEventListener("click", startGame);
+        startBtn.addEventListener("touchend", (e) => { e.preventDefault(); startGame(); });
+
+        nextBtn.addEventListener("click", onNext);
+        nextBtn.addEventListener("touchend", (e) => { e.preventDefault(); onNext(); });
+
+        function onNext() {
+            const level = LEVELS[currentLevel];
+            if (!level) {
+                currentLevel = 0;
+                score = 0;
+            } else {
+                const pct = protectedCount / totalCharacters;
+                if (pct >= 0.6) {
+                    currentLevel++;
+                }
+            }
+            startLevel();
+        }
+
+        // ==================== Global Mouse/Touch Tracking ====================
+        document.addEventListener('mousemove', (e) => {
+            updateCursorPosition(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                updateCursorPosition(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                updateCursorPosition(e.touches[0].clientX, e.touches[0].clientY);
+                showCursor();
+            }
+        }, { passive: true });
+
+        document.addEventListener('mouseenter', showCursor);
+        document.addEventListener('mouseleave', hideCursor);
+
+        // Pre-create rain
+        createRain();
+        
+        // Initialize cursor (hide by default)
+        hideCursor();
+    </script>
+</body>
+</html>

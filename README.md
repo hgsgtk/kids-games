@@ -14,6 +14,7 @@ A collection of fun, educational browser-based games for young learners. Feature
 - **Mochitsuki Game** - Japanese New Year mochi pounding game
 - **Kite Flying Number Game** - Traditional kite flying with number learning
 - **Animal Catch Game** - Catch cute animals game
+- **Moomin Valley Adventure** - Help Moomin collect treasures in the magical valley
 
 ## 🚀 Getting Started
 

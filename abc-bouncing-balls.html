@@ -9,6 +9,9 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         body {
@@ -69,6 +72,7 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             transition: all 0.1s ease-out;
+            pointer-events: none;
         }
 
         .ball-canvas.pointer-locked {
@@ -674,15 +678,18 @@
                 return;
             }
             
-            // First click: lock the pointer and spawn a ball
+            // First click: spawn a ball, lock pointer only if not near bottom edge
             const rect = ballCanvas.getBoundingClientRect();
             lockedX = e.clientX - rect.left;
             lockedY = e.clientY - rect.top;
             
             spawnBallAtPosition(lockedX);
             
-            // Request pointer lock for rapid clicking
-            ballCanvas.requestPointerLock();
+            // Only lock pointer if clicking upper 70% of canvas
+            // Avoid locking near the bottom where buttons are close
+            if (lockedY < rect.height * 0.7) {
+                ballCanvas.requestPointerLock();
+            }
         });
 
         // Touch support (no pointer lock needed on touch devices)

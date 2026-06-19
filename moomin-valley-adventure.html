@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏔️ Moomin's Day in Moominvalley 🏔️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Marker Felt', 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E8F4F8 40%, #B8E6B8 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background elements */
+        .background-layer {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 100px;
+            animation: float-across 30s infinite linear;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 100px;
+        }
+
+        .cloud1 { width: 120px; height: 50px; top: 10%; animation-delay: 0s; }
+        .cloud1::before { width: 60px; height: 50px; top: -25px; left: 15px; }
+        .cloud1::after { width: 80px; height: 40px; top: -15px; right: 10px; }
+
+        .cloud2 { width: 100px; height: 40px; top: 25%; animation-delay: 10s; }
+        .cloud2::before { width: 50px; height: 40px; top: -20px; left: 10px; }
+        .cloud2::after { width: 60px; height: 35px; top: -12px; right: 10px; }
+
+        .cloud3 { width: 140px; height: 55px; top: 15%; animation-delay: 20s; }
+        .cloud3::before { width: 70px; height: 55px; top: -28px; left: 20px; }
+        .cloud3::after { width: 85px; height: 45px; top: -18px; right: 15px; }
+
+        @keyframes float-across {
+            from { transform: translateX(-200px); }
+            to { transform: translateX(calc(100vw + 200px)); }
+        }
+
+        /* Sun with rays */
+        .sun {
+            position: fixed;
+            top: 50px;
+            right: 80px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #FFD700, #FFA500);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.6);
+            animation: sun-pulse 4s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        .sun::before {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            top: -10%;
+            left: -10%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.3), transparent 70%);
+            border-radius: 50%;
+            animation: rotate-rays 20s infinite linear;
+        }
+
+        @keyframes sun-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes rotate-rays {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Game container */
+        .game-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-scene {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.5s ease-out;
+        }
+
+        .scene-section {
+            width: 50%;
+            height: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        /* Header */
+        .game-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-title {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: #2E5266;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-item {
+            font-size: 1.3rem;
+            color: #2E5266;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-right: 5px;
+        }
+
+        /* Moomin character - more detailed */
+        .moomin {
+            position: absolute;
+            width: 90px;
+            height: 110px;
+            z-index: 50;
+            transition: left 0.8s ease-out, bottom 0.8s ease-out, transform 0.3s;
+            cursor: pointer;
+        }
+
+        .moomin:hover {
+            transform: scale(1.05);
+        }
+
+        .moomin-body {
+            position: absolute;
+            width: 70px;
+            height: 80px;
+            background: white;
+            border-radius: 45% 45% 40% 40%;
+            border: 4px solid #222;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .moomin-snout {
+            position: absolute;
+            width: 38px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            border: 4px solid #222;
+            border-top: none;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        .moomin-nose {
+            position: absolute;
+            width: 10px;
+            height: 12px;
+            background: #222;
+            border-radius: 50%;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .moomin-eye {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #222;
+            border-radius: 50%;
+            top: 25px;
+        }
+
+        .moomin-eye-left { left: 20px; }
+        .moomin-eye-right { right: 20px; }
+
+        .moomin-tail {
+            position: absolute;
+            width: 24px;
+            height: 38px;
+            background: white;
+            border: 4px solid #222;
+            border-radius: 50%;
+            bottom: 18px;
+            right: -2px;
+            transform: rotate(-25deg);
+        }
+
+        .moomin-ears {
+            position: absolute;
+            width: 100%;
+            top: 8px;
+        }
+
+        .moomin-ear {
+            position: absolute;
+            width: 18px;
+            height: 25px;
+            background: white;
+            border: 4px solid #222;
+            border-radius: 50% 50% 40% 40%;
+            top: 0;
+        }
+
+        .moomin-ear-left { left: 8px; transform: rotate(-15deg); }
+        .moomin-ear-right { right: 8px; transform: rotate(15deg); }
+
+        /* Friends and items */
+        .character {
+            position: absolute;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            z-index: 40;
+        }
+
+        .character:hover {
+            transform: scale(1.15) translateY(-5px);
+        }
+
+        .character-icon {
+            font-size: 60px;
+            display: block;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .character-name {
+            font-size: 0.85rem;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-top: 5px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .item {
+            position: absolute;
+            font-size: 45px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            z-index: 30;
+            animation: item-float 3s infinite ease-in-out;
+        }
+
+        .item:hover {
+            transform: scale(1.3) rotate(15deg);
+            filter: brightness(1.3);
+        }
+
+        @keyframes item-float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        /* Moominhouse */
+        .moominhouse {
+            position: absolute;
+            left: 12%;
+            bottom: 15%;
+            width: 180px;
+            height: 220px;
+            z-index: 20;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .moominhouse:hover {
+            transform: scale(1.05);
+        }
+
+        .house-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 150px;
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            border-radius: 10px;
+            border: 5px solid #2C5F8D;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .house-roof {
+            position: absolute;
+            bottom: 135px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 90px solid transparent;
+            border-right: 90px solid transparent;
+            border-bottom: 70px solid #8B4513;
+            filter: drop-shadow(0 -5px 10px rgba(0, 0, 0, 0.2));
+        }
+
+        .house-chimney {
+            position: absolute;
+            width: 25px;
+            height: 50px;
+            background: #8B4513;
+            border: 3px solid #654321;
+            border-radius: 5px;
+            bottom: 175px;
+            left: 35%;
+        }
+
+        .house-door {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 65px;
+            background: #8B4513;
+            border: 3px solid #654321;
+            border-radius: 8px 8px 3px 3px;
+        }
+
+        .house-window {
+            position: absolute;
+            width: 30px;
+            height: 35px;
+            background: #FFE4B5;
+            border: 3px solid #654321;
+            border-radius: 5px;
+        }
+
+        .window-1 { top: 40px; left: 20px; }
+        .window-2 { top: 40px; right: 20px; }
+        .window-3 { top: 85px; left: 20px; }
+        .window-4 { top: 85px; right: 20px; }
+
+        /* Trees and nature */
+        .tree {
+            position: absolute;
+            z-index: 15;
+        }
+
+        .tree-trunk {
+            width: 35px;
+            height: 80px;
+            background: linear-gradient(to right, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+            border-radius: 8px;
+            margin: 0 auto;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .tree-foliage {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #228B22 0%, #006400 100%);
+            border-radius: 50%;
+            position: relative;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .tree-foliage::before,
+        .tree-foliage::after {
+            content: '';
+            position: absolute;
+            background: radial-gradient(circle, #228B22 0%, #006400 100%);
+            border-radius: 50%;
+        }
+
+        .tree-foliage::before {
+            width: 75px;
+            height: 75px;
+            top: -25px;
+            left: -15px;
+        }
+
+        .tree-foliage::after {
+            width: 75px;
+            height: 75px;
+            top: -25px;
+            right: -15px;
+        }
+
+        /* Bridge between scenes */
+        .bridge {
+            position: absolute;
+            right: 0;
+            bottom: 25%;
+            width: 150px;
+            height: 80px;
+            z-index: 25;
+        }
+
+        .bridge-platform {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background: #8B4513;
+            border: 3px solid #654321;
+            border-radius: 5px;
+        }
+
+        .bridge-rail {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            height: 50px;
+            border-left: 3px solid #654321;
+            border-right: 3px solid #654321;
+        }
+
+        .bridge-post {
+            position: absolute;
+            width: 8px;
+            height: 50px;
+            background: #654321;
+            bottom: 20px;
+        }
+
+        .post-1 { left: 15px; }
+        .post-2 { left: 50%; transform: translateX(-50%); }
+        .post-3 { right: 15px; }
+
+        /* Mountain in background */
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            z-index: 5;
+        }
+
+        .mountain-1 {
+            right: 20%;
+            border-width: 0 150px 250px 150px;
+            border-color: transparent transparent #6B8E99 transparent;
+        }
+
+        .mountain-2 {
+            right: 35%;
+            border-width: 0 120px 200px 120px;
+            border-color: transparent transparent #7A9AA8 transparent;
+        }
+
+        /* Water/river in second scene */
+        .river {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(64, 164, 223, 0.6) 0%, rgba(34, 126, 185, 0.8) 100%);
+            z-index: 3;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 40px,
+                rgba(255, 255, 255, 0.3) 40px,
+                rgba(255, 255, 255, 0.3) 80px
+            );
+            animation: wave-move 3s linear infinite;
+        }
+
+        @keyframes wave-move {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        /* Flowers */
+        .flower {
+            position: absolute;
+            font-size: 28px;
+            z-index: 10;
+            animation: sway 4s infinite ease-in-out;
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        /* Message bubble */
+        .message-bubble {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            z-index: 200;
+            max-width: 500px;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .message-bubble.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .message-bubble h2 {
+            color: #2E5266;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .message-bubble p {
+            color: #555;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .message-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5);
+        }
+
+        .button:active {
+            transform: translateY(-1px);
+        }
+
+        /* Friends collected display */
+        .friends-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            z-index: 90;
+            max-width: 300px;
+        }
+
+        .friends-panel h3 {
+            color: #2E5266;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .friends-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 30px;
+        }
+
+        .friend-icon {
+            opacity: 0.3;
+            filter: grayscale(100%);
+            transition: all 0.3s;
+        }
+
+        .friend-icon.collected {
+            opacity: 1;
+            filter: grayscale(0%);
+            animation: friend-appear 0.5s ease;
+        }
+
+        @keyframes friend-appear {
+            0% { transform: scale(0) rotate(-180deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Navigation hint */
+        .nav-hint {
+            position: absolute;
+            font-size: 3rem;
+            animation: bounce-hint 2s infinite ease-in-out;
+            cursor: pointer;
+            z-index: 60;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes bounce-hint {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            padding: 12px 18px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Particle effects */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+            animation: particle-float 1.5s ease-out forwards;
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-120px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .game-title { font-size: 1.2rem; }
+            .stat-item { font-size: 1rem; }
+            .moominhouse { width: 140px; height: 170px; }
+            .house-body { width: 110px; height: 120px; }
+            .message-bubble { padding: 30px; max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background elements -->
+    <div class="background-layer">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+        <div class="sun"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="control-btn" onclick="window.location.href='index.html'" title="Home">🏠</button>
+        <button class="control-btn" id="soundToggle" title="Sound">🔊</button>
+    </div>
+
+    <!-- Game header -->
+    <div class="game-header">
+        <div class="game-title">🏔️ Moomin's Day in Moominvalley 🏔️</div>
+        <div class="game-stats">
+            <div class="stat-item">
+                <span class="stat-label">Friends:</span>
+                <span id="friendCount">0</span>/6
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Items:</span>
+                <span id="itemCount">0</span>/8
+            </div>
+        </div>
+    </div>
+
+    <!-- Friends panel -->
+    <div class="friends-panel">
+        <h3>Meet Your Friends!</h3>
+        <div class="friends-list">
+            <span class="friend-icon" data-friend="snorkmaiden">🎀</span>
+            <span class="friend-icon" data-friend="snufkin">🎩</span>
+            <span class="friend-icon" data-friend="little-my">😈</span>
+            <span class="friend-icon" data-friend="sniff">🐾</span>
+            <span class="friend-icon" data-friend="moominpappa">📖</span>
+            <span class="friend-icon" data-friend="moominmamma">👜</span>
+        </div>
+    </div>
+
+    <!-- Game wrapper -->
+    <div class="game-wrapper">
+        <div class="game-scene" id="gameScene">
+            <!-- Scene 1: Moominvalley -->
+            <div class="scene-section" id="scene1">
+                <!-- Moominhouse -->
+                <div class="moominhouse" data-interaction="house">
+                    <div class="house-chimney"></div>
+                    <div class="house-roof"></div>
+                    <div class="house-body">
+                        <div class="house-window window-1"></div>
+                        <div class="house-window window-2"></div>
+                        <div class="house-window window-3"></div>
+                        <div class="house-window window-4"></div>
+                        <div class="house-door"></div>
+                    </div>
+                </div>
+
+                <!-- Trees -->
+                <div class="tree" style="left: 5%; bottom: 20%;">
+                    <div class="tree-foliage"></div>
+                    <div class="tree-trunk"></div>
+                </div>
+                <div class="tree" style="right: 25%; bottom: 10%;">
+                    <div class="tree-foliage"></div>
+                    <div class="tree-trunk"></div>
+                </div>
+
+                <!-- Mountains -->
+                <div class="mountain mountain-1"></div>
+                <div class="mountain mountain-2"></div>
+
+                <!-- Flowers -->
+                <div class="flower" style="left: 30%; bottom: 12%;">🌸</div>
+                <div class="flower" style="left: 35%; bottom: 15%; animation-delay: 1s;">🌺</div>
+                <div class="flower" style="left: 25%; bottom: 18%; animation-delay: 2s;">🌼</div>
+                <div class="flower" style="left: 65%; bottom: 8%;">🌻</div>
+                <div class="flower" style="left: 70%; bottom: 12%; animation-delay: 1.5s;">🌷</div>
+
+                <!-- Characters -->
+                <div class="character" data-friend="snorkmaiden" style="left: 45%; bottom: 25%;">
+                    <span class="character-icon">🎀</span>
+                    <span class="character-name">Snorkmaiden</span>
+                </div>
+
+                <div class="character" data-friend="snufkin" style="left: 75%; bottom: 18%;">
+                    <span class="character-icon">🎩</span>
+                    <span class="character-name">Snufkin</span>
+                </div>
+
+                <div class="character" data-friend="little-my" style="left: 55%; bottom: 35%;">
+                    <span class="character-icon">😈</span>
+                    <span class="character-name">Little My</span>
+                </div>
+
+                <!-- Items -->
+                <div class="item" data-item="coffee" style="left: 20%; bottom: 28%;">☕</div>
+                <div class="item" data-item="pancake" style="left: 18%; bottom: 35%;">🥞</div>
+                <div class="item" data-item="jam" style="left: 28%; bottom: 40%;">🍓</div>
+                <div class="item" data-item="book" style="left: 50%; bottom: 15%;">📚</div>
+
+                <!-- Bridge to scene 2 -->
+                <div class="bridge">
+                    <div class="bridge-rail">
+                        <div class="bridge-post post-1"></div>
+                        <div class="bridge-post post-2"></div>
+                        <div class="bridge-post post-3"></div>
+                    </div>
+                    <div class="bridge-platform"></div>
+                </div>
+
+                <!-- Navigation hint -->
+                <div class="nav-hint" style="right: 10%; bottom: 30%;" onclick="moveToScene(2)">➡️</div>
+            </div>
+
+            <!-- Scene 2: Beach & Forest -->
+            <div class="scene-section" id="scene2">
+                <!-- River/Beach -->
+                <div class="river">
+                    <div class="wave"></div>
+                </div>
+
+                <!-- Trees -->
+                <div class="tree" style="left: 15%; bottom: 35%;">
+                    <div class="tree-foliage"></div>
+                    <div class="tree-trunk"></div>
+                </div>
+                <div class="tree" style="right: 15%; bottom: 35%;">
+                    <div class="tree-foliage"></div>
+                    <div class="tree-trunk"></div>
+                </div>
+                <div class="tree" style="left: 40%; bottom: 40%;">
+                    <div class="tree-foliage"></div>
+                    <div class="tree-trunk"></div>
+                </div>
+
+                <!-- Flowers -->
+                <div class="flower" style="left: 25%; bottom: 35%;">🌸</div>
+                <div class="flower" style="left: 30%; bottom: 38%; animation-delay: 0.8s;">🌺</div>
+                <div class="flower" style="left: 60%; bottom: 35%; animation-delay: 1.2s;">🌼</div>
+                <div class="flower" style="left: 65%; bottom: 40%;">🌷</div>
+
+                <!-- Characters -->
+                <div class="character" data-friend="sniff" style="left: 25%; bottom: 42%;">
+                    <span class="character-icon">🐾</span>
+                    <span class="character-name">Sniff</span>
+                </div>
+
+                <div class="character" data-friend="moominpappa" style="left: 55%; bottom: 45%;">
+                    <span class="character-icon">📖</span>
+                    <span class="character-name">Moominpappa</span>
+                </div>
+
+                <div class="character" data-friend="moominmamma" style="left: 70%; bottom: 42%;">
+                    <span class="character-icon">👜</span>
+                    <span class="character-name">Moominmamma</span>
+                </div>
+
+                <!-- Items -->
+                <div class="item" data-item="seashell" style="left: 30%; bottom: 18%;">🐚</div>
+                <div class="item" data-item="fish" style="left: 45%; bottom: 15%;">🐟</div>
+                <div class="item" data-item="flower-crown" style="left: 35%; bottom: 50%;">💐</div>
+                <div class="item" data-item="hat" style="left: 65%; bottom: 52%;">🎩</div>
+
+                <!-- Navigation hint back -->
+                <div class="nav-hint" style="left: 5%; bottom: 30%; transform: scaleX(-1);" onclick="moveToScene(1)">➡️</div>
+            </div>
+        </div>
+
+        <!-- Moomin character -->
+        <div class="moomin" id="moomin">
+            <div class="moomin-ears">
+                <div class="moomin-ear moomin-ear-left"></div>
+                <div class="moomin-ear moomin-ear-right"></div>
+            </div>
+            <div class="moomin-body">
+                <div class="moomin-eye moomin-eye-left"></div>
+                <div class="moomin-eye moomin-eye-right"></div>
+                <div class="moomin-tail"></div>
+            </div>
+            <div class="moomin-snout">
+                <div class="moomin-nose"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message bubble -->
+    <div class="message-bubble" id="messageBubble">
+        <div class="message-icon" id="messageIcon"></div>
+        <h2 id="messageTitle"></h2>
+        <p id="messageText"></p>
+        <button class="button" id="messageButton" onclick="closeMessage()">Continue</button>
+    </div>
+
+    <script>
+        // Game state
+        let currentScene = 1;
+        let friendsFound = new Set();
+        let itemsCollected = new Set();
+        let soundEnabled = true;
+        let moominPosition = { x: 100, y: 200 };
+
+        // DOM elements
+        const moomin = document.getElementById('moomin');
+        const gameScene = document.getElementById('gameScene');
+        const messageBubble = document.getElementById('messageBubble');
+        const messageIcon = document.getElementById('messageIcon');
+        const messageTitle = document.getElementById('messageTitle');
+        const messageText = document.getElementById('messageText');
+        const friendCount = document.getElementById('friendCount');
+        const itemCount = document.getElementById('itemCount');
+        const soundToggle = document.getElementById('soundToggle');
+
+        // Sound system
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(freq, duration, type = 'sine') {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = freq;
+            osc.type = type;
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + duration);
+        }
+
+        function playHappySound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((note, i) => {
+                setTimeout(() => playSound(note, 0.15), i * 100);
+            });
+        }
+
+        function playCollectSound() {
+            playSound(523.25, 0.08);
+            setTimeout(() => playSound(659.25, 0.08), 80);
+            setTimeout(() => playSound(783.99, 0.12), 160);
+        }
+
+        function playVictorySound() {
+            const melody = [523, 587, 659, 698, 784, 880, 988, 1047];
+            melody.forEach((note, i) => {
+                setTimeout(() => playSound(note, 0.15), i * 120);
+            });
+        }
+
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+        });
+
+        // Initialize Moomin position
+        function initMoomin() {
+            moomin.style.left = '100px';
+            moomin.style.bottom = '200px';
+            moominPosition = { x: 100, y: 200 };
+        }
+
+        // Move Moomin
+        function moveMoomin(x, y) {
+            const bounds = moomin.parentElement.getBoundingClientRect();
+            const maxX = bounds.width / 2 - 90;
+            const maxY = bounds.height - 200;
+            
+            const newX = Math.max(50, Math.min(x, maxX));
+            const newY = Math.max(100, Math.min(y, maxY));
+            
+            moomin.style.left = newX + 'px';
+            moomin.style.bottom = newY + 'px';
+            moominPosition = { x: newX, y: newY };
+            
+            playSound(440, 0.03, 'triangle');
+            checkProximity();
+        }
+
+        // Click to move
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.message-bubble, .control-btn, .nav-hint')) return;
+            
+            const rect = moomin.parentElement.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = rect.bottom - e.clientY;
+            
+            // Adjust for current scene
+            const sceneOffset = currentScene === 1 ? 0 : rect.width / 2;
+            const adjustedX = clickX - sceneOffset;
+            
+            if (adjustedX >= 0 && adjustedX <= rect.width / 2) {
+                moveMoomin(adjustedX, clickY);
+            }
+        });
+
+        // Check proximity to interactables
+        function checkProximity() {
+            const moominRect = moomin.getBoundingClientRect();
+            const moominCenterX = moominRect.left + moominRect.width / 2;
+            const moominCenterY = moominRect.top + moominRect.height / 2;
+            
+            // Check characters
+            document.querySelectorAll('.character').forEach(char => {
+                const friendId = char.dataset.friend;
+                if (friendsFound.has(friendId)) return;
+                
+                const charRect = char.getBoundingClientRect();
+                const charCenterX = charRect.left + charRect.width / 2;
+                const charCenterY = charRect.top + charRect.height / 2;
+                
+                const distance = Math.sqrt(
+                    Math.pow(moominCenterX - charCenterX, 2) +
+                    Math.pow(moominCenterY - charCenterY, 2)
+                );
+                
+                if (distance < 100) {
+                    meetFriend(friendId, char);
+                }
+            });
+            
+            // Check items
+            document.querySelectorAll('.item').forEach(item => {
+                const itemId = item.dataset.item;
+                if (itemsCollected.has(itemId)) return;
+                
+                const itemRect = item.getBoundingClientRect();
+                const itemCenterX = itemRect.left + itemRect.width / 2;
+                const itemCenterY = itemRect.top + itemRect.height / 2;
+                
+                const distance = Math.sqrt(
+                    Math.pow(moominCenterX - itemCenterX, 2) +
+                    Math.pow(moominCenterY - itemCenterY, 2)
+                );
+                
+                if (distance < 80) {
+                    collectItem(itemId, item);
+                }
+            });
+            
+            // Check Moominhouse
+            const house = document.querySelector('[data-interaction="house"]');
+            if (house) {
+                const houseRect = house.getBoundingClientRect();
+                const houseCenterX = houseRect.left + houseRect.width / 2;
+                const houseCenterY = houseRect.top + houseRect.height / 2;
+                
+                const distance = Math.sqrt(
+                    Math.pow(moominCenterX - houseCenterX, 2) +
+                    Math.pow(moominCenterY - houseCenterY, 2)
+                );
+                
+                if (distance < 120) {
+                    visitHouse();
+                }
+            }
+        }
+
+        // Friend interactions
+        const friendMessages = {
+            'snorkmaiden': {
+                icon: '🎀',
+                title: 'Hello Snorkmaiden!',
+                text: 'Snorkmaiden smiles warmly. "What a beautiful day for an adventure!" she says.'
+            },
+            'snufkin': {
+                icon: '🎩',
+                title: 'Snufkin the Wanderer',
+                text: 'Snufkin tips his hat. "The best journeys are the ones with good friends," he says thoughtfully.'
+            },
+            'little-my': {
+                icon: '😈',
+                title: 'Little My!',
+                text: 'Little My giggles mischievously. "Let\'s find something fun to do!" she exclaims.'
+            },
+            'sniff': {
+                icon: '🐾',
+                title: 'Sniff appears!',
+                text: 'Sniff is excited! "Have you found any treasures? I love collecting things!" he says.'
+            },
+            'moominpappa': {
+                icon: '📖',
+                title: 'Moominpappa',
+                text: 'Moominpappa looks up from his memoirs. "Ah, adventures! They make the best stories," he says.'
+            },
+            'moominmamma': {
+                icon: '👜',
+                title: 'Moominmamma',
+                text: 'Moominmamma gives you a warm hug. "Would you like some pancakes, dear?" she asks lovingly.'
+            }
+        };
+
+        function meetFriend(friendId, element) {
+            friendsFound.add(friendId);
+            element.remove();
+            
+            // Update friend panel
+            const friendIcon = document.querySelector(`[data-friend="${friendId}"]`);
+            if (friendIcon) {
+                friendIcon.classList.add('collected');
+            }
+            
+            friendCount.textContent = friendsFound.size;
+            
+            // Show message
+            const msg = friendMessages[friendId];
+            showMessage(msg.icon, msg.title, msg.text);
+            
+            playHappySound();
+            createParticles(element.getBoundingClientRect(), '✨💫⭐');
+            
+            // Check if all friends found
+            if (friendsFound.size === 6 && itemsCollected.size === 8) {
+                setTimeout(() => showVictory(), 1500);
+            }
+        }
+
+        // Item interactions
+        const itemMessages = {
+            'coffee': 'A warm cup of coffee! ☕ Perfect for a cozy moment.',
+            'pancake': 'Delicious pancakes! 🥞 Moominmamma makes the best!',
+            'jam': 'Sweet strawberry jam! 🍓 Goes perfectly with pancakes.',
+            'book': 'An adventure book! 📚 Full of exciting stories.',
+            'seashell': 'A beautiful seashell! 🐚 A treasure from the beach.',
+            'fish': 'A fresh fish! 🐟 Dinner will be wonderful tonight.',
+            'flower-crown': 'A lovely flower crown! 💐 Snorkmaiden would love this.',
+            'hat': 'A mysterious hat! 🎩 Perhaps it belongs to someone?'
+        };
+
+        function collectItem(itemId, element) {
+            itemsCollected.add(itemId);
+            element.remove();
+            
+            itemCount.textContent = itemsCollected.size;
+            
+            showMessage('🎁', 'Found an item!', itemMessages[itemId]);
+            
+            playCollectSound();
+            createParticles(element.getBoundingClientRect(), '✨🌟💫⭐');
+            
+            // Check if everything collected
+            if (friendsFound.size === 6 && itemsCollected.size === 8) {
+                setTimeout(() => showVictory(), 1500);
+            }
+        }
+
+        // House interaction
+        let houseVisited = false;
+        function visitHouse() {
+            if (houseVisited) return;
+            houseVisited = true;
+            
+            showMessage(
+                '🏠',
+                'Moominhouse',
+                'Welcome home! The Moominhouse is warm and cozy. Maybe your friends are waiting outside?'
+            );
+            
+            playHappySound();
+        }
+
+        // Move between scenes
+        function moveToScene(sceneNum) {
+            currentScene = sceneNum;
+            const offset = sceneNum === 1 ? 0 : -50;
+            gameScene.style.transform = `translateX(${offset}%)`;
+            
+            // Reset Moomin position for new scene
+            if (sceneNum === 2) {
+                moomin.style.left = '100px';
+                moomin.style.bottom = '200px';
+            } else {
+                moomin.style.left = '100px';
+                moomin.style.bottom = '200px';
+            }
+            
+            playSound(523.25, 0.1);
+        }
+
+        // Message system
+        function showMessage(icon, title, text) {
+            messageIcon.textContent = icon;
+            messageTitle.textContent = title;
+            messageText.textContent = text;
+            messageBubble.classList.add('show');
+        }
+
+        function closeMessage() {
+            messageBubble.classList.remove('show');
+        }
+
+        // Particle effects
+        function createParticles(rect, emojis) {
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const emojiArray = emojis.split('');
+            
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = emojiArray[Math.floor(Math.random() * emojiArray.length)];
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                particle.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                
+                const angle = (Math.PI * 2 * i) / 15;
+                const distance = Math.random() * 80 + 40;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1500);
+            }
+        }
+
+        // Victory
+        function showVictory() {
+            showMessage(
+                '🎉',
+                'What a Wonderful Day!',
+                'You met all your friends and found all the treasures! Moominvalley is full of joy and friendship. Thank you for playing! 💕'
+            );
+            
+            playVictorySound();
+            
+            // Change button to restart
+            document.getElementById('messageButton').textContent = 'Play Again';
+            document.getElementById('messageButton').onclick = () => location.reload();
+        }
+
+        // Initialize game
+        function initGame() {
+            initMoomin();
+            
+            // Show welcome message
+            setTimeout(() => {
+                showMessage(
+                    '🌸',
+                    'Welcome to Moominvalley!',
+                    'Help Moomin explore the valley! Click anywhere to move, meet friends, and collect items. Visit both areas to find everyone! 🏔️'
+                );
+            }, 500);
+        }
+
+        // Start game
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>

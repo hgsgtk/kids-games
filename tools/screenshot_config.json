@@ -49,6 +49,11 @@
       "file": "animal-catch-game.html",
       "wait_time": 2,
       "description": "Animal Catch Game (Bilingual)"
+    },
+    {
+      "file": "moomin-valley-adventure.html",
+      "wait_time": 3,
+      "description": "Moomin Valley Adventure"
     }
   ]
 }

@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⛰️ 山登りナンバーゲーム ⛰️</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', cursive, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* ========== CANVAS / SVG layers ========== */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%; height: 100vh;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* ========== HUD ========== */
+        .game-header {
+            position: absolute;
+            top: 8px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.88);
+            padding: 8px 22px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+            z-index: 100;
+            text-align: center;
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            white-space: nowrap;
+        }
+
+        h1 {
+            font-size: 1.15em;
+            color: #d35400;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.12);
+            margin: 0;
+        }
+
+        .game-stats {
+            display: flex; gap: 10px;
+            align-items: center;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            padding: 5px 14px;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.95em;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+        }
+
+        /* ========== 数字ターゲット ========== */
+        .number-target {
+            position: absolute;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: white;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 14px rgba(0,0,0,0.25);
+            z-index: 5;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.35);
+            border: 3px solid rgba(255,255,255,0.8);
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+        }
+
+        .number-target.next {
+            animation: pulse 1s ease-in-out infinite;
+            border-color: #FFD700;
+            box-shadow: 0 0 18px rgba(255,215,0,0.7), 0 5px 14px rgba(0,0,0,0.25);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .number-target.correct {
+            animation: collect 0.7s ease-out forwards;
+        }
+
+        @keyframes collect {
+            0%   { transform: scale(1); opacity:1; filter:brightness(1); }
+            40%  { transform: scale(1.5) rotate(120deg); filter:brightness(2); }
+            100% { transform: scale(0) rotate(360deg) translateY(-60px); opacity:0; }
+        }
+
+        /* ========== 入力ディスプレイ ========== */
+        .input-display {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.96);
+            padding: 30px 50px;
+            border-radius: 30px;
+            box-shadow: 0 12px 50px rgba(0,0,0,0.35), 0 0 35px rgba(230,126,34,0.4);
+            font-size: clamp(4rem, 10vw, 7rem);
+            font-weight: bold; color: #d35400;
+            min-width: 2.4em; text-align: center;
+            display: none; z-index: 500;
+            border: 4px solid white;
+            font-family: 'Comic Sans MS', cursive;
+            text-shadow: 2px 2px 5px rgba(230,126,34,0.25);
+        }
+
+        .input-display.show { display: block; animation: popIn .25s ease-out; }
+
+        @keyframes popIn {
+            0%   { transform: translate(-50%,-50%) scale(.5); }
+            70%  { transform: translate(-50%,-50%) scale(1.08); }
+            100% { transform: translate(-50%,-50%) scale(1); }
+        }
+
+        .input-display.correct {
+            color: #27ae60; border-color: #27ae60;
+            background: linear-gradient(135deg,#E8F5E9,#A5D6A7);
+            animation: correctPop .55s cubic-bezier(.68,-.55,.265,1.55);
+            box-shadow: 0 12px 50px rgba(39,174,96,.5), 0 0 50px rgba(39,174,96,.6);
+        }
+
+        @keyframes correctPop {
+            0%   { transform: translate(-50%,-50%) scale(.3) rotate(-90deg); }
+            60%  { transform: translate(-50%,-50%) scale(1.25) rotate(8deg); }
+            100% { transform: translate(-50%,-50%) scale(1) rotate(0); }
+        }
+
+        .input-display.wrong {
+            color: #e74c3c; border-color: #e74c3c;
+            background: linear-gradient(135deg,#FFEBEE,#EF9A9A);
+            animation: wrongShake .45s;
+            box-shadow: 0 12px 50px rgba(231,76,60,.5), 0 0 50px rgba(231,76,60,.6);
+        }
+
+        @keyframes wrongShake {
+            0%,100% { transform: translate(-50%,-50%) rotate(0); }
+            15%,45%,75% { transform: translate(-48%,-50%) rotate(-3deg); }
+            30%,60%,90% { transform: translate(-52%,-50%) rotate(3deg); }
+        }
+
+        /* ========== スタート画面 ========== */
+        .start-screen {
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 1000; gap: 20px;
+            background: linear-gradient(180deg,#87CEEB 0%,#E8F4F8 40%,#90EE90 70%,#6B8E23 100%);
+        }
+
+        .start-screen.hidden { display: none; }
+
+        .start-screen h1 {
+            color: #d35400;
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            text-shadow: 3px 3px 8px rgba(0,0,0,0.25);
+            animation: titleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes titleFloat {
+            0%,100% { transform: translateY(0); }
+            50%     { transform: translateY(-8px); }
+        }
+
+        .start-screen .mountain-emoji {
+            font-size: 5rem;
+            animation: titleFloat 4s ease-in-out infinite;
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+        }
+
+        .mode-selector {
+            background: rgba(255,255,255,0.95);
+            padding: 30px 40px; border-radius: 25px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            border: 3px solid white; text-align: center;
+        }
+
+        .mode-selector label {
+            font-size: 1.5rem; font-weight: bold;
+            color: #d35400; display: block; margin-bottom: 12px;
+        }
+
+        .mode-buttons {
+            display: flex; gap: 10px;
+            flex-wrap: wrap; justify-content: center;
+        }
+
+        .mode-btn {
+            padding: 14px 24px; font-size: 1.2rem; font-weight: bold;
+            background: linear-gradient(135deg,#e67e22,#d35400);
+            color: white; border: 3px solid transparent;
+            border-radius: 18px; cursor: pointer;
+            transition: all .25s;
+            box-shadow: 0 5px 16px rgba(230,126,34,.25);
+            font-family: inherit;
+        }
+
+        .mode-btn:hover { transform: translateY(-3px) scale(1.04); }
+        .mode-btn:active { transform: translateY(-1px) scale(1.01); }
+
+        .mode-btn.selected {
+            border-color: #FFD700;
+            background: linear-gradient(135deg,#f39c12,#e67e22);
+            box-shadow: 0 0 18px rgba(243,156,18,.5), 0 5px 16px rgba(230,126,34,.3);
+            transform: scale(1.06);
+        }
+
+        .start-btn {
+            padding: 18px 55px; font-size: 1.8rem; font-weight: bold;
+            background: linear-gradient(135deg,#27ae60,#2ecc71);
+            color: white; border: 3px solid white;
+            border-radius: 40px; cursor: pointer;
+            transition: all .25s;
+            box-shadow: 0 8px 30px rgba(39,174,96,.35);
+            font-family: inherit; margin-top: 8px;
+        }
+
+        .start-btn:hover { transform: translateY(-5px) scale(1.06); }
+        .start-btn:active { transform: translateY(-2px) scale(1.03); }
+
+        /* ========== モーダル ========== */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.65);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+
+        .modal-content {
+            background: white; padding: 45px;
+            border-radius: 28px; text-align: center;
+            box-shadow: 0 18px 55px rgba(0,0,0,.35);
+            max-width: 480px;
+        }
+
+        .modal-content h2 { font-size: 2.6em; color: #e67e22; margin-bottom: 15px; }
+        .modal-content p  { font-size: 1.4em; color: #34495e; margin: 12px 0; }
+
+        .modal-button {
+            background: linear-gradient(135deg,#e67e22,#d35400);
+            color: white; border: none;
+            padding: 14px 35px; font-size: 1.4em;
+            border-radius: 14px; cursor: pointer;
+            margin: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.18);
+            transition: transform .2s; font-family: inherit;
+        }
+
+        .modal-button:hover  { transform: scale(1.08); }
+        .modal-button:active { transform: scale(.96); }
+
+        /* ========== ヒント ========== */
+        .hint-text {
+            position: fixed; bottom: 18px; left: 50%;
+            transform: translateX(-50%);
+            color: white; font-size: 1.1rem;
+            text-shadow: 0 2px 6px rgba(0,0,0,.5);
+            font-weight: bold;
+            background: rgba(0,0,0,.35);
+            padding: 10px 22px; border-radius: 16px;
+            backdrop-filter: blur(4px);
+            z-index: 100; pointer-events: none;
+        }
+
+        /* ========== パーティクル ========== */
+        .fx-particle {
+            position: fixed;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            pointer-events: none; z-index: 20;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1em; }
+            .game-header {
+                padding: 6px 12px;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .stat-box { font-size: .8em; padding: 4px 8px; }
+            .game-stats { gap: 6px; }
+            .mode-btn { padding: 10px 16px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- background canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- ========== スタート画面 ========== -->
+    <div class="start-screen" id="start-screen">
+        <div class="mountain-emoji">🏔️</div>
+        <h1>⛰️ 山登りナンバーゲーム ⛰️</h1>
+        <div class="mode-selector">
+            <label>🎯 どこまで登る？</label>
+            <div class="mode-buttons">
+                <button class="mode-btn selected" data-max="20" onclick="selectMode(this)">1〜20<br><small>🌿 ふもと</small></button>
+                <button class="mode-btn" data-max="30" onclick="selectMode(this)">1〜30<br><small>🌲 森ゾーン</small></button>
+                <button class="mode-btn" data-max="50" onclick="selectMode(this)">1〜50<br><small>⛰️ 山頂へ</small></button>
+                <button class="mode-btn" data-max="100" onclick="selectMode(this)">1〜100<br><small>🏔️ 大冒険</small></button>
+            </div>
+        </div>
+        <button class="start-btn" onclick="startGame()">🥾 登山スタート！</button>
+    </div>
+
+    <!-- ========== ゲーム画面 ========== -->
+    <div class="game-container" id="game-container" style="display:none;">
+        <div class="game-header">
+            <h1>⛰️ 山登りナンバーゲーム ⛰️</h1>
+            <div class="game-stats">
+                <div class="stat-box">🎯 <span id="current-number">1</span> を入力！</div>
+                <div class="stat-box">📊 <span id="progress">0</span> / <span id="total-numbers">20</span></div>
+                <div class="stat-box">🏔️ <span id="altitude">0</span>m</div>
+            </div>
+        </div>
+
+        <div id="number-container"></div>
+
+        <div class="hint-text" id="hint-text">
+            ⌨️ キーボードで数字を1桁ずつ入力！ | Backspaceでやり直し
+        </div>
+    </div>
+
+    <!-- 入力ディスプレイ -->
+    <div class="input-display" id="input-display"></div>
+
+    <!-- ゲーム完了モーダル -->
+    <div class="modal" id="game-over-modal">
+        <div class="modal-content">
+            <h2>🎉 山頂制覇！ 🎉</h2>
+            <p style="font-size:3.5em;margin:8px 0;">🏔️</p>
+            <p>到達高度: <strong id="final-altitude">0</strong>m</p>
+            <p>モード: 1〜<strong id="final-mode">20</strong></p>
+            <button class="modal-button" onclick="backToMenu()">🏠 モード選択へ</button>
+            <button class="modal-button" onclick="replayGame()" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">🔄 もう一度</button>
+        </div>
+    </div>
+
+<script>
+// =============================================================
+//  GAME STATE (must be first – referenced by resize/draw)
+// =============================================================
+let maxNumber = 20;
+let currentNumber = 1;
+let altitude = 0;
+let gameActive = false;
+let numberElements = [];
+const maxAltitude = 3776; // Mt. Fuji!
+
+let currentInput = '';
+let remainingDigits = [];
+let inputHideTimeout = null;
+
+// =============================================================
+//  CANVAS  – mountain, trail, climber, sky, weather
+// =============================================================
+const C = document.getElementById('bg-canvas');
+const ctx = C.getContext('2d');
+let W, H;
+
+function resize() {
+    W = C.width  = window.innerWidth;
+    H = C.height = window.innerHeight;
+    // reposition number targets if game is active
+    if (gameActive && numberElements.length > 0) {
+        repositionNumbers();
+    }
+}
+window.addEventListener('resize', resize);
+resize();
+
+function repositionNumbers() {
+    const sz = maxNumber <= 20 ? 60 : maxNumber <= 30 ? 52 : maxNumber <= 50 ? 44 : 36;
+    for (let i = 0; i < numberElements.length; i++) {
+        const el = numberElements[i];
+        if (el.style.display === 'none') continue;
+        const t = (i + 1) / maxNumber;
+        const pos = trailPos(t * 0.95 + 0.02);
+        // keep the same random offset stored in data attribute
+        let offsetX = parseFloat(el.dataset.offsetX);
+        if (isNaN(offsetX)) offsetX = 0;
+        el.style.left = (pos.x + offsetX - sz / 2) + 'px';
+        el.style.top  = (pos.y - sz / 2 - 15) + 'px';
+    }
+}
+
+// ---------- mode palettes ----------
+const PALETTES = {
+    20: {
+        sky:  ['#87CEEB','#B4E4F8','#d0f0ff'],
+        mtFar: '#6aaa3a', mtMid: '#7CB342', mtMain: '#558B2F',
+        snow: '#ffffff', trail: '#8B6C42',
+        grass: '#7CB342', tree: '#2E7D32', treeLight: '#4CAF50',
+        sun: true, stars: false, moon: false,
+        fogColor: 'rgba(255,255,255,0.08)',
+        particleColors: ['#FFD700','#FFA500','#FF8C00','#90EE90'],
+    },
+    30: {
+        sky:  ['#FF7E47','#FFB380','#FFD7A1'],
+        mtFar: '#A68A5C', mtMid: '#8B6F47', mtMain: '#6D4C2A',
+        snow: '#FFE4C4', trail: '#5C3D1E',
+        grass: '#8B7D3C', tree: '#5D4E1E', treeLight: '#8B7D3C',
+        sun: true, stars: false, moon: false,
+        fogColor: 'rgba(255,165,0,0.06)',
+        particleColors: ['#FF9A56','#FFB380','#FFA500','#FFD700'],
+    },
+    50: {
+        sky:  ['#0B1931','#1B3A5C','#2C5F8D'],
+        mtFar: '#3A5068', mtMid: '#2E4053', mtMain: '#1C2833',
+        snow: '#D5E8F0', trail: '#5D6D7E',
+        grass: '#2E4053', tree: '#1C3B2A', treeLight: '#2E5B3A',
+        sun: false, stars: true, moon: true,
+        fogColor: 'rgba(100,149,237,0.04)',
+        particleColors: ['#4682B4','#5F9EA0','#6495ED','#87CEEB'],
+    },
+    100: {
+        sky:  ['#020111','#0B0C2A','#1A1040'],
+        mtFar: '#1A1A3E', mtMid: '#12122A', mtMain: '#0A0A1A',
+        snow: '#B0C4DE', trail: '#4A4A6A',
+        grass: '#0A0A1A', tree: '#0F1F15', treeLight: '#1A3325',
+        sun: false, stars: true, moon: true,
+        fogColor: 'rgba(75,0,130,0.04)',
+        particleColors: ['#ADD8E6','#87CEEB','#B0E0E6','#E6E6FA'],
+    },
+};
+
+let pal = PALETTES[20];
+
+// ---------- mountain path points (zigzag trail going up) ----------
+// trail is normalised 0-1 coords, recomputed on resize
+let trailPoints = [];
+
+function buildTrail() {
+    trailPoints = [];
+    const segs = 30;
+    const yBottom = 0.92;  // base of mountain
+    const yTop = 0.14;     // just below snow cap
+    for (let i = 0; i <= segs; i++) {
+        const t = i / segs;                       // 0 (base) → 1 (peak)
+        const y = yBottom - t * (yBottom - yTop); // screen y: bottom → top
+        const sway = Math.sin(t * Math.PI * 4) * (0.12 - t * 0.08);
+        const x = 0.5 + sway;
+        trailPoints.push({ x, y, t });
+    }
+}
+buildTrail();
+
+// ---------- stars (for night modes) ----------
+let stars = [];
+function buildStars() {
+    stars = [];
+    for (let i = 0; i < 120; i++) {
+        stars.push({
+            x: Math.random(),
+            y: Math.random() * 0.55,
+            r: 0.5 + Math.random() * 1.5,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.5 + Math.random() * 1.5,
+        });
+    }
+}
+buildStars();
+
+// ---------- shooting stars ----------
+let shootingStars = [];
+function spawnShootingStar() {
+    shootingStars.push({
+        x: Math.random() * 0.6 + 0.1,
+        y: Math.random() * 0.3,
+        vx: 0.003 + Math.random() * 0.004,
+        vy: 0.002 + Math.random() * 0.003,
+        life: 1,
+    });
+}
+
+// ---------- clouds ----------
+let clouds = [];
+function buildClouds() {
+    clouds = [];
+    for (let i = 0; i < 6; i++) {
+        clouds.push({
+            x: Math.random(),
+            y: 0.08 + Math.random() * 0.25,
+            w: 0.08 + Math.random() * 0.1,
+            speed: 0.0001 + Math.random() * 0.0002,
+            opacity: 0.3 + Math.random() * 0.35,
+        });
+    }
+}
+buildClouds();
+
+// ---------- birds ----------
+let birds = [];
+function buildBirds() {
+    birds = [];
+    for (let i = 0; i < 4; i++) {
+        birds.push({
+            x: Math.random(),
+            y: 0.12 + Math.random() * 0.22,
+            speed: 0.0003 + Math.random() * 0.0003,
+            wingPhase: Math.random() * Math.PI * 2,
+            wingSpeed: 3 + Math.random() * 3,
+            size: 8 + Math.random() * 6,
+        });
+    }
+}
+buildBirds();
+
+// ---------- trees ----------
+let trees = [];
+function buildTrees() {
+    trees = [];
+    const count = 28;
+    for (let i = 0; i < count; i++) {
+        const t = i / count;                         // 0..1 along the trail altitude
+        if (t > 0.75) continue;                      // no trees near peak
+        const baseY = 1 - t;
+        const side = (i % 2 === 0) ? -1 : 1;
+        const spread = 0.15 - t * 0.08;
+        const xOff = side * (0.03 + Math.random() * spread);
+        trees.push({
+            x: 0.5 + xOff + Math.sin(t * 12) * 0.04,
+            y: baseY,
+            h: 20 + Math.random() * 25 - t * 15,
+            t,
+        });
+    }
+}
+buildTrees();
+
+// ---------- climber position ----------
+let climberT = 0;  // 0 = base, 1 = peak
+
+// ---------- flag ----------
+let flagWave = 0;
+
+// ========== DRAW ==========
+let frameCount = 0;
+let lastShootingStar = 0;
+
+function draw() {
+    frameCount++;
+    const now = performance.now() / 1000;
+
+    // sky gradient
+    const skyGrd = ctx.createLinearGradient(0, 0, 0, H);
+    pal.sky.forEach((c, i) => skyGrd.addColorStop(i / (pal.sky.length - 1), c));
+    ctx.fillStyle = skyGrd;
+    ctx.fillRect(0, 0, W, H);
+
+    // stars
+    if (pal.stars) {
+        stars.forEach(s => {
+            const twinkle = 0.3 + 0.7 * ((Math.sin(now * s.speed + s.phase) + 1) / 2);
+            ctx.globalAlpha = twinkle;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        // shooting stars
+        if (now - lastShootingStar > 2.5 + Math.random() * 3) {
+            spawnShootingStar();
+            lastShootingStar = now;
+        }
+        shootingStars.forEach(ss => {
+            ss.x += ss.vx;
+            ss.y += ss.vy;
+            ss.life -= 0.012;
+            if (ss.life > 0) {
+                ctx.globalAlpha = ss.life;
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(ss.x * W, ss.y * H);
+                ctx.lineTo((ss.x - ss.vx * 12) * W, (ss.y - ss.vy * 12) * H);
+                ctx.stroke();
+            }
+        });
+        shootingStars = shootingStars.filter(s => s.life > 0);
+        ctx.globalAlpha = 1;
+    }
+
+    // sun or moon
+    if (pal.sun) {
+        const sx = W * 0.82, sy = H * 0.1 + Math.sin(now * 0.3) * 8;
+        const sunGrd = ctx.createRadialGradient(sx, sy, 0, sx, sy, 50);
+        sunGrd.addColorStop(0, '#FFF8E1');
+        sunGrd.addColorStop(0.4, '#FFD54F');
+        sunGrd.addColorStop(1, 'rgba(255,183,77,0)');
+        ctx.fillStyle = sunGrd;
+        ctx.fillRect(sx - 60, sy - 60, 120, 120);
+        ctx.fillStyle = '#FDD835';
+        ctx.beginPath();
+        ctx.arc(sx, sy, 28, 0, Math.PI * 2);
+        ctx.fill();
+        // rays
+        for (let i = 0; i < 12; i++) {
+            const a = (i / 12) * Math.PI * 2 + now * 0.2;
+            ctx.strokeStyle = 'rgba(255,235,59,0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(sx + Math.cos(a) * 32, sy + Math.sin(a) * 32);
+            ctx.lineTo(sx + Math.cos(a) * (42 + Math.sin(now * 2 + i) * 6), sy + Math.sin(a) * (42 + Math.sin(now * 2 + i) * 6));
+            ctx.stroke();
+        }
+    }
+    if (pal.moon) {
+        const mx = W * 0.82, my = H * 0.1 + Math.sin(now * 0.2) * 6;
+        const moonGrd = ctx.createRadialGradient(mx, my, 0, mx, my, 35);
+        moonGrd.addColorStop(0, '#FFF9C4');
+        moonGrd.addColorStop(0.6, '#FFF176');
+        moonGrd.addColorStop(1, 'rgba(255,245,157,0)');
+        ctx.fillStyle = moonGrd;
+        ctx.fillRect(mx - 50, my - 50, 100, 100);
+        ctx.fillStyle = '#FFF9C4';
+        ctx.beginPath();
+        ctx.arc(mx, my, 22, 0, Math.PI * 2);
+        ctx.fill();
+        // craters
+        ctx.fillStyle = 'rgba(200,200,180,0.3)';
+        ctx.beginPath(); ctx.arc(mx - 6, my - 5, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(mx + 8, my + 4, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(mx + 2, my + 9, 2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // clouds
+    clouds.forEach(c => {
+        c.x += c.speed;
+        if (c.x > 1.15) c.x = -0.15;
+        ctx.globalAlpha = c.opacity;
+        const cx = c.x * W, cy = c.y * H, cw = c.w * W;
+        const ch = cw * 0.35;
+        ctx.fillStyle = pal.stars ? 'rgba(150,150,180,0.25)' : 'rgba(255,255,255,0.85)';
+        // fluffy cloud shape
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, cw * 0.5, ch * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cx - cw * 0.25, cy + ch * 0.1, cw * 0.3, ch * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cx + cw * 0.28, cy + ch * 0.05, cw * 0.33, ch * 0.55, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    // ---------- far mountains ----------
+    drawMountainRange(0.45, 0.55, pal.mtFar, 0.07, 5);
+    // ---------- mid mountains ----------
+    drawMountainRange(0.35, 0.65, pal.mtMid, 0.09, 7);
+
+    // ---------- main mountain ----------
+    drawMainMountain();
+
+    // ---------- trees ----------
+    trees.forEach(tr => drawTree(tr.x * W, tr.y * H, tr.h, now));
+
+    // ---------- trail ----------
+    drawTrail();
+
+    // ---------- climber ----------
+    drawClimber(now);
+
+    // ---------- summit flag ----------
+    if (climberT > 0.95) {
+        flagWave += 0.05;
+        drawFlag(now);
+    }
+
+    // birds
+    birds.forEach(b => {
+        b.x += b.speed;
+        if (b.x > 1.12) b.x = -0.12;
+        b.wingPhase += 0.08;
+        drawBird(b, now);
+    });
+
+    // fog overlay
+    if (pal.fogColor) {
+        ctx.fillStyle = pal.fogColor;
+        ctx.fillRect(0, 0, W, H);
+    }
+
+    requestAnimationFrame(draw);
+}
+
+// ---------- mountain ranges ----------
+function drawMountainRange(yBase, yNoise, color, amplitude, peaks) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 3) {
+        const nx = x / W;
+        let y = yBase + 0.05; // shift down to match main mountain
+        for (let p = 1; p <= peaks; p++) {
+            y -= amplitude * Math.sin(nx * Math.PI * p * 1.3 + p * 2) / p;
+        }
+        ctx.lineTo(x, y * H);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+}
+
+// ---------- main mountain with realistic shape ----------
+function drawMainMountain() {
+    const peakX = W * 0.5, peakY = H * 0.12;
+    const baseL = W * 0.12, baseR = W * 0.88;
+    const baseY = H * 0.95;
+
+    // main body gradient
+    const grd = ctx.createLinearGradient(peakX, peakY, peakX, baseY);
+    grd.addColorStop(0, pal.snow);
+    grd.addColorStop(0.08, pal.mtMain);
+    grd.addColorStop(0.35, pal.mtMid);
+    grd.addColorStop(0.7, pal.grass);
+    grd.addColorStop(1, pal.grass);
+    ctx.fillStyle = grd;
+
+    ctx.beginPath();
+    ctx.moveTo(baseL, baseY);
+    // left ridge
+    ctx.bezierCurveTo(
+        W * 0.2, H * 0.55,
+        W * 0.32, H * 0.25,
+        peakX, peakY
+    );
+    // right ridge
+    ctx.bezierCurveTo(
+        W * 0.68, H * 0.25,
+        W * 0.8, H * 0.55,
+        baseR, baseY
+    );
+    ctx.closePath();
+    ctx.fill();
+
+    // rocky ridgelines / texture (deterministic)
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 15; i++) {
+        const t = 0.1 + i * 0.055;
+        const ly = peakY + (baseY - peakY) * t;
+        const hw = (baseR - baseL) * t * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(peakX - hw, ly);
+        for (let j = 0; j < 8; j++) {
+            const jx = peakX - hw + (hw * 2) * (j / 7);
+            const seed = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
+            const jy = ly + (seed - Math.floor(seed) - 0.5) * 6;
+            ctx.lineTo(jx, jy);
+        }
+        ctx.stroke();
+    }
+
+    // snow cap with glow
+    ctx.fillStyle = pal.snow;
+    ctx.beginPath();
+    ctx.moveTo(peakX - 45, peakY + 55);
+    ctx.quadraticCurveTo(peakX - 15, peakY - 5, peakX, peakY);
+    ctx.quadraticCurveTo(peakX + 15, peakY - 5, peakX + 45, peakY + 55);
+    // jagged snow line
+    for (let i = 0; i < 6; i++) {
+        const sx = peakX + 45 - (90) * ((i + 1) / 7);
+        const sy = peakY + 55 + Math.sin(i * 2.3) * 12 + 8;
+        ctx.lineTo(sx, sy);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // snow glow
+    ctx.save();
+    ctx.shadowColor = pal.stars ? 'rgba(173,216,230,0.5)' : 'rgba(255,255,255,0.4)';
+    ctx.shadowBlur = 18;
+    ctx.fill();
+    ctx.restore();
+}
+
+// ---------- trail ----------
+function drawTrail() {
+    ctx.strokeStyle = pal.trail;
+    ctx.lineWidth = 6;
+    ctx.setLineDash([12, 8]);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    trailPoints.forEach((p, i) => {
+        const x = p.x * W, y = p.y * H;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // trail shadow
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 10;
+    ctx.setLineDash([12, 8]);
+    ctx.beginPath();
+    trailPoints.forEach((p, i) => {
+        const x = p.x * W + 2, y = p.y * H + 3;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+// ---------- tree drawing ----------
+function drawTree(x, y, h, now) {
+    const sway = Math.sin(now * 1.5 + x * 0.01) * 2;
+
+    // trunk
+    ctx.fillStyle = '#5D4037';
+    ctx.fillRect(x - 3, y - h * 0.4, 6, h * 0.45);
+
+    // layers of foliage
+    for (let i = 0; i < 3; i++) {
+        const ly = y - h * 0.35 - i * h * 0.22;
+        const lw = (h * 0.35 - i * 5);
+        ctx.fillStyle = i === 0 ? pal.tree : pal.treeLight;
+        ctx.beginPath();
+        ctx.moveTo(x + sway, ly - h * 0.25);
+        ctx.lineTo(x - lw / 2, ly);
+        ctx.lineTo(x + lw / 2, ly);
+        ctx.closePath();
+        ctx.fill();
+    }
+}
+
+// ---------- bird drawing ----------
+function drawBird(b, now) {
+    const x = b.x * W, y = b.y * H;
+    const wing = Math.sin(now * b.wingSpeed + b.wingPhase) * 8;
+    const s = b.size;
+
+    ctx.strokeStyle = pal.stars ? 'rgba(200,200,220,0.7)' : 'rgba(40,40,40,0.7)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    // left wing
+    ctx.beginPath();
+    ctx.moveTo(x - s, y + wing);
+    ctx.quadraticCurveTo(x - s * 0.4, y - Math.abs(wing) * 0.5, x, y);
+    ctx.stroke();
+    // right wing
+    ctx.beginPath();
+    ctx.moveTo(x + s, y + wing);
+    ctx.quadraticCurveTo(x + s * 0.4, y - Math.abs(wing) * 0.5, x, y);
+    ctx.stroke();
+}
+
+// ---------- get position on trail at t (0..1) ----------
+function trailPos(t) {
+    t = Math.max(0, Math.min(1, t));
+    const idx = t * (trailPoints.length - 1);
+    const i0 = Math.floor(idx);
+    const i1 = Math.min(i0 + 1, trailPoints.length - 1);
+    const frac = idx - i0;
+    const p0 = trailPoints[i0], p1 = trailPoints[i1];
+    return {
+        x: (p0.x + (p1.x - p0.x) * frac) * W,
+        y: (p0.y + (p1.y - p0.y) * frac) * H,
+    };
+}
+
+// ---------- draw realistic climber ----------
+function drawClimber(now) {
+    const pos = trailPos(climberT);
+    const x = pos.x, y = pos.y;
+    const scale = 1.2;
+    const walk = Math.sin(now * 4) * 0.15; // walking cycle
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 10, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- legs ---
+    const legSwing = Math.sin(now * 4) * 12;
+    // left leg
+    ctx.save();
+    ctx.translate(-4, -8);
+    ctx.rotate((legSwing) * Math.PI / 180);
+    ctx.fillStyle = '#4E342E'; // brown pants
+    roundRect(ctx, -4, 0, 8, 22, 4); ctx.fill();
+    // boot
+    ctx.fillStyle = '#3E2723';
+    roundRect(ctx, -5, 19, 10, 6, 3); ctx.fill();
+    ctx.restore();
+    // right leg
+    ctx.save();
+    ctx.translate(4, -8);
+    ctx.rotate((-legSwing) * Math.PI / 180);
+    ctx.fillStyle = '#4E342E';
+    roundRect(ctx, -4, 0, 8, 22, 4); ctx.fill();
+    ctx.fillStyle = '#3E2723';
+    roundRect(ctx, -5, 19, 10, 6, 3); ctx.fill();
+    ctx.restore();
+
+    // --- torso (jacket) ---
+    ctx.fillStyle = '#E53935'; // red jacket
+    roundRect(ctx, -11, -38, 22, 32, 5); ctx.fill();
+    // jacket zipper
+    ctx.strokeStyle = '#B71C1C';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, -36);
+    ctx.lineTo(0, -8);
+    ctx.stroke();
+
+    // --- backpack ---
+    ctx.fillStyle = '#FF8F00'; // orange
+    roundRect(ctx, 10, -36, 12, 22, 4); ctx.fill();
+    // straps
+    ctx.strokeStyle = '#E65100';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(10, -34); ctx.lineTo(6, -26);
+    ctx.moveTo(10, -30); ctx.lineTo(6, -22);
+    ctx.stroke();
+    // pocket
+    ctx.fillStyle = '#F57C00';
+    roundRect(ctx, 12, -20, 8, 6, 2); ctx.fill();
+
+    // --- arms ---
+    const armSwing = Math.sin(now * 4) * 18;
+    // left arm
+    ctx.save();
+    ctx.translate(-11, -34);
+    ctx.rotate((-armSwing + 10) * Math.PI / 180);
+    ctx.fillStyle = '#E53935';
+    roundRect(ctx, -4, 0, 8, 20, 4); ctx.fill();
+    // hand
+    ctx.fillStyle = '#FFCCBC';
+    ctx.beginPath();
+    ctx.arc(0, 22, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // hiking pole
+    ctx.strokeStyle = '#795548';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 24);
+    ctx.lineTo(-4, 52);
+    ctx.stroke();
+    ctx.restore();
+
+    // right arm
+    ctx.save();
+    ctx.translate(11, -34);
+    ctx.rotate((armSwing + 10) * Math.PI / 180);
+    ctx.fillStyle = '#E53935';
+    roundRect(ctx, -4, 0, 8, 20, 4); ctx.fill();
+    ctx.fillStyle = '#FFCCBC';
+    ctx.beginPath();
+    ctx.arc(0, 22, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // hiking pole
+    ctx.strokeStyle = '#795548';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 24);
+    ctx.lineTo(4, 52);
+    ctx.stroke();
+    ctx.restore();
+
+    // --- neck ---
+    ctx.fillStyle = '#FFCCBC';
+    roundRect(ctx, -4, -42, 8, 6, 2); ctx.fill();
+
+    // --- head ---
+    ctx.fillStyle = '#FFCCBC';
+    ctx.beginPath();
+    ctx.arc(0, -52, 12, 0, Math.PI * 2);
+    ctx.fill();
+    // outline
+    ctx.strokeStyle = '#D7A986';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // eyes
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(-4, -54, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(4, -54, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // smile
+    ctx.strokeStyle = '#C62828';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, -50, 5, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
+
+    // cheeks
+    ctx.fillStyle = 'rgba(255,138,128,0.35)';
+    ctx.beginPath(); ctx.arc(-8, -50, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(8, -50, 3.5, 0, Math.PI * 2); ctx.fill();
+
+    // --- hat (bucket hat) ---
+    ctx.fillStyle = '#43A047';
+    // brim
+    ctx.beginPath();
+    ctx.ellipse(0, -62, 17, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // dome
+    roundRect(ctx, -11, -74, 22, 14, 6); ctx.fill();
+    ctx.fillStyle = '#2E7D32';
+    // band
+    roundRect(ctx, -11, -65, 22, 4, 1); ctx.fill();
+
+    ctx.restore();
+}
+
+// ---------- flag at summit ----------
+function drawFlag(now) {
+    const pos = trailPos(1);
+    const x = pos.x - 20, y = pos.y - 20;
+
+    // pole
+    ctx.strokeStyle = '#5D4037';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y - 50);
+    ctx.stroke();
+
+    // flag with wave
+    ctx.fillStyle = '#F44336';
+    ctx.beginPath();
+    ctx.moveTo(x, y - 50);
+    for (let i = 0; i <= 10; i++) {
+        const fx = x + (i / 10) * 35;
+        const fy = y - 50 + Math.sin(now * 4 + i * 0.8) * 3 + 12 * (i / 10);
+        if (i === 0) continue;
+        ctx.lineTo(fx, fy);
+    }
+    for (let i = 10; i >= 0; i--) {
+        const fx = x + (i / 10) * 35;
+        const fy = y - 50 + Math.sin(now * 4 + i * 0.8 + 1) * 3 + 22 * (i / 10);
+        ctx.lineTo(fx, fy);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // star on flag
+    ctx.fillStyle = '#FFD600';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('★', x + 14, y - 32 + Math.sin(now * 4 + 3) * 2);
+}
+
+// ---------- utility ----------
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+// =============================================================
+//  GAME LOGIC – DOM references & functions
+// =============================================================
+const startScreen    = document.getElementById('start-screen');
+const gameContainer  = document.getElementById('game-container');
+const currentNumberD = document.getElementById('current-number');
+const progressD      = document.getElementById('progress');
+const totalD         = document.getElementById('total-numbers');
+const altitudeD      = document.getElementById('altitude');
+const numberCont     = document.getElementById('number-container');
+const gameOverModal  = document.getElementById('game-over-modal');
+const finalAltD      = document.getElementById('final-altitude');
+const finalModeD     = document.getElementById('final-mode');
+const inputDisplay   = document.getElementById('input-display');
+const hintText       = document.getElementById('hint-text');
+
+// audio - lazy init to avoid autoplay policy issues
+let audioCtx = null;
+
+function getAudioContext() {
+    if (!audioCtx) {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.warn('Audio context creation failed:', e);
+        }
+    }
+    return audioCtx;
+}
+
+function playClickSound() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 800; o.type = 'sine';
+    g.gain.setValueAtTime(0.12, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+    o.start(); o.stop(ctx.currentTime + 0.08);
+}
+
+function playCorrectSound() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    [523.25, 659.25, 783.99].forEach((f, i) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = f; o.type = 'sine';
+        const t = ctx.currentTime + i * 0.08;
+        g.gain.setValueAtTime(0.25, t);
+        g.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+        o.start(t); o.stop(t + 0.2);
+    });
+}
+
+function playWrongSound() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(200, ctx.currentTime);
+    o.frequency.setValueAtTime(150, ctx.currentTime + 0.1);
+    g.gain.setValueAtTime(0.12, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    o.start(); o.stop(ctx.currentTime + 0.2);
+}
+
+function selectMode(btn) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    maxNumber = parseInt(btn.dataset.max);
+}
+
+function startGame() {
+    console.log('startGame called, maxNumber:', maxNumber);
+    try {
+        // Initialize audio context on user interaction
+        getAudioContext();
+        
+        startScreen.classList.add('hidden');
+        gameContainer.style.display = '';
+        gameOverModal.style.display = 'none';
+
+        currentNumber = 1; altitude = 0; climberT = 0;
+        gameActive = true; numberElements = [];
+        pal = PALETTES[maxNumber] || PALETTES[20];
+        
+        buildTrail();
+        buildClouds();
+        buildBirds();
+        buildTrees();
+        buildStars();
+
+        totalD.textContent = maxNumber;
+        updateDisplay();
+        generateNumbers();
+        resetInput();
+        hideInputDisplay();
+
+        hintText.style.opacity = '1';
+        setTimeout(() => {
+            hintText.style.transition = 'opacity 1.5s';
+            hintText.style.opacity = '0';
+        }, 5000);
+        
+        console.log('Game started successfully');
+    } catch (err) {
+        console.error('Error starting game:', err);
+        alert('ゲームの開始に失敗しました: ' + err.message);
+    }
+}
+
+function generateNumbers() {
+    numberCont.innerHTML = '';
+    numberElements = [];
+
+    const sz = maxNumber <= 20 ? 60 : maxNumber <= 30 ? 52 : maxNumber <= 50 ? 44 : 36;
+    const fs = maxNumber <= 20 ? '1.6em' : maxNumber <= 30 ? '1.3em' : maxNumber <= 50 ? '1.1em' : '0.95em';
+
+    for (let i = 1; i <= maxNumber; i++) {
+        const el = document.createElement('div');
+        el.className = 'number-target';
+        el.textContent = i;
+        el.style.width = sz + 'px';
+        el.style.height = sz + 'px';
+        el.style.fontSize = fs;
+
+        // position along trail
+        const t = i / maxNumber;
+        const pos = trailPos(t * 0.95 + 0.02);
+        const offsetX = (Math.random() - 0.5) * 80;
+        el.dataset.offsetX = offsetX;
+
+        el.style.left = (pos.x + offsetX - sz / 2) + 'px';
+        el.style.top  = (pos.y - sz / 2 - 15) + 'px';
+
+        if (i === 1) el.classList.add('next');
+
+        numberCont.appendChild(el);
+        numberElements.push(el);
+    }
+}
+
+// input display
+function showInputDisplay(text, state) {
+    inputDisplay.textContent = text || '_';
+    inputDisplay.className = 'input-display show';
+    if (state === 'correct') inputDisplay.classList.add('correct');
+    else if (state === 'wrong') inputDisplay.classList.add('wrong');
+    if (inputHideTimeout) clearTimeout(inputHideTimeout);
+    if (state) {
+        inputHideTimeout = setTimeout(() => {
+            inputDisplay.classList.remove('show');
+        }, state === 'correct' ? 800 : 600);
+    }
+}
+function hideInputDisplay() {
+    inputDisplay.classList.remove('show');
+    if (inputHideTimeout) clearTimeout(inputHideTimeout);
+}
+
+function resetInput() {
+    currentInput = '';
+    remainingDigits = currentNumber.toString().split('');
+}
+
+// keyboard
+document.addEventListener('keydown', (e) => {
+    if (!startScreen.classList.contains('hidden')) {
+        if (e.key === 'Enter') startGame();
+        return;
+    }
+    if (gameOverModal.style.display === 'flex') {
+        if (e.key === 'Enter') backToMenu();
+        return;
+    }
+    if (!gameActive) return;
+
+    if (e.key === 'Backspace') {
+        e.preventDefault();
+        if (currentInput.length > 0) {
+            const removed = currentInput[currentInput.length - 1];
+            currentInput = currentInput.slice(0, -1);
+            remainingDigits.unshift(removed);
+            playClickSound();
+            currentInput.length > 0 ? showInputDisplay(currentInput, null) : hideInputDisplay();
+        }
+        return;
+    }
+    if (e.key === 'Escape') { resetInput(); hideInputDisplay(); return; }
+
+    if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        if (remainingDigits.length > 0 && e.key === remainingDigits[0]) {
+            playClickSound();
+            remainingDigits.shift();
+            currentInput += e.key;
+            showInputDisplay(currentInput, null);
+            if (remainingDigits.length === 0) handleCorrectAnswer();
+        } else {
+            handleWrongAnswer(currentInput + e.key);
+        }
+    }
+});
+
+function handleCorrectAnswer() {
+    showInputDisplay(currentNumber.toString(), 'correct');
+    playCorrectSound();
+
+    const el = numberElements[currentNumber - 1];
+    el.classList.remove('next');
+    el.classList.add('correct');
+    spawnParticles(el);
+
+    altitude = Math.round((currentNumber / maxNumber) * maxAltitude);
+    climberT = currentNumber / maxNumber;
+
+    setTimeout(() => { el.style.display = 'none'; }, 700);
+
+    currentNumber++;
+
+    setTimeout(() => {
+        if (currentNumber > maxNumber) {
+            reachSummit();
+        } else {
+            numberElements[currentNumber - 1].classList.add('next');
+            resetInput();
+            updateDisplay();
+        }
+    }, 800);
+
+    updateDisplay();
+}
+
+function handleWrongAnswer(wrongText) {
+    showInputDisplay(wrongText, 'wrong');
+    playWrongSound();
+    const el = numberElements[currentNumber - 1];
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = '';
+    setTimeout(() => resetInput(), 600);
+}
+
+function updateDisplay() {
+    currentNumberD.textContent = currentNumber > maxNumber ? '✓' : currentNumber;
+    progressD.textContent = Math.min(currentNumber - 1, maxNumber);
+    altitudeD.textContent = altitude;
+}
+
+function reachSummit() {
+    climberT = 1;
+    altitude = maxAltitude;
+    updateDisplay();
+    for (let i = 0; i < 40; i++) {
+        setTimeout(() => spawnCelebration(), i * 80);
+    }
+    setTimeout(() => endGame(), 2500);
+}
+
+function spawnParticles(el) {
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const colors = pal.particleColors;
+    for (let i = 0; i < 14; i++) {
+        const p = document.createElement('div');
+        p.className = 'fx-particle';
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        const c = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = c;
+        p.style.boxShadow = `0 0 8px ${c}`;
+        const angle = (i / 14) * Math.PI * 2;
+        const dist = 50 + Math.random() * 60;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+        document.body.appendChild(p);
+        p.animate([
+            { transform: 'translate(0,0) scale(1)', opacity: 1 },
+            { transform: `translate(${tx}px,${ty}px) scale(0)`, opacity: 0 },
+        ], { duration: 700 + Math.random() * 300, easing: 'ease-out', fill: 'forwards' });
+        setTimeout(() => p.remove(), 1100);
+    }
+}
+
+function spawnCelebration() {
+    const colors = ['#FFD700','#FFA500','#FF69B4','#87CEEB','#90EE90','#DDA0DD','#FF5252','#448AFF'];
+    for (let i = 0; i < 6; i++) {
+        const p = document.createElement('div');
+        p.className = 'fx-particle';
+        p.style.left = (W * 0.3 + Math.random() * W * 0.4) + 'px';
+        p.style.top = (H * 0.05 + Math.random() * H * 0.15) + 'px';
+        const c = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = c;
+        p.style.boxShadow = `0 0 10px ${c}`;
+        p.style.width = (6 + Math.random() * 8) + 'px';
+        p.style.height = p.style.width;
+        document.body.appendChild(p);
+        const tx = (Math.random() - 0.5) * 300;
+        const ty = Math.random() * 200 + 100;
+        p.animate([
+            { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
+            { transform: `translate(${tx}px,${ty}px) scale(0) rotate(${360 + Math.random()*360}deg)`, opacity: 0 },
+        ], { duration: 1200 + Math.random() * 600, easing: 'ease-out', fill: 'forwards' });
+        setTimeout(() => p.remove(), 2000);
+    }
+}
+
+function endGame() {
+    gameActive = false;
+    finalAltD.textContent = altitude;
+    finalModeD.textContent = maxNumber;
+    gameOverModal.style.display = 'flex';
+}
+
+function backToMenu() {
+    gameOverModal.style.display = 'none';
+    gameContainer.style.display = 'none';
+    startScreen.classList.remove('hidden');
+    hideInputDisplay();
+    climberT = 0;
+}
+
+function replayGame() {
+    gameOverModal.style.display = 'none';
+    startGame();
+}
+
+// kick off render loop
+draw();
+
+// backup event listener for start button
+document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.querySelector('.start-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Start button clicked');
+            startGame();
+        });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐧 Penguin Nendo Game 🐧</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 50%, #dfe6e9 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 100%;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #2d3436;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            font-size: 1em;
+            color: #636e72;
+            margin-bottom: 10px;
+        }
+
+        /* Game Info */
+        .game-info {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            padding: 8px 18px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Progress bar */
+        .progress-bar-container {
+            width: 85%;
+            max-width: 500px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            margin: 8px auto;
+            overflow: hidden;
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #74b9ff 0%, #0984e3 100%);
+            border-radius: 15px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1em;
+            min-width: 40px;
+        }
+
+        /* Variant selector */
+        .variant-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .variant-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            border: 3px solid transparent;
+            background: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .variant-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .variant-btn.active {
+            border-color: #0984e3;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            transform: scale(1.1);
+        }
+
+        .variant-name {
+            font-size: 0.35em;
+            font-weight: bold;
+            margin-top: 2px;
+            color: #2d3436;
+        }
+
+        .variant-btn.active .variant-name {
+            color: white;
+        }
+
+        /* Step indicator */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dfe6e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .step-dot.active {
+            border-color: #0984e3;
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(9, 132, 227, 0.5);
+        }
+
+        .step-dot.completed {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            border-color: #00b894;
+        }
+
+        /* Nendo workspace */
+        .nendo-workspace {
+            position: relative;
+            width: min(85vw, 75vh);
+            height: min(85vw, 75vh);
+            max-width: 600px;
+            max-height: 600px;
+            margin: 8px auto;
+            background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+            border-radius: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: inset 0 5px 20px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .nendo-workspace:active {
+            transform: scale(0.98);
+        }
+
+        .nendo-workspace:hover {
+            transform: scale(1.02);
+        }
+
+        /* Clay/Nendo canvas */
+        .nendo-canvas {
+            position: relative;
+            width: 80%;
+            height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Penguin parts (built with CSS) */
+        .penguin {
+            position: relative;
+            width: 200px;
+            height: 280px;
+        }
+
+        /* Step 0: Just a blob of clay */
+        .clay-blob {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(ellipse at 30% 30%, #636e72, #2d3436);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Body - step 1 */
+        .penguin-body {
+            position: absolute;
+            width: 160px;
+            height: 200px;
+            background: radial-gradient(ellipse at 30% 20%, #636e72, #2d3436);
+            border-radius: 50% 50% 45% 45%;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Variant color overrides */
+        .penguin.pink .penguin-body,
+        .penguin.pink .penguin-head {
+            background: radial-gradient(ellipse at 30% 20%, #fd79a8, #e84393);
+        }
+
+        .penguin.pink .clay-blob {
+            background: radial-gradient(ellipse at 30% 30%, #fd79a8, #e84393);
+        }
+
+        .penguin.blue .penguin-body,
+        .penguin.blue .penguin-head {
+            background: radial-gradient(ellipse at 30% 20%, #74b9ff, #0984e3);
+        }
+
+        .penguin.blue .clay-blob {
+            background: radial-gradient(ellipse at 30% 30%, #74b9ff, #0984e3);
+        }
+
+        .penguin.purple .penguin-body,
+        .penguin.purple .penguin-head {
+            background: radial-gradient(ellipse at 30% 20%, #a29bfe, #6c5ce7);
+        }
+
+        .penguin.purple .clay-blob {
+            background: radial-gradient(ellipse at 30% 30%, #a29bfe, #6c5ce7);
+        }
+
+        .penguin.rainbow .penguin-body {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ffa06b 20%, #ffd93d 40%, #4CAF50 60%, #667eea 80%, #f093fb 100%);
+        }
+
+        .penguin.rainbow .penguin-head {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+
+        .penguin.rainbow .clay-blob {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ffa06b 25%, #ffd93d 50%, #4CAF50 75%, #667eea 100%);
+        }
+
+        .penguin.golden .penguin-body,
+        .penguin.golden .penguin-head {
+            background: radial-gradient(ellipse at 30% 20%, #ffd93d, #fdcb6e, #e17055);
+        }
+
+        .penguin.golden .clay-blob {
+            background: radial-gradient(ellipse at 30% 30%, #ffd93d, #fdcb6e);
+        }
+
+        .penguin-body.show {
+            opacity: 1;
+        }
+
+        /* White belly */
+        .penguin-belly {
+            position: absolute;
+            width: 110px;
+            height: 150px;
+            background: radial-gradient(ellipse at 50% 30%, #ffffff, #dfe6e9);
+            border-radius: 50% 50% 45% 45%;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-belly.show {
+            opacity: 1;
+        }
+
+        /* Head - step 2 */
+        .penguin-head {
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(ellipse at 30% 20%, #636e72, #2d3436);
+            border-radius: 50%;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .penguin-head.show {
+            opacity: 1;
+        }
+
+        /* Eyes - step 3 */
+        .penguin-eye {
+            position: absolute;
+            width: 28px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            top: 10px;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-eye.show {
+            opacity: 1;
+        }
+
+        .penguin-eye-left {
+            left: 25px;
+        }
+
+        .penguin-eye-right {
+            right: 25px;
+        }
+
+        .penguin-pupil {
+            position: absolute;
+            width: 16px;
+            height: 18px;
+            background: #2d3436;
+            border-radius: 50%;
+            top: 7px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .penguin-pupil-shine {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            right: 3px;
+        }
+
+        /* Beak - step 4 */
+        .penguin-beak {
+            position: absolute;
+            top: 42px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-beak.show {
+            opacity: 1;
+        }
+
+        .beak-top {
+            width: 30px;
+            height: 12px;
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            border-radius: 50% 50% 0 0;
+            margin: 0 auto;
+        }
+
+        .beak-bottom {
+            width: 24px;
+            height: 8px;
+            background: linear-gradient(135deg, #e17055, #d63031);
+            border-radius: 0 0 50% 50%;
+            margin: 0 auto;
+        }
+
+        /* Wings - step 5 */
+        .penguin-wing {
+            position: absolute;
+            width: 40px;
+            height: 100px;
+            background: radial-gradient(ellipse at 50% 30%, #636e72, #2d3436);
+            border-radius: 40% 40% 60% 60%;
+            top: 50px;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-wing.show {
+            opacity: 1;
+        }
+
+        .penguin-wing-left {
+            left: -25px;
+            transform: rotate(15deg);
+        }
+
+        .penguin-wing-right {
+            right: -25px;
+            transform: rotate(-15deg);
+        }
+
+        /* Feet - step 6 */
+        .penguin-foot {
+            position: absolute;
+            width: 50px;
+            height: 20px;
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            border-radius: 50%;
+            bottom: -10px;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-foot.show {
+            opacity: 1;
+        }
+
+        .penguin-foot-left {
+            left: 15px;
+        }
+
+        .penguin-foot-right {
+            right: 15px;
+        }
+
+        /* Bow tie - step 7 (finishing touch) */
+        .penguin-bowtie {
+            position: absolute;
+            top: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Variant accessories */
+        .penguin-crown {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5em;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-glasses {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-hat {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5em;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-scarf {
+            position: absolute;
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5em;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .penguin-bowtie.show {
+            opacity: 1;
+        }
+
+        .bowtie-left, .bowtie-right {
+            position: absolute;
+            width: 20px;
+            height: 15px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-radius: 50%;
+        }
+
+        .bowtie-left {
+            left: -12px;
+            transform: rotate(-20deg);
+        }
+
+        .bowtie-right {
+            right: -12px;
+            transform: rotate(20deg);
+        }
+
+        .bowtie-center {
+            width: 10px;
+            height: 10px;
+            background: #e74c3c;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Cheeks (blush) - appears with eyes */
+        .penguin-cheek {
+            position: absolute;
+            width: 22px;
+            height: 14px;
+            background: rgba(255, 118, 117, 0.6);
+            border-radius: 50%;
+            top: 35px;
+            opacity: 0;
+            transition: all 0.4s;
+        }
+
+        .penguin-cheek.show {
+            opacity: 1;
+        }
+
+        .penguin-cheek-left {
+            left: 15px;
+        }
+
+        .penguin-cheek-right {
+            right: 15px;
+        }
+
+        /* Squish animation */
+        .squish {
+            animation: squish 0.3s ease;
+        }
+
+        @keyframes squish {
+            0%, 100% { transform: translateX(-50%) scaleY(1) scaleX(1); }
+            50% { transform: translateX(-50%) scaleY(0.9) scaleX(1.1); }
+        }
+
+        .squish-blob {
+            animation: squishBlob 0.3s ease;
+        }
+
+        @keyframes squishBlob {
+            0%, 100% { transform: translate(-50%, -50%) scaleY(1) scaleX(1); }
+            50% { transform: translate(-50%, -50%) scaleY(0.85) scaleX(1.15); }
+        }
+
+        /* Celebration */
+        .penguin-dance {
+            animation: penguinDance 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes penguinDance {
+            0% { transform: rotate(-5deg) translateY(0); }
+            50% { transform: rotate(5deg) translateY(-10px); }
+            100% { transform: rotate(-5deg) translateY(0); }
+        }
+
+        .wing-flap-left {
+            animation: wingFlapLeft 0.3s ease-in-out infinite alternate;
+        }
+
+        @keyframes wingFlapLeft {
+            0% { transform: rotate(15deg); }
+            100% { transform: rotate(-30deg); }
+        }
+
+        .wing-flap-right {
+            animation: wingFlapRight 0.3s ease-in-out infinite alternate;
+        }
+
+        @keyframes wingFlapRight {
+            0% { transform: rotate(-15deg); }
+            100% { transform: rotate(30deg); }
+        }
+
+        /* Instruction text */
+        .instruction {
+            font-size: 1.3em;
+            color: #2d3436;
+            font-weight: bold;
+            margin: 8px 0;
+            min-height: 35px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Buttons */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Particle effects */
+        .clay-particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Snowflakes */
+        .snowflake {
+            position: fixed;
+            color: white;
+            font-size: 1.5em;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.7;
+        }
+
+        @keyframes snowfall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Floating decorations */
+        .decorations {
+            position: fixed;
+            font-size: 2.5em;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(8deg); }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes confettiFall {
+            to { transform: translateY(100vh) rotate(720deg); }
+        }
+
+        /* Star burst */
+        .star {
+            position: fixed;
+            font-size: 2.5em;
+            pointer-events: none;
+            z-index: 101;
+        }
+
+        @keyframes starBurst {
+            0% { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1) rotate(720deg); opacity: 0; }
+        }
+
+        /* Achievement overlay */
+        .achievement-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(116, 185, 255, 0.9) 0%, rgba(9, 132, 227, 0.8) 50%, rgba(45, 52, 54, 0.7) 100%);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .achievement-overlay.show {
+            animation: achievementFlash 3s ease-out forwards;
+        }
+
+        @keyframes achievementFlash {
+            0% { opacity: 0; visibility: visible; }
+            10% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        .achievement-text {
+            font-size: 4em;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(116, 185, 255, 1), 0 0 40px rgba(9, 132, 227, 1);
+            animation: achievementBounce 3s ease-out;
+        }
+
+        @keyframes achievementBounce {
+            0% { transform: scale(0) rotate(-180deg); }
+            40% { transform: scale(1.3) rotate(10deg); }
+            60% { transform: scale(0.9) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Gallery */
+        .gallery {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+
+        .gallery-penguin {
+            width: 60px;
+            height: 60px;
+            background: rgba(116, 185, 255, 0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+
+        .gallery-penguin.earned {
+            opacity: 1;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3);
+        }
+
+        /* Settings button */
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Home button */
+        .home-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5em; }
+            .subtitle { font-size: 0.9em; }
+            .nendo-workspace {
+                width: min(90vw, 70vh);
+                height: min(90vw, 70vh);
+            }
+            .penguin {
+                transform: scale(0.8);
+            }
+            .step-dot {
+                width: 32px;
+                height: 32px;
+                font-size: 1em;
+            }
+            .instruction { font-size: 1.1em; }
+        }
+
+        @media (max-width: 480px) {
+            .penguin {
+                transform: scale(0.65);
+            }
+        }
+    </style>
+    <script src="assets/i18n.js"></script>
+</head>
+<body>
+    <a href="index.html" class="home-btn" title="Home">🏠</a>
+
+    <div class="achievement-overlay" id="achievementOverlay">
+        <div class="achievement-text" id="achievementText">🐧🎉 Complete! 🎉🐧</div>
+    </div>
+
+    <div class="game-container">
+        <h1 data-i18n="title">🐧 Penguin Nendo Game 🐧</h1>
+        <p class="subtitle" data-i18n="subtitle">Shape clay into a cute penguin!</p>
+
+        <div class="game-info">
+            <div class="info-box">
+                <span data-i18n="step">Step</span>: <span id="currentStep">0</span> / <span id="totalSteps">7</span>
+            </div>
+            <div class="info-box">
+                <span data-i18n="taps">Taps</span>: <span id="tapCount">0</span> / <span id="tapGoal">10</span>
+            </div>
+            <div class="info-box">
+                🐧 <span id="penguinCount">0</span>
+            </div>
+        </div>
+
+        <div class="variant-selector">
+            <button class="variant-btn active" onclick="selectVariant('classic')" data-variant="classic">
+                🐧
+                <div class="variant-name" data-i18n="variantClassic">Classic</div>
+            </button>
+            <button class="variant-btn" onclick="selectVariant('pink')" data-variant="pink">
+                💗
+                <div class="variant-name" data-i18n="variantPink">Pink</div>
+            </button>
+            <button class="variant-btn" onclick="selectVariant('blue')" data-variant="blue">
+                💙
+                <div class="variant-name" data-i18n="variantBlue">Blue</div>
+            </button>
+            <button class="variant-btn" onclick="selectVariant('purple')" data-variant="purple">
+                💜
+                <div class="variant-name" data-i18n="variantPurple">Purple</div>
+            </button>
+            <button class="variant-btn" onclick="selectVariant('rainbow')" data-variant="rainbow">
+                🌈
+                <div class="variant-name" data-i18n="variantRainbow">Rainbow</div>
+            </button>
+            <button class="variant-btn" onclick="selectVariant('golden')" data-variant="golden">
+                👑
+                <div class="variant-name" data-i18n="variantGolden">Golden</div>
+            </button>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%;">0%</div>
+        </div>
+
+        <div class="step-indicator" id="stepIndicator">
+            <div class="step-dot active" data-step="0">⚫</div>
+            <div class="step-dot" data-step="1">🫳</div>
+            <div class="step-dot" data-step="2">🟤</div>
+            <div class="step-dot" data-step="3">👀</div>
+            <div class="step-dot" data-step="4">🔶</div>
+            <div class="step-dot" data-step="5">🪽</div>
+            <div class="step-dot" data-step="6">🦶</div>
+            <div class="step-dot" data-step="7">🎀</div>
+        </div>
+
+        <div class="nendo-workspace" id="workspace">
+            <div class="nendo-canvas">
+                <div class="penguin" id="penguin">
+                    <!-- Clay blob (initial state) -->
+                    <div class="clay-blob" id="clayBlob"></div>
+
+                    <!-- Body -->
+                    <div class="penguin-body" id="penguinBody">
+                        <div class="penguin-belly" id="penguinBelly"></div>
+                    </div>
+
+                    <!-- Head -->
+                    <div class="penguin-head" id="penguinHead">
+                        <!-- Eyes -->
+                        <div class="penguin-eye penguin-eye-left" id="eyeLeft">
+                            <div class="penguin-pupil">
+                                <div class="penguin-pupil-shine"></div>
+                            </div>
+                        </div>
+                        <div class="penguin-eye penguin-eye-right" id="eyeRight">
+                            <div class="penguin-pupil">
+                                <div class="penguin-pupil-shine"></div>
+                            </div>
+                        </div>
+                        <!-- Cheeks -->
+                        <div class="penguin-cheek penguin-cheek-left" id="cheekLeft"></div>
+                        <div class="penguin-cheek penguin-cheek-right" id="cheekRight"></div>
+                        <!-- Beak -->
+                        <div class="penguin-beak" id="penguinBeak">
+                            <div class="beak-top"></div>
+                            <div class="beak-bottom"></div>
+                        </div>
+                    </div>
+
+                    <!-- Wings -->
+                    <div class="penguin-wing penguin-wing-left" id="wingLeft"></div>
+                    <div class="penguin-wing penguin-wing-right" id="wingRight"></div>
+
+                    <!-- Feet -->
+                    <div class="penguin-foot penguin-foot-left" id="footLeft"></div>
+                    <div class="penguin-foot penguin-foot-right" id="footRight"></div>
+
+                    <!-- Bow tie -->
+                    <div class="penguin-bowtie" id="bowtie">
+                        <div class="bowtie-left"></div>
+                        <div class="bowtie-right"></div>
+                        <div class="bowtie-center"></div>
+                    </div>
+
+                    <!-- Variant accessories -->
+                    <div class="penguin-crown" id="crown">👑</div>
+                    <div class="penguin-glasses" id="glasses">🕶️</div>
+                    <div class="penguin-hat" id="hat">🎩</div>
+                    <div class="penguin-scarf" id="scarf">🧣</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instruction" id="instruction" data-i18n="startMessage">
+            Press Start to begin shaping! 🐧
+        </div>
+
+        <div class="buttons">
+            <button class="start-btn" id="startBtn" onclick="startGame()" data-i18n="start">
+                🎮 Start
+            </button>
+            <button class="reset-btn" onclick="resetGame()" data-i18n="reset">
+                🔄 Reset
+            </button>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <div class="gallery-penguin" id="gp1">🐧</div>
+            <div class="gallery-penguin" id="gp2">🐧</div>
+            <div class="gallery-penguin" id="gp3">🐧</div>
+            <div class="gallery-penguin" id="gp4">🐧</div>
+            <div class="gallery-penguin" id="gp5">🐧</div>
+        </div>
+    </div>
+
+    <!-- Decorations -->
+    <div class="decorations" style="top: 8%; left: 8%; animation: float 3s infinite;">🐧</div>
+    <div class="decorations" style="top: 12%; right: 8%; animation: float 3.5s infinite;">❄️</div>
+    <div class="decorations" style="bottom: 8%; left: 12%; animation: float 4s infinite;">⛄</div>
+    <div class="decorations" style="bottom: 12%; right: 12%; animation: float 3.2s infinite;">🧊</div>
+    <div class="decorations" style="top: 45%; left: 3%; animation: float 3.8s infinite;">🏔️</div>
+    <div class="decorations" style="top: 45%; right: 3%; animation: float 4.2s infinite;">🐟</div>
+
+    <script>
+        // ──── i18n translations ────
+        const translations = {
+            en: {
+                title: "🐧 Penguin Nendo Game 🐧",
+                subtitle: "Shape clay into a cute penguin!",
+                step: "Step",
+                taps: "Taps",
+                variantClassic: "Classic",
+                variantPink: "Pink",
+                variantBlue: "Blue",
+                variantPurple: "Purple",
+                variantRainbow: "Rainbow",
+                variantGolden: "Golden",
+                startMessage: "Choose a penguin style and press Start! 🐧",
+                start: "🎮 Start",
+                startAgain: "🎮 Make Another!",
+                reset: "🔄 Reset",
+                stepInstructions: [
+                    "Tap the clay to warm it up! 🫳",
+                    "Shape the body! Make it round and tall! 🫳",
+                    "Add the head on top! 🟤",
+                    "Press in the eyes! 👀",
+                    "Pinch the beak! 🔶",
+                    "Pull out the wings! 🪽",
+                    "Add little feet! 🦶",
+                    "Final touch: a cute bow tie! 🎀"
+                ],
+                stepComplete: [
+                    "Clay is ready! ✨",
+                    "Nice body shape! 🎉",
+                    "Great head! 🎉",
+                    "Cute eyes! ✨",
+                    "Perfect beak! 🎉",
+                    "Wings look great! ✨",
+                    "Adorable feet! 🎉",
+                    "Beautiful bow tie! ✨"
+                ],
+                complete: "🎉 Your penguin is complete! 🐧",
+                penguinCount: "penguins made",
+                tapEncourage: ["Nice!", "Great!", "Keep going!", "Almost there!", "Perfect!"]
+            },
+            ja: {
+                title: "🐧 ペンギンねんどゲーム 🐧",
+                subtitle: "ねんどでかわいいペンギンをつくろう！",
+                step: "ステップ",
+                taps: "タップ",
+                variantClassic: "ノーマル",
+                variantPink: "ピンク",
+                variantBlue: "ブルー",
+                variantPurple: "むらさき",
+                variantRainbow: "にじいろ",
+                variantGolden: "ゴールド",
+                startMessage: "ペンギンをえらんでスタート！ 🐧",
+                start: "🎮 スタート",
+                startAgain: "🎮 もういっかい！",
+                reset: "🔄 リセット",
+                stepInstructions: [
+                    "ねんどをタップしてやわらかくしよう！ 🫳",
+                    "からだをつくろう！まるくて大きいよ！ 🫳",
+                    "あたまをのせよう！ 🟤",
+                    "おめめをつけよう！ 👀",
+                    "くちばしをつけよう！ 🔶",
+                    "つばさをひっぱりだそう！ 🪽",
+                    "あしをつけよう！ 🦶",
+                    "さいご：かわいいリボン！ 🎀"
+                ],
+                stepComplete: [
+                    "ねんどがやわらかくなった！ ✨",
+                    "いいからだの形！ 🎉",
+                    "すてきなあたま！ 🎉",
+                    "かわいいおめめ！ ✨",
+                    "かんぺきなくちばし！ 🎉",
+                    "つばさバッチリ！ ✨",
+                    "かわいいあしだね！ 🎉",
+                    "すてきなリボン！ ✨"
+                ],
+                complete: "🎉 ペンギンのかんせい！ 🐧",
+                penguinCount: "たいつくった",
+                tapEncourage: ["いいね！", "すごい！", "がんばれ！", "あとすこし！", "かんぺき！"]
+            }
+        };
+
+        i18n.init(translations, 'penguin-nendo');
+
+        // ──── Game state ────
+        const TOTAL_STEPS = 7;
+        const TAPS_PER_STEP = 10;
+
+        let gameActive = false;
+        let currentStep = 0;
+        let tapCount = 0;
+        let penguinsCompleted = 0;
+        let currentVariant = 'classic';
+
+        // Variant definitions
+        const variants = {
+            classic: { accessory: 'bowtie', colors: 'classic' },
+            pink: { accessory: 'bowtie', colors: 'pink' },
+            blue: { accessory: 'glasses', colors: 'blue' },
+            purple: { accessory: 'hat', colors: 'purple' },
+            rainbow: { accessory: 'scarf', colors: 'rainbow' },
+            golden: { accessory: 'crown', colors: 'golden' }
+        };
+
+        // DOM elements
+        const workspace = document.getElementById('workspace');
+        const penguin = document.getElementById('penguin');
+        const clayBlob = document.getElementById('clayBlob');
+        const instruction = document.getElementById('instruction');
+        const startBtn = document.getElementById('startBtn');
+        const progressBar = document.getElementById('progressBar');
+        const currentStepDisplay = document.getElementById('currentStep');
+        const tapCountDisplay = document.getElementById('tapCount');
+        const tapGoalDisplay = document.getElementById('tapGoal');
+        const penguinCountDisplay = document.getElementById('penguinCount');
+        const achievementOverlay = document.getElementById('achievementOverlay');
+
+        // Parts
+        const parts = {
+            body: document.getElementById('penguinBody'),
+            belly: document.getElementById('penguinBelly'),
+            head: document.getElementById('penguinHead'),
+            eyeLeft: document.getElementById('eyeLeft'),
+            eyeRight: document.getElementById('eyeRight'),
+            cheekLeft: document.getElementById('cheekLeft'),
+            cheekRight: document.getElementById('cheekRight'),
+            beak: document.getElementById('penguinBeak'),
+            wingLeft: document.getElementById('wingLeft'),
+            wingRight: document.getElementById('wingRight'),
+            footLeft: document.getElementById('footLeft'),
+            footRight: document.getElementById('footRight'),
+            bowtie: document.getElementById('bowtie'),
+            crown: document.getElementById('crown'),
+            glasses: document.getElementById('glasses'),
+            hat: document.getElementById('hat'),
+            scarf: document.getElementById('scarf')
+        };
+
+        // Web Audio
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSquishy() {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.frequency.value = 300 + Math.random() * 200;
+            o.type = 'sine';
+            g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+            o.start(audioCtx.currentTime);
+            o.stop(audioCtx.currentTime + 0.12);
+        }
+
+        function playStepComplete() {
+            [0, 0.1, 0.2].forEach((delay, i) => {
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.frequency.value = 500 + i * 150;
+                o.type = 'triangle';
+                g.gain.setValueAtTime(0.2, audioCtx.currentTime + delay);
+                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.2);
+                o.start(audioCtx.currentTime + delay);
+                o.stop(audioCtx.currentTime + delay + 0.2);
+            });
+        }
+
+        function playComplete() {
+            const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+            notes.forEach((freq, i) => {
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.frequency.value = freq;
+                o.type = 'triangle';
+                g.gain.setValueAtTime(0.25, audioCtx.currentTime + i * 0.15);
+                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.15 + 0.4);
+                o.start(audioCtx.currentTime + i * 0.15);
+                o.stop(audioCtx.currentTime + i * 0.15 + 0.4);
+            });
+        }
+
+        // ──── Snowflakes ────
+        function createSnowflake() {
+            const flake = document.createElement('div');
+            flake.className = 'snowflake';
+            flake.textContent = ['❄', '❅', '❆', '✦'][Math.floor(Math.random() * 4)];
+            flake.style.left = Math.random() * 100 + '%';
+            flake.style.fontSize = (1 + Math.random() * 1.5) + 'em';
+            flake.style.animation = `snowfall ${4 + Math.random() * 4}s linear forwards`;
+            document.body.appendChild(flake);
+            setTimeout(() => flake.remove(), 8000);
+        }
+        setInterval(createSnowflake, 800);
+
+        // ──── Clay particles ────
+        function createClayParticles(x, y) {
+            const colors = ['#2d3436', '#636e72', '#b2bec3', '#dfe6e9'];
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'clay-particle';
+                p.style.width = (4 + Math.random() * 8) + 'px';
+                p.style.height = p.style.width;
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                workspace.appendChild(p);
+
+                const angle = (Math.PI * 2 * i) / 8;
+                const velocity = 30 + Math.random() * 40;
+                let px = parseFloat(p.style.left), py = parseFloat(p.style.top), op = 1;
+
+                const anim = setInterval(() => {
+                    px += Math.cos(angle) * velocity * 0.08;
+                    py += Math.sin(angle) * velocity * 0.08;
+                    op -= 0.06;
+                    p.style.left = px + 'px';
+                    p.style.top = py + 'px';
+                    p.style.opacity = op;
+                    if (op <= 0) { clearInterval(anim); p.remove(); }
+                }, 16);
+            }
+        }
+
+        // ──── Confetti & Stars ────
+        function createConfetti() {
+            const colors = ['#74b9ff', '#0984e3', '#00b894', '#fdcb6e', '#e17055', '#fd79a8', '#a29bfe'];
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.left = Math.random() * 100 + '%';
+                    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    c.style.animation = `confettiFall ${2 + Math.random() * 2}s linear forwards`;
+                    document.body.appendChild(c);
+                    setTimeout(() => c.remove(), 4000);
+                }, i * 25);
+            }
+        }
+
+        function createStarBurst() {
+            const stars = ['⭐', '✨', '🌟', '💫', '🐧'];
+            const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+            for (let i = 0; i < 16; i++) {
+                setTimeout(() => {
+                    const s = document.createElement('div');
+                    s.className = 'star';
+                    s.textContent = stars[Math.floor(Math.random() * stars.length)];
+                    s.style.left = cx + 'px';
+                    s.style.top = cy + 'px';
+                    const angle = (Math.PI * 2 * i) / 16;
+                    const dist = 150 + Math.random() * 250;
+                    s.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                    s.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+                    s.style.animation = `starBurst ${1 + Math.random()}s ease-out forwards`;
+                    document.body.appendChild(s);
+                    setTimeout(() => s.remove(), 2000);
+                }, i * 40);
+            }
+        }
+
+        // ──── Step logic ────
+        const stepActions = [
+            // Step 0: warm up clay
+            () => {
+                // Blob deforms slightly each tap
+                const scale = 1 + (tapCount / TAPS_PER_STEP) * 0.15;
+                const skew = Math.sin(tapCount) * 5;
+                clayBlob.style.borderRadius = `${50 - tapCount}% ${50 + tapCount}% ${50 + tapCount * 0.5}% ${50 - tapCount * 0.5}%`;
+                clayBlob.classList.add('squish-blob');
+                setTimeout(() => clayBlob.classList.remove('squish-blob'), 300);
+            },
+            // Step 1: form body
+            () => {
+                const progress = tapCount / TAPS_PER_STEP;
+                clayBlob.style.opacity = 1 - progress;
+                clayBlob.style.transform = `translate(-50%, -50%) scale(${1 - progress * 0.5})`;
+                parts.body.classList.add('show');
+                parts.body.style.opacity = progress;
+                parts.body.classList.add('squish');
+                setTimeout(() => parts.body.classList.remove('squish'), 300);
+            },
+            // Step 2: add head
+            () => {
+                const progress = tapCount / TAPS_PER_STEP;
+                parts.head.classList.add('show');
+                parts.head.style.opacity = progress;
+                parts.belly.classList.add('show');
+                parts.belly.style.opacity = progress;
+            },
+            // Step 3: eyes
+            () => {
+                const progress = tapCount / TAPS_PER_STEP;
+                parts.eyeLeft.classList.add('show');
+                parts.eyeRight.classList.add('show');
+                parts.eyeLeft.style.opacity = progress;
+                parts.eyeRight.style.opacity = progress;
+                if (tapCount >= TAPS_PER_STEP * 0.6) {
+                    parts.cheekLeft.classList.add('show');
+                    parts.cheekRight.classList.add('show');
+                }
+            },
+            // Step 4: beak
+            () => {
+                const progress = tapCount / TAPS_PER_STEP;
+                parts.beak.classList.add('show');
+                parts.beak.style.opacity = progress;
+                parts.beak.style.transform = `translateX(-50%) scale(${0.5 + progress * 0.5})`;
+            },
+            // Step 5: wings
+            () => {
+                const progress = tapCount / TAPS_PER_STEP;
+                parts.wingLeft.classList.add('show');
+                parts.wingRight.classList.add('show');
+                parts.wingLeft.style.opacity = progress;
+                parts.wingRight.style.opacity = progress;
+            },
+            // Step 6: feet
+            () => {
+                const progress = tapCount / TAPS_PER_STEP;
+                parts.footLeft.classList.add('show');
+                parts.footRight.classList.add('show');
+                parts.footLeft.style.opacity = progress;
+                parts.footRight.style.opacity = progress;
+            },
+            // Step 7: accessory (variant-specific)
+            () => {
+                const progress = tapCount / TAPS_PER_STEP;
+                const accessory = variants[currentVariant].accessory;
+                const accessoryEl = parts[accessory];
+                accessoryEl.classList.add('show');
+                accessoryEl.style.opacity = progress;
+                accessoryEl.style.transform = `translateX(-50%) scale(${0.3 + progress * 0.7})`;
+            }
+        ];
+
+        function onStepComplete() {
+            playStepComplete();
+
+            // Update step dots
+            const dots = document.querySelectorAll('.step-dot');
+            dots[currentStep].classList.add('completed');
+            dots[currentStep].classList.remove('active');
+
+            // Finalize the current step parts
+            if (currentStep === 0) {
+                // Ensure blob is morphed
+            } else if (currentStep === 1) {
+                clayBlob.style.opacity = 0;
+                parts.body.style.opacity = 1;
+                parts.body.classList.add('show');
+            } else if (currentStep === 2) {
+                parts.head.style.opacity = 1;
+                parts.belly.style.opacity = 1;
+            } else if (currentStep === 3) {
+                parts.eyeLeft.style.opacity = 1;
+                parts.eyeRight.style.opacity = 1;
+                parts.cheekLeft.classList.add('show');
+                parts.cheekRight.classList.add('show');
+            } else if (currentStep === 4) {
+                parts.beak.style.opacity = 1;
+                parts.beak.style.transform = 'translateX(-50%) scale(1)';
+            } else if (currentStep === 5) {
+                parts.wingLeft.style.opacity = 1;
+                parts.wingRight.style.opacity = 1;
+            } else if (currentStep === 6) {
+                parts.footLeft.style.opacity = 1;
+                parts.footRight.style.opacity = 1;
+            } else if (currentStep === 7) {
+                const accessory = variants[currentVariant].accessory;
+                parts[accessory].style.opacity = 1;
+                parts[accessory].style.transform = 'translateX(-50%) scale(1)';
+            }
+
+            instruction.textContent = i18n.t(`stepComplete.${currentStep}`);
+
+            if (currentStep >= TOTAL_STEPS) {
+                // Penguin complete!
+                onPenguinComplete();
+                return;
+            }
+
+            // Move to next step
+            currentStep++;
+            tapCount = 0;
+
+            setTimeout(() => {
+                if (currentStep <= TOTAL_STEPS) {
+                    dots[currentStep].classList.add('active');
+                }
+                updateUI();
+                instruction.textContent = i18n.t(`stepInstructions.${currentStep}`);
+            }, 800);
+        }
+
+        function onPenguinComplete() {
+            gameActive = false;
+            penguinsCompleted++;
+            penguinCountDisplay.textContent = penguinsCompleted;
+
+            // Update gallery
+            const gp = document.getElementById(`gp${Math.min(penguinsCompleted, 5)}`);
+            if (gp) gp.classList.add('earned');
+
+            // Celebration!
+            playComplete();
+            penguin.classList.add('penguin-dance');
+            parts.wingLeft.classList.add('wing-flap-left');
+            parts.wingRight.classList.add('wing-flap-right');
+
+            achievementOverlay.classList.add('show');
+            createConfetti();
+            createStarBurst();
+
+            setTimeout(() => {
+                achievementOverlay.classList.remove('show');
+            }, 3000);
+
+            instruction.textContent = i18n.t('complete');
+
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.textContent = i18n.t('startAgain');
+        }
+
+        function updateUI() {
+            currentStepDisplay.textContent = currentStep;
+            tapCountDisplay.textContent = tapCount;
+            tapGoalDisplay.textContent = TAPS_PER_STEP;
+
+            // Overall progress
+            const totalTaps = TOTAL_STEPS * TAPS_PER_STEP + TAPS_PER_STEP; // step 0-7 = 8 steps
+            const doneTaps = currentStep * TAPS_PER_STEP + tapCount;
+            const pct = Math.min(Math.round((doneTaps / totalTaps) * 100), 100);
+            progressBar.style.width = pct + '%';
+            progressBar.textContent = pct + '%';
+
+            if (pct >= 100) {
+                progressBar.style.background = 'linear-gradient(90deg, #00b894 0%, #00cec9 100%)';
+            } else if (pct >= 60) {
+                progressBar.style.background = 'linear-gradient(90deg, #0984e3 0%, #74b9ff 100%)';
+            } else {
+                progressBar.style.background = 'linear-gradient(90deg, #74b9ff 0%, #0984e3 100%)';
+            }
+        }
+
+        // ──── Tap handler ────
+        workspace.addEventListener('click', (e) => {
+            if (!gameActive) return;
+
+            tapCount++;
+            playSquishy();
+
+            // Particles at click position
+            const rect = workspace.getBoundingClientRect();
+            createClayParticles(e.clientX - rect.left, e.clientY - rect.top);
+
+            // Execute step action
+            if (currentStep <= TOTAL_STEPS && stepActions[currentStep]) {
+                stepActions[currentStep]();
+            }
+
+            updateUI();
+
+            // Encourage on random taps
+            if (tapCount % 3 === 0 && tapCount < TAPS_PER_STEP) {
+                const encouragements = i18n.t('tapEncourage');
+                const msg = encouragements[Math.floor(Math.random() * encouragements.length)];
+                showFloatingText(e.clientX - rect.left, e.clientY - rect.top, msg);
+            }
+
+            // Check step completion
+            if (tapCount >= TAPS_PER_STEP) {
+                onStepComplete();
+            }
+        });
+
+        function showFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.textContent = text;
+            el.style.position = 'absolute';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.color = '#0984e3';
+            el.style.fontWeight = 'bold';
+            el.style.fontSize = '1.3em';
+            el.style.pointerEvents = 'none';
+            el.style.zIndex = '50';
+            el.style.textShadow = '1px 1px 3px rgba(0,0,0,0.2)';
+            el.style.transition = 'all 1s ease-out';
+            workspace.appendChild(el);
+
+            requestAnimationFrame(() => {
+                el.style.transform = 'translateY(-60px) scale(1.3)';
+                el.style.opacity = '0';
+            });
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // ──── Space key ────
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameActive) {
+                e.preventDefault();
+                workspace.click();
+            }
+        });
+
+        // ──── Variant selector ────
+        function selectVariant(variant) {
+            if (gameActive) return; // Can't change during game
+            
+            currentVariant = variant;
+            
+            // Update button states
+            document.querySelectorAll('.variant-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.variant === variant) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Apply variant class to penguin
+            penguin.className = 'penguin ' + variants[variant].colors;
+        }
+
+        // ──── Start / Reset ────
+        function startGame() {
+            // Reset penguin
+            resetPenguinVisual();
+            
+            // Apply current variant
+            penguin.className = 'penguin ' + variants[currentVariant].colors;
+
+            gameActive = true;
+            currentStep = 0;
+            tapCount = 0;
+
+            // Reset step dots
+            document.querySelectorAll('.step-dot').forEach((dot, i) => {
+                dot.classList.remove('completed', 'active');
+                if (i === 0) dot.classList.add('active');
+            });
+
+            updateUI();
+            instruction.textContent = i18n.t('stepInstructions.0');
+            startBtn.disabled = true;
+            startBtn.style.opacity = '0.5';
+        }
+
+        function resetGame() {
+            gameActive = false;
+            currentStep = 0;
+            tapCount = 0;
+            penguinsCompleted = 0;
+            penguinCountDisplay.textContent = 0;
+
+            resetPenguinVisual();
+
+            // Reset gallery
+            for (let i = 1; i <= 5; i++) {
+                const gp = document.getElementById(`gp${i}`);
+                if (gp) gp.classList.remove('earned');
+            }
+
+            // Reset step dots
+            document.querySelectorAll('.step-dot').forEach((dot, i) => {
+                dot.classList.remove('completed', 'active');
+                if (i === 0) dot.classList.add('active');
+            });
+
+            updateUI();
+            instruction.textContent = i18n.t('startMessage');
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.textContent = i18n.t('start');
+        }
+
+        function resetPenguinVisual() {
+            // Remove dance animation
+            penguin.classList.remove('penguin-dance');
+            parts.wingLeft.classList.remove('wing-flap-left');
+            parts.wingRight.classList.remove('wing-flap-right');
+
+            // Reset clay blob
+            clayBlob.style.opacity = 1;
+            clayBlob.style.transform = 'translate(-50%, -50%)';
+            clayBlob.style.borderRadius = '50%';
+
+            // Hide all parts
+            Object.values(parts).forEach(el => {
+                el.classList.remove('show');
+                el.style.opacity = 0;
+            });
+            
+            // Reset penguin class
+            penguin.className = 'penguin ' + variants[currentVariant].colors;
+        }
+
+        // ──── Language change handler ────
+        window.addEventListener('languageChanged', () => {
+            if (!gameActive) {
+                instruction.textContent = i18n.t('startMessage');
+                if (penguinsCompleted > 0) {
+                    startBtn.textContent = i18n.t('startAgain');
+                } else {
+                    startBtn.textContent = i18n.t('start');
+                }
+            } else {
+                instruction.textContent = i18n.t(`stepInstructions.${currentStep}`);
+            }
+        });
+    </script>
+</body>
+</html>
