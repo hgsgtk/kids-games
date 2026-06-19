@@ -657,12 +657,20 @@
             renderer.setClearColor(currentTheme.bgColor);
 
             // Lights
-            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
             scene.add(ambientLight);
 
-            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-            pointLight.position.set(0, 0, 0);
+            const pointLight = new THREE.PointLight(0xffffff, 1.5, 200);
+            pointLight.position.set(0, 0, 5);
             scene.add(pointLight);
+
+            const rimLight = new THREE.PointLight(0x4488ff, 0.8, 150);
+            rimLight.position.set(0, 10, -50);
+            scene.add(rimLight);
+
+            const backLight = new THREE.PointLight(0xff4488, 0.5, 150);
+            backLight.position.set(0, -10, -80);
+            scene.add(backLight);
 
             // Create tunnel effect
             createTunnel();
@@ -684,7 +692,16 @@
             
             // Update tunnel colors
             tunnel.forEach((ring, i) => {
-                ring.material.color = getTunnelColor(i, currentTheme.tunnelColors);
+                const newColor = getTunnelColor(i, currentTheme.tunnelColors);
+                ring.material.color.copy(newColor);
+                ring.material.emissive.copy(newColor);
+                // Update child rings (inner accent + outer glow)
+                if (ring.children[0]) {
+                    ring.children[0].material.emissive.copy(newColor);
+                }
+                if (ring.children[1]) {
+                    ring.children[1].material.color.copy(newColor);
+                }
             });
 
             // Update particles
@@ -718,17 +735,55 @@
 
         // Create tunnel walls
         function createTunnel() {
-            const geometry = new THREE.TorusGeometry(15, 0.5, 8, 32);
-            
+            // Main solid ring – thicker tube, high-poly smooth
+            const mainGeometry = new THREE.TorusGeometry(15, 1.2, 24, 64);
+            // Thin inner accent ring
+            const innerGeometry = new THREE.TorusGeometry(13, 0.25, 16, 48);
+            // Outer glow ring
+            const outerGeometry = new THREE.TorusGeometry(16.5, 0.6, 16, 48);
+
             for (let i = 0; i < 50; i++) {
-                const material = new THREE.MeshBasicMaterial({ 
-                    color: getTunnelColor(i, themes[gameState.theme].tunnelColors),
-                    wireframe: true
+                const baseColor = getTunnelColor(i, themes[gameState.theme].tunnelColors);
+
+                // Main ring – metallic and shiny
+                const mainMaterial = new THREE.MeshStandardMaterial({
+                    color: baseColor,
+                    emissive: baseColor,
+                    emissiveIntensity: 0.35,
+                    metalness: 0.85,
+                    roughness: 0.18,
+                    transparent: true,
+                    opacity: 0.92
                 });
-                const ring = new THREE.Mesh(geometry, material);
-                ring.position.z = i * 10 - 100;
-                scene.add(ring);
-                tunnel.push(ring);
+                const mainRing = new THREE.Mesh(mainGeometry, mainMaterial);
+                mainRing.position.z = i * 10 - 100;
+                mainRing.userData.ringIndex = i;
+                mainRing.userData.phaseOffset = Math.random() * Math.PI * 2;
+                scene.add(mainRing);
+                tunnel.push(mainRing);
+
+                // Inner accent ring – bright emissive core
+                const innerMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    emissive: baseColor,
+                    emissiveIntensity: 0.8,
+                    metalness: 0.3,
+                    roughness: 0.1,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const innerRing = new THREE.Mesh(innerGeometry, innerMaterial);
+                mainRing.add(innerRing);
+
+                // Outer glow ring – soft transparent aura
+                const outerMaterial = new THREE.MeshBasicMaterial({
+                    color: baseColor,
+                    transparent: true,
+                    opacity: 0.12,
+                    side: THREE.DoubleSide
+                });
+                const outerRing = new THREE.Mesh(outerGeometry, outerMaterial);
+                mainRing.add(outerRing);
             }
         }
 
@@ -1274,12 +1329,24 @@
                 }
                 
                 // Move tunnel
-                tunnel.forEach(ring => {
+                const time = performance.now() * 0.001;
+                tunnel.forEach((ring, idx) => {
                     ring.position.z += gameState.baseSpeed * gameState.speed;
                     if (ring.position.z > 10) {
                         ring.position.z = -490;
                     }
-                    ring.rotation.z += 0.008;
+                    // Varied rotation per ring
+                    const dir = idx % 2 === 0 ? 1 : -1;
+                    ring.rotation.z += 0.006 * dir;
+
+                    // Pulsing emissive glow
+                    const phase = ring.userData.phaseOffset || 0;
+                    const pulse = 0.25 + 0.2 * Math.sin(time * 1.5 + phase);
+                    ring.material.emissiveIntensity = pulse;
+
+                    // Subtle scale breathing
+                    const breathe = 1.0 + 0.03 * Math.sin(time * 0.8 + phase);
+                    ring.scale.set(breathe, breathe, 1);
                 });
                 
                 // Animate stars with twinkling
