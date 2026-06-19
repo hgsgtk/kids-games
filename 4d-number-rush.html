@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 4D Number Journey - Type & Learn! 🚀</title>
+    <title>🚀 4D Number Rush - Ultimate Edition! 🌟</title>
     <style>
         * {
             margin: 0;
@@ -39,69 +39,223 @@
             left: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .hud-item {
-            background: rgba(102, 126, 234, 0.95);
-            padding: 15px 25px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+            padding: 12px 20px;
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5), 0 0 30px rgba(102, 126, 234, 0.3);
             font-weight: bold;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: white;
-            min-width: 200px;
-        }
-
-        .input-container {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: all;
-        }
-
-        #numberInput {
-            width: 400px;
-            padding: 25px;
-            font-size: 3.5rem;
-            text-align: center;
-            border: 5px solid #667eea;
-            border-radius: 25px;
-            outline: none;
-            font-weight: bold;
-            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.7);
+            min-width: 180px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s;
-            background: rgba(255, 255, 255, 0.95);
         }
 
-        #numberInput:focus {
-            border-color: #ff6b9d;
-            box-shadow: 0 10px 50px rgba(255, 107, 157, 0.9);
+        .hud-item:hover {
             transform: scale(1.05);
         }
 
-        #numberInput.correct {
-            border-color: #4CAF50;
-            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-            animation: pulse 0.3s;
+        .power-up-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        #numberInput.incorrect {
-            border-color: #ff6b9d;
-            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
-            animation: shake 0.3s;
+        .power-up {
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.95), rgba(255, 160, 107, 0.95));
+            padding: 10px 18px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.5);
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+            pointer-events: all;
         }
 
-        @keyframes pulse {
+        .power-up:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.8);
+        }
+
+        .power-up.active {
+            animation: powerUpPulse 0.5s infinite;
+        }
+
+        @keyframes powerUpPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+        .theme-selector {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(50, 50, 80, 0.8));
+            padding: 12px 20px;
+            border-radius: 20px;
+            display: flex;
+            gap: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            pointer-events: all;
+        }
+
+        .theme-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .theme-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: white;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.8);
+        }
+
+        /* ========== INPUT DISPLAY (floating, no box) ========== */
+        .input-area {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: all;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* The digits the user has typed so far */
+        .live-input {
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            font-weight: 900;
+            font-family: 'Segoe UI', 'SF Pro Display', system-ui, sans-serif;
+            letter-spacing: 0.08em;
+            text-align: center;
+            color: #fff;
+            min-height: 1.2em;
+            min-width: 100px;
+            position: relative;
+            /* glassy pill backdrop */
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 24px;
+            padding: 14px 40px;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            text-shadow:
+                0 0 20px rgba(255,255,255,0.6),
+                0 0 40px currentColor,
+                0 2px 3px rgba(0,0,0,0.4);
+            transition: color .25s, text-shadow .25s, border-color .25s, background .25s;
+        }
+
+        /* blinking cursor when empty */
+        .live-input.empty::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes blink {
+            0%,100% { opacity: 0.5; }
+            50%     { opacity: 0; }
+        }
+
+        /* --- correct flash --- */
+        .live-input.correct {
+            color: #69FF8E;
+            text-shadow:
+                0 0 24px rgba(105,255,142,0.8),
+                0 0 60px rgba(40,220,100,0.5),
+                0 2px 3px rgba(0,0,0,0.3);
+            border-color: rgba(105,255,142,0.35);
+            background: rgba(105,255,142,0.08);
+            animation: correctPop .45s cubic-bezier(.36,1.6,.5,1);
+        }
+
+        @keyframes correctPop {
+            0%   { transform: scale(.85); }
+            50%  { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- wrong flash --- */
+        .live-input.wrong {
+            color: #FF6B8A;
+            text-shadow:
+                0 0 24px rgba(255,107,138,0.8),
+                0 0 60px rgba(255,60,80,0.5),
+                0 2px 3px rgba(0,0,0,0.3);
+            border-color: rgba(255,107,138,0.35);
+            background: rgba(255,107,138,0.08);
+            animation: wrongShake .4s;
+        }
+
+        @keyframes wrongShake {
+            0%,100% { transform: translateX(0); }
+            20%     { transform: translateX(-8px); }
+            40%     { transform: translateX(8px); }
+            60%     { transform: translateX(-5px); }
+            80%     { transform: translateX(5px); }
+        }
+
+        /* target number floating above input */
+        .target-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.55);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+
+        /* subtle helper row */
+        .quick-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .quick-btn {
+            padding: 7px 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            font-size: .85rem;
+            backdrop-filter: blur(6px);
+        }
+
+        .quick-btn:hover {
+            background: rgba(255,255,255,0.14);
+            color: #fff;
         }
 
         .start-screen {
@@ -110,7 +264,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -127,50 +281,59 @@
             color: white;
             font-size: 4.5rem;
             margin-bottom: 20px;
-            text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+            text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), 0 0 50px rgba(255, 255, 255, 0.5);
             animation: glow 2s ease-in-out infinite;
         }
 
         @keyframes glow {
-            0%, 100% { text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); }
-            50% { text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 255, 255, 0.8); }
+            0%, 100% { text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 255, 255, 0.5); }
+            50% { text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5), 0 0 60px rgba(255, 255, 255, 0.9); }
         }
 
         .start-screen p {
             color: white;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin-bottom: 30px;
             text-align: center;
-            max-width: 600px;
+            max-width: 700px;
             line-height: 1.6;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        .difficulty-selector {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
+        .settings-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 40px;
+            border-radius: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
         }
 
-        .difficulty-selector label {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #667eea;
-            display: block;
-            margin-bottom: 15px;
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .difficulty-selector select {
-            width: 100%;
-            padding: 15px;
+        .setting-group label {
             font-size: 1.3rem;
             font-weight: bold;
+            color: #667eea;
+        }
+
+        .setting-group select {
+            padding: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
             border: 3px solid #667eea;
-            border-radius: 15px;
+            border-radius: 12px;
             cursor: pointer;
             outline: none;
             font-family: inherit;
+            background: white;
         }
 
         .start-btn {
@@ -193,28 +356,16 @@
         }
 
 
-        .hint-text {
-            position: absolute;
-            bottom: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 1.3rem;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
-            opacity: 0.9;
-            text-align: center;
-        }
-
 
         .combo-display {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 4rem;
+            font-size: 5rem;
             font-weight: bold;
             color: #ffd700;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 100, 0, 0.5);
             pointer-events: none;
             z-index: 150;
             opacity: 0;
@@ -227,9 +378,63 @@
         }
 
         @keyframes comboAnim {
-            0% { transform: translate(-50%, -50%) scale(0.5); }
-            50% { transform: translate(-50%, -50%) scale(1.3); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+            0% { transform: translate(-50%, -50%) scale(0.3) rotate(-20deg); }
+            50% { transform: translate(-50%, -50%) scale(1.4) rotate(5deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        .power-up-notification {
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 160, 0, 0.95));
+            padding: 15px 30px;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 5px 30px rgba(255, 215, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 160;
+            border: 3px solid white;
+        }
+
+        .power-up-notification.show {
+            animation: slideDown 2s ease-out;
+        }
+
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-50px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        }
+
+        .streak-display {
+            position: absolute;
+            top: 200px;
+            right: 30px;
+            background: linear-gradient(135deg, rgba(255, 100, 100, 0.9), rgba(255, 150, 100, 0.9));
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 5px 20px rgba(255, 100, 100, 0.5);
+            border: 2px solid white;
+        }
+
+        @media (max-width: 768px) {
+            .live-input { font-size: 2.8rem; padding: 10px 28px; }
+            .start-screen h1 { font-size: 2.5rem; }
+            .hud { gap: 8px; }
+            .hud-item { padding: 8px 15px; font-size: 1.1rem; min-width: 150px; }
+            .theme-selector { gap: 5px; padding: 8px 12px; }
+            .theme-btn { padding: 6px 12px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -237,6 +442,15 @@
     <canvas id="gameCanvas"></canvas>
 
     <div class="ui-overlay">
+        <!-- Theme Selector -->
+        <div class="theme-selector">
+            <button class="theme-btn active" data-theme="space" onclick="changeTheme('space')">🌌 Space</button>
+            <button class="theme-btn" data-theme="ocean" onclick="changeTheme('ocean')">🌊 Ocean</button>
+            <button class="theme-btn" data-theme="neon" onclick="changeTheme('neon')">💎 Neon</button>
+            <button class="theme-btn" data-theme="sunset" onclick="changeTheme('sunset')">🌅 Sunset</button>
+            <button class="theme-btn" data-theme="matrix" onclick="changeTheme('matrix')">🟢 Matrix</button>
+        </div>
+
         <!-- HUD -->
         <div class="hud">
             <div class="hud-item">
@@ -248,50 +462,159 @@
             <div class="hud-item">
                 ⭐ Correct: <span id="correct">0</span>
             </div>
+            <div class="hud-item">
+                ⚡ Speed: <span id="speedDisplay">1.0</span>x
+            </div>
+        </div>
+
+        <!-- Power-ups -->
+        <div class="power-up-bar">
+            <div class="power-up" onclick="activatePowerUp('slow')" title="Slow down numbers">
+                🐌 Slow Time
+            </div>
+            <div class="power-up" onclick="activatePowerUp('double')" title="Double points">
+                💰 2x Points
+            </div>
+            <div class="power-up" onclick="activatePowerUp('freeze')" title="Freeze numbers">
+                ❄️ Freeze
+            </div>
+        </div>
+
+        <!-- Streak Display -->
+        <div class="streak-display" id="streakDisplay" style="display: none;">
+            🔥 <span id="streakCount">0</span> Streak!
         </div>
 
         <!-- Input -->
-        <div class="input-container">
-            <input type="text" id="numberInput" placeholder="Type number + ENTER" disabled inputmode="numeric">
-        </div>
-
-        <!-- Hint -->
-        <div class="hint-text">
-            Type any number and press ENTER to send it!<br>
-            <small>Match flying numbers to score! 🌟 Sparkly = Your numbers! ✨</small>
+        <div class="input-area">
+            <div class="target-label" id="targetLabel">type a number · enter ↵</div>
+            <div class="live-input empty" id="liveInput"></div>
+            <div class="quick-row">
+                <button class="quick-btn" onclick="clearInput()">⌫ Clear</button>
+                <button class="quick-btn" onclick="randomNumber()">🎲 Random</button>
+            </div>
         </div>
 
         <!-- Combo Display -->
         <div class="combo-display" id="comboDisplay"></div>
+
+        <!-- Power-up Notification -->
+        <div class="power-up-notification" id="powerUpNotif"></div>
     </div>
 
     <!-- Start Screen -->
     <div class="start-screen" id="startScreen">
-        <h1>🚀 4D Number Journey! 🚀</h1>
-        <p>Numbers stream towards you from space!<br>Type any number and press ENTER to create a sparkly version!<br>Match them to score points! ✨</p>
-        <div class="difficulty-selector">
-            <label for="difficultySelect">Choose Difficulty:</label>
-            <select id="difficultySelect">
-                <option value="easy">Easy - Single digits (1, 2, 3...)</option>
-                <option value="medium" selected>Medium - Double digits (11, 22, 33...)</option>
-                <option value="hard">Hard - Triple digits (111, 222, 333...)</option>
-                <option value="extreme">Extreme - Random patterns (211, 811, 917...)</option>
-            </select>
+        <h1>🚀 4D Number Rush! 🌟</h1>
+        <p>
+            ✨ Ultimate typing adventure through space and time! ✨<br>
+            Type numbers, match them, build combos, unlock power-ups!<br>
+            Choose your theme and difficulty - let's go! 🎮
+        </p>
+        <div class="settings-panel">
+            <div class="setting-group">
+                <label for="difficultySelect">🎯 Difficulty:</label>
+                <select id="difficultySelect">
+                    <option value="easy">🟢 Easy - Single digits (1-9)</option>
+                    <option value="medium" selected>🟡 Medium - Double digits (11, 22, 33...)</option>
+                    <option value="hard">🔴 Hard - Triple digits (111, 222, 333...)</option>
+                    <option value="extreme">⚫ Extreme - Random (100-999)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="modeSelect">🎮 Game Mode:</label>
+                <select id="modeSelect">
+                    <option value="endless">♾️ Endless - No time limit</option>
+                    <option value="timed">⏱️ Time Attack - 60 seconds</option>
+                    <option value="zen">🧘 Zen - Super relaxed</option>
+                </select>
+            </div>
         </div>
-        <button class="start-btn" onclick="startGame()">🎮 Start Game!</button>
+        <button class="start-btn" onclick="startGame()">🎮 Start Adventure!</button>
     </div>
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // Themes configuration
+        // Bubble color palettes for regular numbers
+        const bubbleColorSets = [
+            { bg: '#FF6B9D', border: '#E0457B', text: '#ffffff' },
+            { bg: '#845EC2', border: '#6B3FA0', text: '#ffffff' },
+            { bg: '#00C9A7', border: '#00A88A', text: '#ffffff' },
+            { bg: '#FFC75F', border: '#E0A830', text: '#5A4520' },
+            { bg: '#4D8AF0', border: '#3070D0', text: '#ffffff' },
+            { bg: '#FF8066', border: '#E06050', text: '#ffffff' },
+            { bg: '#08D9D6', border: '#06B5B2', text: '#ffffff' },
+            { bg: '#D65DB1', border: '#B84098', text: '#ffffff' },
+            { bg: '#FF6F91', border: '#E05575', text: '#ffffff' },
+            { bg: '#67E6DC', border: '#45C4BA', text: '#3A6B66' }
+        ];
+
+        const themes = {
+            space: {
+                bgColor: 0x0a0a2e,
+                fogColor: 0x0a0a2e,
+                tunnelColors: 'rainbow',
+                particleColor: 0xffffff,
+                numberColor: '#ffffff',
+                userNumberGlow: ['#ffff00', '#ffaa00', '#ff69b4'],
+                userBubble: { bg: '#FFD700', border: '#FFA500', text: '#5A3800', shine: '#FFF8DC' }
+            },
+            ocean: {
+                bgColor: 0x001133,
+                fogColor: 0x003366,
+                tunnelColors: 'blue',
+                particleColor: 0x00ffff,
+                numberColor: '#00ffff',
+                userNumberGlow: ['#00ffff', '#0099ff', '#00ff99'],
+                userBubble: { bg: '#00E5FF', border: '#00B8D4', text: '#003D4D', shine: '#E0FFFF' }
+            },
+            neon: {
+                bgColor: 0x110033,
+                fogColor: 0x220066,
+                tunnelColors: 'neon',
+                particleColor: 0xff00ff,
+                numberColor: '#ff00ff',
+                userNumberGlow: ['#ff00ff', '#ff0099', '#ffff00'],
+                userBubble: { bg: '#FF00FF', border: '#CC00CC', text: '#ffffff', shine: '#FFB3FF' }
+            },
+            sunset: {
+                bgColor: 0x331100,
+                fogColor: 0x663300,
+                tunnelColors: 'warm',
+                particleColor: 0xffaa00,
+                numberColor: '#ffaa00',
+                userNumberGlow: ['#ff6600', '#ff9900', '#ffcc00'],
+                userBubble: { bg: '#FF7043', border: '#E64A19', text: '#ffffff', shine: '#FFCCBC' }
+            },
+            matrix: {
+                bgColor: 0x001100,
+                fogColor: 0x003300,
+                tunnelColors: 'green',
+                particleColor: 0x00ff00,
+                numberColor: '#00ff00',
+                userNumberGlow: ['#00ff00', '#00aa00', '#00ff66'],
+                userBubble: { bg: '#00E676', border: '#00C853', text: '#003D1A', shine: '#B9F6CA' }
+            }
+        };
+
         // Game state
         let gameState = {
             isPlaying: false,
             score: 0,
             combo: 0,
             correctCount: 0,
+            streak: 0,
             difficulty: 'medium',
-            speed: 0.05
+            mode: 'endless',
+            speed: 1.0,
+            baseSpeed: 0.04,
+            theme: 'space',
+            powerUps: {
+                slow: { active: false, duration: 0 },
+                double: { active: false, duration: 0 },
+                freeze: { active: false, duration: 0 }
+            },
+            timeLeft: 60
         };
 
         // Three.js variables
@@ -304,24 +627,34 @@
         const scoreEl = document.getElementById('score');
         const comboEl = document.getElementById('combo');
         const correctEl = document.getElementById('correct');
-        const numberInput = document.getElementById('numberInput');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const streakDisplay = document.getElementById('streakDisplay');
+        const streakCount = document.getElementById('streakCount');
+        const liveInput = document.getElementById('liveInput');
+        const targetLabel = document.getElementById('targetLabel');
         const startScreen = document.getElementById('startScreen');
         const difficultySelect = document.getElementById('difficultySelect');
+        const modeSelect = document.getElementById('modeSelect');
         const comboDisplay = document.getElementById('comboDisplay');
+        const powerUpNotif = document.getElementById('powerUpNotif');
+
+        // typed buffer
+        let typedValue = '';
 
         // Initialize Three.js
         function initThreeJS() {
             const canvas = document.getElementById('gameCanvas');
             
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x000033, 0.015);
+            const currentTheme = themes[gameState.theme];
+            scene.fog = new THREE.FogExp2(currentTheme.fogColor, 0.015);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 0;
 
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0x000033);
+            renderer.setClearColor(currentTheme.bgColor);
 
             // Lights
             const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
@@ -340,13 +673,56 @@
             window.addEventListener('resize', onWindowResize);
         }
 
+        // Change theme
+        function changeTheme(themeName) {
+            gameState.theme = themeName;
+            const currentTheme = themes[themeName];
+            
+            // Update visuals
+            scene.fog.color.setHex(currentTheme.fogColor);
+            renderer.setClearColor(currentTheme.bgColor);
+            
+            // Update tunnel colors
+            tunnel.forEach((ring, i) => {
+                ring.material.color = getTunnelColor(i, currentTheme.tunnelColors);
+            });
+
+            // Update particles
+            particles.forEach(star => {
+                star.material.color.setHex(currentTheme.particleColor);
+            });
+
+            // Update active button
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === themeName);
+            });
+        }
+
+        // Get tunnel color based on theme
+        function getTunnelColor(index, colorScheme) {
+            switch (colorScheme) {
+                case 'rainbow':
+                    return new THREE.Color().setHSL(index / 50, 1, 0.5);
+                case 'blue':
+                    return new THREE.Color().setHSL(0.55 + index * 0.01, 0.8, 0.5);
+                case 'neon':
+                    return new THREE.Color().setHSL((index % 3) * 0.33, 1, 0.5);
+                case 'warm':
+                    return new THREE.Color().setHSL(0.1 - index * 0.005, 1, 0.5);
+                case 'green':
+                    return new THREE.Color().setHSL(0.33, 0.8, 0.3 + (index % 10) * 0.05);
+                default:
+                    return new THREE.Color(0xffffff);
+            }
+        }
+
         // Create tunnel walls
         function createTunnel() {
             const geometry = new THREE.TorusGeometry(15, 0.5, 8, 32);
             
             for (let i = 0; i < 50; i++) {
                 const material = new THREE.MeshBasicMaterial({ 
-                    color: new THREE.Color().setHSL(i / 50, 1, 0.5),
+                    color: getTunnelColor(i, themes[gameState.theme].tunnelColors),
                     wireframe: true
                 });
                 const ring = new THREE.Mesh(geometry, material);
@@ -359,15 +735,18 @@
         // Create starfield
         function createStarfield() {
             const geometry = new THREE.SphereGeometry(0.1, 8, 8);
-            const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const material = new THREE.MeshBasicMaterial({ 
+                color: themes[gameState.theme].particleColor 
+            });
 
-            for (let i = 0; i < 200; i++) {
-                const star = new THREE.Mesh(geometry, material);
+            for (let i = 0; i < 300; i++) {
+                const star = new THREE.Mesh(geometry, material.clone());
                 star.position.set(
                     (Math.random() - 0.5) * 100,
                     (Math.random() - 0.5) * 100,
                     (Math.random() - 0.5) * 200 - 50
                 );
+                star.userData.twinkle = Math.random() * Math.PI * 2;
                 scene.add(star);
                 particles.push(star);
             }
@@ -377,75 +756,84 @@
         function generateNumber() {
             switch (gameState.difficulty) {
                 case 'easy':
-                    return Math.floor(Math.random() * 10); // 0-9
+                    return Math.floor(Math.random() * 9) + 1;
                 case 'medium':
-                    const digit = Math.floor(Math.random() * 10);
-                    return parseInt(digit.toString() + digit.toString()); // 11, 22, 33...
+                    const digit = Math.floor(Math.random() * 9) + 1;
+                    return parseInt(digit.toString() + digit.toString());
                 case 'hard':
-                    const d = Math.floor(Math.random() * 10);
-                    return parseInt(d.toString() + d.toString() + d.toString()); // 111, 222, 333...
+                    const d = Math.floor(Math.random() * 9) + 1;
+                    return parseInt(d.toString().repeat(3));
                 case 'extreme':
-                    // Random 3-digit numbers
-                    return Math.floor(Math.random() * 900) + 100; // 100-999
+                    return Math.floor(Math.random() * 900) + 100;
             }
         }
 
-        // Create flying number with specific value (user-typed, cute highlight)
+        // Create user-typed number (bubble style – larger, golden/themed)
         function createFlyingNumberWithValue(value) {
             if (!gameState.isPlaying) return;
 
-            // Create text sprite with cute styling
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            canvas.width = 300;
-            canvas.height = 150;
-            
-            // Draw cute background glow
-            const gradient = context.createRadialGradient(150, 75, 20, 150, 75, 70);
-            gradient.addColorStop(0, 'rgba(255, 255, 100, 0.8)');
-            gradient.addColorStop(0.5, 'rgba(255, 200, 100, 0.5)');
-            gradient.addColorStop(1, 'rgba(255, 100, 200, 0.2)');
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 300, 150);
-            
-            // Draw sparkles
-            context.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            const sparkles = [
-                {x: 50, y: 30, size: 8},
-                {x: 250, y: 40, size: 6},
-                {x: 70, y: 120, size: 7},
-                {x: 230, y: 110, size: 5}
-            ];
-            sparkles.forEach(sparkle => {
-                context.beginPath();
-                for (let i = 0; i < 4; i++) {
-                    const angle = (Math.PI * 2 * i) / 4;
-                    const x = sparkle.x + Math.cos(angle) * sparkle.size;
-                    const y = sparkle.y + Math.sin(angle) * sparkle.size;
-                    if (i === 0) context.moveTo(x, y);
-                    else context.lineTo(x, y);
-                }
-                context.closePath();
-                context.fill();
-            });
-            
-            // Draw number with outline
-            context.font = 'bold 85px Arial';
+            canvas.width = 400;
+            canvas.height = 400;
+            const cx = 200, cy = 200, r = 160;
+
+            const currentTheme = themes[gameState.theme];
+            const ub = currentTheme.userBubble;
+
+            // Outer glow
+            const glow = context.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 1.4);
+            glow.addColorStop(0, ub.bg + 'aa');
+            glow.addColorStop(1, ub.bg + '00');
+            context.fillStyle = glow;
+            context.beginPath();
+            context.arc(cx, cy, r * 1.4, 0, Math.PI * 2);
+            context.fill();
+
+            // Main bubble circle
+            const grad = context.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
+            grad.addColorStop(0, ub.shine);
+            grad.addColorStop(0.4, ub.bg);
+            grad.addColorStop(1, ub.border);
+            context.fillStyle = grad;
+            context.beginPath();
+            context.arc(cx, cy, r, 0, Math.PI * 2);
+            context.fill();
+
+            // Border
+            context.strokeStyle = ub.border;
+            context.lineWidth = 6;
+            context.stroke();
+
+            // Highlight / shine arc
+            context.save();
+            context.globalAlpha = 0.45;
+            context.fillStyle = '#ffffff';
+            context.beginPath();
+            context.ellipse(cx - r * 0.2, cy - r * 0.35, r * 0.55, r * 0.30, -0.3, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+
+            // Number text
+            context.font = 'bold 120px "Comic Sans MS", "Arial Rounded MT Bold", sans-serif';
             context.textAlign = 'center';
             context.textBaseline = 'middle';
-            
-            // Outline
-            context.strokeStyle = '#ff69b4';
-            context.lineWidth = 8;
-            context.strokeText(value.toString(), 150, 75);
-            
-            // Main text with gradient
-            const textGradient = context.createLinearGradient(0, 0, 0, 150);
-            textGradient.addColorStop(0, '#ffff00');
-            textGradient.addColorStop(0.5, '#ffaa00');
-            textGradient.addColorStop(1, '#ff69b4');
-            context.fillStyle = textGradient;
-            context.fillText(value.toString(), 150, 75);
+            // Shadow
+            context.shadowColor = 'rgba(0,0,0,0.3)';
+            context.shadowBlur = 8;
+            context.shadowOffsetX = 3;
+            context.shadowOffsetY = 3;
+            context.fillStyle = ub.text;
+            context.fillText(value.toString(), cx, cy + 5);
+            context.shadowColor = 'transparent';
+
+            // Small sparkle dots
+            [[cx - r * 0.55, cy - r * 0.55, 8], [cx + r * 0.5, cy - r * 0.4, 6], [cx + r * 0.6, cy + r * 0.45, 5]].forEach(([sx, sy, sz]) => {
+                context.fillStyle = 'rgba(255,255,255,0.85)';
+                context.beginPath();
+                context.arc(sx, sy, sz, 0, Math.PI * 2);
+                context.fill();
+            });
 
             const texture = new THREE.CanvasTexture(canvas);
             const material = new THREE.SpriteMaterial({ 
@@ -454,39 +842,80 @@
             });
             const sprite = new THREE.Sprite(material);
             
-            // Random position in the distance
             sprite.position.set(
                 (Math.random() - 0.5) * 30,
                 (Math.random() - 0.5) * 20,
                 -100
             );
-            sprite.scale.set(10, 5, 1); // Slightly bigger for cute effect
+            sprite.scale.set(10, 10, 1);
             sprite.userData.number = parseInt(value);
-            sprite.userData.speed = gameState.speed;
-            sprite.userData.isUserTyped = true; // Mark as user-typed
-            sprite.userData.pulseTime = 0; // For animation
+            sprite.userData.speed = gameState.baseSpeed * gameState.speed;
+            sprite.userData.isUserTyped = true;
+            sprite.userData.pulseTime = 0;
             
             scene.add(sprite);
             flyingNumbers.push(sprite);
         }
 
-        // Create flying number
+        // Create regular flying number (bubble style)
         function createFlyingNumber() {
             if (!gameState.isPlaying) return;
 
             const number = generateNumber();
-            
-            // Create text sprite
+            const currentTheme = themes[gameState.theme];
+            const colors = bubbleColorSets[number % bubbleColorSets.length];
+
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            canvas.width = 256;
-            canvas.height = 128;
-            
+            canvas.width = 300;
+            canvas.height = 300;
+            const cx = 150, cy = 150, r = 120;
+
+            // Soft outer glow
+            const glow = context.createRadialGradient(cx, cy, r * 0.7, cx, cy, r * 1.3);
+            glow.addColorStop(0, colors.bg + '66');
+            glow.addColorStop(1, colors.bg + '00');
+            context.fillStyle = glow;
+            context.beginPath();
+            context.arc(cx, cy, r * 1.3, 0, Math.PI * 2);
+            context.fill();
+
+            // Main bubble
+            const grad = context.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(0.25, colors.bg);
+            grad.addColorStop(1, colors.border);
+            context.fillStyle = grad;
+            context.beginPath();
+            context.arc(cx, cy, r, 0, Math.PI * 2);
+            context.fill();
+
+            // Border ring
+            context.strokeStyle = colors.border;
+            context.lineWidth = 5;
+            context.stroke();
+
+            // Highlight / shine arc
+            context.save();
+            context.globalAlpha = 0.4;
             context.fillStyle = '#ffffff';
-            context.font = 'bold 80px Arial';
+            context.beginPath();
+            context.ellipse(cx - r * 0.18, cy - r * 0.35, r * 0.5, r * 0.25, -0.3, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+
+            // Number text
+            context.font = 'bold 100px "Comic Sans MS", "Arial Rounded MT Bold", sans-serif';
             context.textAlign = 'center';
             context.textBaseline = 'middle';
-            context.fillText(number.toString(), 128, 64);
+            // Drop shadow
+            context.shadowColor = 'rgba(0,0,0,0.25)';
+            context.shadowBlur = 6;
+            context.shadowOffsetX = 2;
+            context.shadowOffsetY = 2;
+            context.fillStyle = colors.text;
+            context.fillText(number.toString(), cx, cy + 4);
+            context.shadowColor = 'transparent';
 
             const texture = new THREE.CanvasTexture(canvas);
             const material = new THREE.SpriteMaterial({ 
@@ -495,15 +924,16 @@
             });
             const sprite = new THREE.Sprite(material);
             
-            // Random position in the distance
             sprite.position.set(
                 (Math.random() - 0.5) * 30,
                 (Math.random() - 0.5) * 20,
                 -100
             );
-            sprite.scale.set(8, 4, 1);
+            sprite.scale.set(8, 8, 1);
             sprite.userData.number = number;
-            sprite.userData.speed = gameState.speed;
+            sprite.userData.speed = gameState.baseSpeed * gameState.speed;
+            sprite.userData.isUserTyped = false;
+            sprite.userData.wobbleTime = Math.random() * Math.PI * 2;
             
             scene.add(sprite);
             flyingNumbers.push(sprite);
@@ -515,31 +945,68 @@
             gameState.score = 0;
             gameState.combo = 0;
             gameState.correctCount = 0;
+            gameState.streak = 0;
             gameState.difficulty = difficultySelect.value;
+            gameState.mode = modeSelect.value;
+            gameState.speed = 1.0;
             
             // Set speed based on difficulty
             switch (gameState.difficulty) {
-                case 'easy': gameState.speed = 0.03; break;
-                case 'medium': gameState.speed = 0.04; break;
-                case 'hard': gameState.speed = 0.05; break;
-                case 'extreme': gameState.speed = 0.06; break;
+                case 'easy': gameState.baseSpeed = 0.03; break;
+                case 'medium': gameState.baseSpeed = 0.04; break;
+                case 'hard': gameState.baseSpeed = 0.05; break;
+                case 'extreme': gameState.baseSpeed = 0.06; break;
+            }
+
+            // Zen mode is slower
+            if (gameState.mode === 'zen') {
+                gameState.baseSpeed *= 0.6;
+            }
+
+            // Timed mode setup
+            if (gameState.mode === 'timed') {
+                gameState.timeLeft = 60;
+                startTimer();
             }
             
             startScreen.classList.add('hidden');
-            numberInput.disabled = false;
-            numberInput.focus();
+            typedValue = '';
+            renderInput();
             
             updateUI();
             
-            // Create initial numbers (5 numbers at different distances)
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    createFlyingNumber();
-                }, i * 400);
+            // Create initial numbers
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => createFlyingNumber(), i * 400);
             }
             
             // Spawn numbers periodically
-            gameState.spawnInterval = setInterval(createFlyingNumber, 3000);
+            const spawnRate = gameState.mode === 'zen' ? 4000 : 2500;
+            gameState.spawnInterval = setInterval(createFlyingNumber, spawnRate);
+        }
+
+        // Timer for timed mode
+        function startTimer() {
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // End game
+        function endGame() {
+            gameState.isPlaying = false;
+            clearInterval(gameState.spawnInterval);
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            
+            alert(`🎉 Game Over!\n\n🎯 Final Score: ${gameState.score}\n⭐ Correct: ${gameState.correctCount}\n💥 Max Combo: ${gameState.combo}`);
+            
+            // Return to start screen
+            startScreen.classList.remove('hidden');
+            typedValue = '';
+            renderInput();
         }
 
         // Update UI
@@ -547,12 +1014,21 @@
             scoreEl.textContent = gameState.score;
             comboEl.textContent = gameState.combo;
             correctEl.textContent = gameState.correctCount;
+            speedDisplay.textContent = gameState.speed.toFixed(1);
+            
+            if (gameState.streak >= 5) {
+                streakDisplay.style.display = 'block';
+                streakCount.textContent = gameState.streak;
+            } else {
+                streakDisplay.style.display = 'none';
+            }
         }
 
         // Show combo
         function showCombo(combo) {
             if (combo >= 3) {
-                comboDisplay.textContent = `${combo}x COMBO! 🔥`;
+                let emoji = combo >= 10 ? '🔥🔥🔥' : combo >= 5 ? '🔥🔥' : '🔥';
+                comboDisplay.textContent = `${combo}x COMBO! ${emoji}`;
                 comboDisplay.classList.add('show');
                 
                 setTimeout(() => {
@@ -561,113 +1037,197 @@
             }
         }
 
+        // Show power-up notification
+        function showPowerUpNotif(message) {
+            powerUpNotif.textContent = message;
+            powerUpNotif.classList.add('show');
+            setTimeout(() => {
+                powerUpNotif.classList.remove('show');
+            }, 2000);
+        }
+
+        // Activate power-up
+        function activatePowerUp(type) {
+            if (gameState.powerUps[type].active) return;
+            if (gameState.score < 50) {
+                showPowerUpNotif('❌ Need 50+ points to use power-ups!');
+                return;
+            }
+
+            gameState.score -= 50;
+            gameState.powerUps[type].active = true;
+            gameState.powerUps[type].duration = 5000;
+
+            switch (type) {
+                case 'slow':
+                    gameState.speed = 0.5;
+                    showPowerUpNotif('🐌 Time slowed down!');
+                    break;
+                case 'double':
+                    showPowerUpNotif('💰 Double points activated!');
+                    break;
+                case 'freeze':
+                    gameState.speed = 0.1;
+                    showPowerUpNotif('❄️ Numbers frozen!');
+                    break;
+            }
+
+            updateUI();
+
+            setTimeout(() => {
+                gameState.powerUps[type].active = false;
+                gameState.speed = 1.0;
+                updateUI();
+            }, 5000);
+        }
+
         // Check input
         function checkInput() {
             if (!gameState.isPlaying) return;
             
-            const userValue = numberInput.value.trim();
+            const userValue = typedValue.trim();
             if (userValue === '') return;
             
-            // Find matching number
             let found = false;
             for (let i = flyingNumbers.length - 1; i >= 0; i--) {
                 const num = flyingNumbers[i];
                 if (num.userData.number.toString() === userValue) {
-                    // Correct!
                     found = true;
                     gameState.combo++;
                     gameState.correctCount++;
-                    gameState.score += 10 * gameState.combo;
+                    gameState.streak++;
                     
-                    numberInput.className = 'correct';
+                    let points = 10 * gameState.combo;
+                    if (gameState.powerUps.double.active) points *= 2;
+                    if (gameState.streak >= 10) points *= 1.5;
                     
-                    // Remove number
+                    gameState.score += Math.floor(points);
+                    
+                    flashInput('correct');
+                    
                     scene.remove(num);
                     flyingNumbers.splice(i, 1);
                     
-                    // Create explosion effect
                     createExplosion(num.position);
                     
-                    // Create new number with the typed value!
                     setTimeout(() => {
                         createFlyingNumberWithValue(userValue);
-                    }, 500);
+                    }, 400);
                     
                     showCombo(gameState.combo);
                     updateUI();
                     
                     setTimeout(() => {
-                        numberInput.value = '';
-                        numberInput.className = '';
-                    }, 200);
+                        typedValue = '';
+                        renderInput();
+                    }, 250);
                     
                     break;
                 }
             }
             
             if (!found && userValue.length >= 1) {
-                // If no matching number, create one with the typed value anyway!
-                const typedNumber = parseInt(userValue);
-                if (!isNaN(typedNumber)) {
+                const typed = parseInt(userValue);
+                if (!isNaN(typed)) {
                     createFlyingNumberWithValue(userValue);
-                    gameState.score += 5; // Small bonus for creating numbers
+                    gameState.score += 5;
+                    gameState.streak = 0;
                     updateUI();
                 }
                 
-                numberInput.className = 'correct';
+                flashInput('correct');
                 
                 setTimeout(() => {
-                    numberInput.value = '';
-                    numberInput.className = '';
-                }, 300);
+                    typedValue = '';
+                    renderInput();
+                }, 350);
             }
         }
 
-        // Create explosion effect
+        // Create bubble-pop explosion effect
         function createExplosion(position) {
             const particleCount = 20;
-            const particles = [];
+            const explosionParticles = [];
             
+            // Mix of small colorful bubbles popping outward
             for (let i = 0; i < particleCount; i++) {
-                const geometry = new THREE.SphereGeometry(0.2, 8, 8);
+                const size = 0.15 + Math.random() * 0.25;
+                const geometry = new THREE.SphereGeometry(size, 12, 12);
+                const bubbleColor = bubbleColorSets[Math.floor(Math.random() * bubbleColorSets.length)];
                 const material = new THREE.MeshBasicMaterial({ 
-                    color: new THREE.Color().setHSL(Math.random(), 1, 0.5)
+                    color: new THREE.Color(bubbleColor.bg),
+                    transparent: true,
+                    opacity: 0.9
                 });
                 const particle = new THREE.Mesh(geometry, material);
                 particle.position.copy(position);
                 
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1.5 + Math.random() * 2;
                 const velocity = new THREE.Vector3(
-                    (Math.random() - 0.5) * 2,
-                    (Math.random() - 0.5) * 2,
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed,
                     (Math.random() - 0.5) * 2
                 );
                 particle.userData.velocity = velocity;
                 particle.userData.life = 1;
                 
                 scene.add(particle);
-                particles.push(particle);
+                explosionParticles.push(particle);
             }
             
-            // Animate particles
             let frame = 0;
-            const animate = () => {
+            const animateExplosion = () => {
                 frame++;
-                particles.forEach(p => {
+                explosionParticles.forEach(p => {
                     p.position.add(p.userData.velocity);
-                    p.scale.multiplyScalar(0.95);
+                    p.userData.velocity.multiplyScalar(0.96);
+                    p.scale.multiplyScalar(0.96);
+                    p.material.opacity *= 0.97;
                     p.userData.life -= 0.02;
                 });
                 
                 if (frame < 50) {
-                    requestAnimationFrame(animate);
+                    requestAnimationFrame(animateExplosion);
                 } else {
-                    particles.forEach(p => scene.remove(p));
+                    explosionParticles.forEach(p => scene.remove(p));
                 }
             };
-            animate();
+            animateExplosion();
         }
 
+        // render the typed value into liveInput div
+        function renderInput() {
+            if (typedValue === '') {
+                liveInput.textContent = '';
+                liveInput.classList.add('empty');
+            } else {
+                liveInput.textContent = typedValue;
+                liveInput.classList.remove('empty');
+            }
+        }
 
+        // flash feedback on the live-input
+        function flashInput(type) {
+            liveInput.classList.remove('correct', 'wrong');
+            void liveInput.offsetWidth;             // reflow to restart animation
+            liveInput.classList.add(type);
+            setTimeout(() => {
+                liveInput.classList.remove(type);
+            }, 500);
+        }
+
+        // Clear input
+        function clearInput() {
+            typedValue = '';
+            renderInput();
+        }
+
+        // Random number
+        function randomNumber() {
+            typedValue = String(Math.floor(Math.random() * 900) + 100);
+            renderInput();
+        }
 
         // Animation loop
         function animate() {
@@ -677,50 +1237,65 @@
                 // Move flying numbers
                 for (let i = flyingNumbers.length - 1; i >= 0; i--) {
                     const num = flyingNumbers[i];
-                    num.position.z += num.userData.speed;
                     
-                    // Animate user-typed numbers with cute effects
-                    if (num.userData.isUserTyped) {
-                        num.userData.pulseTime = (num.userData.pulseTime || 0) + 0.05;
-                        const pulse = 1 + Math.sin(num.userData.pulseTime) * 0.1;
-                        num.scale.set(10 * pulse, 5 * pulse, 1);
-                        num.rotation.z = Math.sin(num.userData.pulseTime * 0.5) * 0.1;
+                    if (!gameState.powerUps.freeze.active || !gameState.powerUps.slow.active) {
+                        num.position.z += num.userData.speed;
                     }
                     
-                    // If number passes by, just fade it out and remove it
+                    // User-typed numbers animation (bubble pulse)
+                    if (num.userData.isUserTyped) {
+                        num.userData.pulseTime = (num.userData.pulseTime || 0) + 0.06;
+                        const pulse = 1 + Math.sin(num.userData.pulseTime) * 0.08;
+                        num.scale.set(10 * pulse, 10 * pulse, 1);
+                        num.rotation.z = Math.sin(num.userData.pulseTime * 0.3) * 0.06;
+                    }
+                    // Regular number wobble (gentle float)
+                    if (!num.userData.isUserTyped && num.userData.wobbleTime !== undefined) {
+                        num.userData.wobbleTime += 0.03;
+                        num.position.y += Math.sin(num.userData.wobbleTime) * 0.015;
+                        num.rotation.z = Math.sin(num.userData.wobbleTime * 0.7) * 0.05;
+                    }
+                    
+                    // Remove if passed
                     if (num.position.z > 5) {
-                        // Fade out
                         num.material.opacity -= 0.05;
                         
                         if (num.material.opacity <= 0) {
                             scene.remove(num);
                             flyingNumbers.splice(i, 1);
-                            gameState.combo = 0; // Reset combo when number passes
+                            if (!num.userData.isUserTyped) {
+                                gameState.combo = 0;
+                                gameState.streak = 0;
+                            }
                         }
-                    } else {
-                        // Fade in as it approaches
-                        if (num.position.z > -50) {
-                            num.material.opacity = Math.min(1, (num.position.z + 100) / 50);
-                        }
+                    } else if (num.position.z > -50) {
+                        num.material.opacity = Math.min(1, (num.position.z + 100) / 50);
                     }
                 }
                 
                 // Move tunnel
                 tunnel.forEach(ring => {
-                    ring.position.z += gameState.speed;
+                    ring.position.z += gameState.baseSpeed * gameState.speed;
                     if (ring.position.z > 10) {
                         ring.position.z = -490;
                     }
-                    ring.rotation.z += 0.01;
+                    ring.rotation.z += 0.008;
                 });
                 
-                // Move stars
+                // Animate stars with twinkling
                 particles.forEach(star => {
-                    star.position.z += gameState.speed * 2;
+                    star.position.z += gameState.baseSpeed * gameState.speed * 2;
                     if (star.position.z > 10) {
                         star.position.z = -200;
                     }
+                    star.userData.twinkle += 0.05;
+                    star.scale.setScalar(0.8 + Math.sin(star.userData.twinkle) * 0.3);
                 });
+
+                // Gradually increase speed
+                if (gameState.mode !== 'zen' && !gameState.powerUps.freeze.active && !gameState.powerUps.slow.active) {
+                    gameState.speed = Math.min(2.0, 1.0 + gameState.correctCount * 0.01);
+                }
             }
             
             renderer.render(scene, camera);
@@ -733,17 +1308,37 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // Event listeners
-        numberInput.addEventListener('input', (e) => {
-            // Only allow numbers
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-            // Don't check immediately - wait for Enter key
-        });
+        // Global keyboard handler – replaces old <input> listeners
+        document.addEventListener('keydown', (e) => {
+            // ignore when start screen is visible
+            if (!startScreen.classList.contains('hidden')) return;
+            if (!gameState.isPlaying) return;
 
-        // Check input only on Enter key press
-        numberInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 checkInput();
+                return;
+            }
+
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                typedValue = typedValue.slice(0, -1);
+                renderInput();
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                typedValue = '';
+                renderInput();
+                return;
+            }
+
+            // only digits
+            if (e.key >= '0' && e.key <= '9') {
+                e.preventDefault();
+                typedValue += e.key;
+                renderInput();
             }
         });
 
@@ -753,4 +1348,3 @@
     </script>
 </body>
 </html>
-
