@@ -686,7 +686,7 @@ document.querySelectorAll('.mbtn').forEach(b=>b.addEventListener('click',()=>{do
 ascBtn.addEventListener('click',()=>{document.querySelectorAll('.dirbtn').forEach(b=>b.classList.remove('sel'));ascBtn.classList.add('sel');seqDir='ascending';startNI.value='0';endNI.value='9'});
 descBtn.addEventListener('click',()=>{document.querySelectorAll('.dirbtn').forEach(b=>b.classList.remove('sel'));descBtn.classList.add('sel');seqDir='descending';startNI.value='100';endNI.value='0'});
 startNI.addEventListener('change',()=>{const s=parseInt(startNI.value);if(seqDir==='ascending'){if(parseInt(endNI.value)<=s)endNI.value=Math.min(s+10,maxNumber)}else{if(parseInt(endNI.value)>=s)endNI.value=Math.max(s-10,0)}});
-document.querySelectorAll('.dbtn').forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.difficulty)return;document.querySelectorAll('.dbtn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');difficulty=b.dataset.difficulty;maxNumber=DS[difficulty].max;startNI.max=maxNumber;endNI.max=maxNumber;if(seqDir==='ascending'){if(parseInt(startNI.value)>maxNumber)startNI.value=0;if(parseInt(endNI.value)>maxNumber)endNI.value=maxNumber}else{if(parseInt(startNI.value)>maxNumber)startNI.value=maxNumber}}));
+document.querySelectorAll('.dbtn').forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.difficulty)return;document.querySelectorAll('.dbtn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');difficulty=b.dataset.difficulty;maxNumber=DS[difficulty].max;startNI.max=maxNumber;endNI.max=maxNumber;if(seqDir==='ascending'){startNI.value=0;endNI.value=maxNumber}else{startNI.value=maxNumber;endNI.value=0}}));
 startBtn.addEventListener('click',startGame);
 resetBtn.addEventListener('click',resetGame);
 

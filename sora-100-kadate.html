@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>☁️ そらの100かいだてのいえ ☁️</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'M PLUS Rounded 1c','Comic Sans MS',cursive,sans-serif;
+            overflow:hidden;height:100vh;width:100vw;
+            background:#87CEEB;
+            user-select:none;
+        }
+
+        /* ===== Screens ===== */
+        .screen{
+            position:absolute;inset:0;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            transition:opacity .5s,transform .5s;
+            opacity:0;pointer-events:none;transform:scale(.95);
+        }
+        .screen.active{opacity:1;pointer-events:auto;transform:scale(1)}
+
+        /* ===== Title Screen ===== */
+        #titleScreen{
+            background:linear-gradient(180deg,#87CEEB 0%,#B3E5FC 30%,#E1F5FE 60%,#C8E6C9 85%,#4CAF50 100%);
+            overflow:hidden;
+        }
+        #titleScreen::before{
+            content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+            background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cellipse cx='25' cy='10' rx='18' ry='8' fill='%23fff' opacity='0.3'/%3E%3Cellipse cx='75' cy='14' rx='15' ry='6' fill='%23fff' opacity='0.2'/%3E%3C/svg%3E") repeat;
+            background-size:300px 100px;animation:cloudDrift 30s linear infinite;
+        }
+        @keyframes cloudDrift{0%{background-position:0 0}100%{background-position:300px 0}}
+        .title-bird{font-size:clamp(5rem,15vw,10rem);animation:birdFly 3s ease-in-out infinite;position:relative;z-index:1;filter:drop-shadow(0 8px 20px rgba(0,0,0,.15))}
+        @keyframes birdFly{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-20px) rotate(3deg)}}
+        .title-text{font-size:clamp(1.8rem,5vw,3.5rem);color:#1565C0;text-shadow:2px 2px 4px rgba(255,255,255,.8);text-align:center;position:relative;z-index:1;line-height:1.5;margin:20px 0}
+        .title-sub{font-size:clamp(1rem,3vw,1.5rem);color:#42A5F5;position:relative;z-index:1;animation:pulse 2s ease-in-out infinite}
+        @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+        .title-ground{position:absolute;bottom:0;left:0;right:0;height:80px;background:#4CAF50;border-top:4px solid #388E3C}
+        .title-tree{position:absolute;bottom:80px;font-size:3rem;z-index:1}
+
+        /* ===== Story Screen ===== */
+        #storyScreen{
+            background:linear-gradient(180deg,#E1F5FE,#B3E5FC);
+            padding:40px 20px;text-align:center;
+        }
+        .story-text{font-size:clamp(1rem,2.8vw,1.6rem);color:#37474F;line-height:2;max-width:600px;margin:20px auto}
+        .story-emoji{font-size:clamp(4rem,12vw,8rem);margin:20px 0}
+
+        /* ===== Game Screen ===== */
+        #gameScreen{
+            flex-direction:row;
+            justify-content:stretch;align-items:stretch;
+        }
+
+        /* --- Progress Tower (left side) --- */
+        .progress-tower{
+            position:absolute;left:0;top:0;bottom:0;width:56px;
+            background:rgba(0,0,0,.25);backdrop-filter:blur(8px);
+            display:flex;flex-direction:column;align-items:center;
+            padding:8px 0;z-index:20;overflow:hidden;
+        }
+        .progress-label{font-size:.6rem;color:rgba(255,255,255,.7);font-weight:bold;margin-bottom:4px}
+        .progress-track{
+            flex:1;width:28px;border-radius:14px;
+            background:rgba(255,255,255,.1);position:relative;
+            border:2px solid rgba(255,255,255,.2);overflow:hidden;
+        }
+        .progress-fill{
+            position:absolute;bottom:0;left:0;right:0;
+            background:linear-gradient(180deg,#FFD54F,#FF8F00,#E65100);
+            border-radius:0 0 12px 12px;
+            transition:height .5s cubic-bezier(.4,0,.2,1);
+        }
+        .progress-bird{
+            position:absolute;left:50%;transform:translateX(-50%);
+            font-size:1.3rem;z-index:5;
+            transition:bottom .5s cubic-bezier(.4,0,.2,1);
+            filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));
+        }
+        .progress-floor-num{
+            font-size:.75rem;font-weight:900;color:#fff;margin-top:6px;
+            text-shadow:1px 1px 3px rgba(0,0,0,.4);
+        }
+
+        /* --- Zone markers on progress bar --- */
+        .progress-zone-marker{
+            position:absolute;left:0;right:0;height:2px;
+            background:rgba(255,255,255,.3);
+        }
+
+        /* --- Main Floor Display (center) --- */
+        .floor-display{
+            position:absolute;left:56px;right:0;top:0;bottom:80px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            overflow:hidden;
+        }
+
+        /* Zone background */
+        .floor-bg{
+            position:absolute;inset:0;
+            transition:background .8s ease;
+        }
+
+        /* Zone title banner (shown on zone change) */
+        .zone-banner{
+            position:absolute;top:0;left:0;right:0;
+            text-align:center;padding:12px;z-index:15;
+            font-size:clamp(.9rem,2.5vw,1.3rem);font-weight:900;color:#fff;
+            text-shadow:2px 2px 4px rgba(0,0,0,.3);
+            transform:translateY(-100%);transition:transform .4s ease;
+        }
+        .zone-banner.show{transform:translateY(0)}
+        .zone-banner .zone-emoji{font-size:clamp(1.5rem,5vw,2.5rem);display:block;margin-bottom:4px}
+
+        /* Floor card */
+        .floor-card-container{
+            position:relative;z-index:10;
+            display:flex;flex-direction:column;align-items:center;
+            transition:transform .4s cubic-bezier(.4,0,.2,1),opacity .4s;
+        }
+        .floor-card-container.exit-up{transform:translateY(-120vh);opacity:0}
+        .floor-card-container.exit-down{transform:translateY(120vh);opacity:0}
+        .floor-card-container.enter-up{transform:translateY(120vh);opacity:0}
+        .floor-card-container.enter-down{transform:translateY(-120vh);opacity:0}
+
+        .floor-card{
+            width:clamp(200px,50vw,320px);height:clamp(200px,50vw,320px);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            position:relative;padding:20px;
+            transition:transform .2s;
+        }
+        .floor-card:hover{transform:scale(1.02)}
+
+        .floor-number-big{
+            font-size:clamp(3rem,10vw,6rem);font-weight:900;
+            position:absolute;opacity:.15;z-index:1;
+            top:50%;left:50%;transform:translate(-50%,-50%);
+        }
+        .floor-resident-big{
+            font-size:clamp(3rem,9vw,5rem);z-index:5;position:relative;
+            filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));
+            margin-bottom:8px;
+        }
+        .floor-items{
+            display:flex;gap:clamp(8px,3vw,20px);z-index:5;position:relative;
+            font-size:clamp(2rem,7vw,3.5rem);margin:10px 0;
+        }
+        .floor-desc-big{
+            font-size:clamp(1rem,3vw,1.6rem);font-weight:900;
+            text-align:center;z-index:5;position:relative;
+            text-shadow:1px 1px 3px rgba(0,0,0,.2);
+            margin-top:8px;
+        }
+
+        /* --- Floor card shapes per zone --- */
+        .card-kumo{
+            background:radial-gradient(ellipse at 50% 60%,#fff,#E3F2FD);
+            border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+            box-shadow:0 8px 30px rgba(0,0,0,.08);
+        }
+        .card-kumo .floor-number-big{color:#64B5F6}
+        .card-kumo .floor-desc-big{color:#1565C0}
+
+        .card-ame{
+            background:radial-gradient(ellipse at 50% 30%,#E3F2FD,#BBDEFB);
+            border-radius:50% 50% 12px 12px / 60% 60% 15% 15%;
+            border-top:6px solid #42A5F5;
+            box-shadow:0 8px 30px rgba(0,0,0,.1);
+        }
+        .card-ame .floor-number-big{color:#1565C0}
+        .card-ame .floor-desc-big{color:#0D47A1}
+
+        .card-niji{
+            background:conic-gradient(from 0deg,#FF6B6B,#FFD93D,#6BCB77,#4D96FF,#C084FC,#FF6B9D,#FF6B6B);
+            border-radius:50%;padding:8px;
+        }
+        .card-niji .floor-inner{
+            width:100%;height:100%;border-radius:50%;
+            background:radial-gradient(circle,#FFF9C4,#FFE082);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+        }
+        .card-niji .floor-number-big{color:#E65100}
+        .card-niji .floor-desc-big{color:#BF360C}
+
+        .card-kaze{
+            background:radial-gradient(ellipse,#CFD8DC,#90A4AE);
+            border-radius:40% 60% 65% 35% / 50% 40% 60% 50%;
+            border:4px dashed rgba(255,255,255,.4);
+            box-shadow:0 0 25px rgba(0,0,0,.15);
+            animation:kazeWobble 4s ease-in-out infinite;
+        }
+        @keyframes kazeWobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+        .card-kaze .floor-number-big{color:#37474F}
+        .card-kaze .floor-desc-big{color:#263238}
+
+        .card-yuki{
+            background:linear-gradient(135deg,#ECEFF1,#CFD8DC);
+            clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+        }
+        .card-yuki .floor-number-big{color:#546E7A}
+        .card-yuki .floor-desc-big{color:#37474F}
+
+        .card-koori{
+            background:linear-gradient(180deg,#546E7A,#37474F);
+            border:4px solid #78909C;border-radius:8px;
+            box-shadow:inset 0 -4px 0 rgba(0,0,0,.3),0 8px 20px rgba(0,0,0,.3);
+        }
+        .card-koori .floor-number-big{color:#B0BEC5}
+        .card-koori .floor-desc-big{color:#B0BEC5}
+
+        .card-kaminari{
+            background:linear-gradient(135deg,#212121,#424242);
+            border:3px solid #FDD835;border-radius:16px;
+            box-shadow:0 0 25px rgba(255,235,59,.2),inset 0 0 30px rgba(255,235,59,.05);
+        }
+        .card-kaminari .floor-number-big{color:#FDD835}
+        .card-kaminari .floor-desc-big{color:#FDD835}
+
+        .card-aurora{
+            background:linear-gradient(135deg,rgba(46,125,50,.4),rgba(156,39,176,.4),rgba(33,150,243,.4));
+            border:4px solid rgba(76,175,80,.4);border-radius:30px;
+            box-shadow:0 0 30px rgba(76,175,80,.2),0 0 60px rgba(156,39,176,.1);
+            overflow:hidden;
+        }
+        .card-aurora::before{
+            content:'';position:absolute;inset:0;
+            background:linear-gradient(180deg,
+                rgba(76,175,80,.2) 0%,transparent 20%,
+                rgba(233,30,99,.15) 40%,transparent 60%,
+                rgba(33,150,243,.2) 80%,transparent 100%);
+            animation:auroraShift 4s ease-in-out infinite;
+        }
+        @keyframes auroraShift{0%,100%{transform:translateY(-10px)}50%{transform:translateY(10px)}}
+        .card-aurora .floor-number-big{color:#69F0AE}
+        .card-aurora .floor-desc-big{color:#69F0AE}
+
+        .card-hoshi{
+            background:radial-gradient(circle,#1A237E,#0D1B2A);
+            clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+            box-shadow:0 0 30px rgba(255,235,59,.15);
+        }
+        .card-hoshi .floor-number-big{color:#FDD835;text-shadow:0 0 15px rgba(255,235,59,.6)}
+        .card-hoshi .floor-desc-big{color:#FDD835}
+        .card-hoshi .floor-items{font-size:clamp(1.5rem,5vw,2.5rem)}
+
+        .card-ohisama{
+            background:radial-gradient(circle,#FFF9C4,#FFD54F,#FF8F00);
+            border-radius:50%;
+            box-shadow:0 0 40px rgba(255,143,0,.3);
+            animation:sunGlow 3s ease-in-out infinite;
+        }
+        @keyframes sunGlow{0%,100%{box-shadow:0 0 30px rgba(255,143,0,.3)}50%{box-shadow:0 0 60px rgba(255,143,0,.5)}}
+        .card-ohisama .floor-number-big{color:#E65100}
+        .card-ohisama .floor-desc-big{color:#BF360C}
+
+        /* --- Zone backgrounds --- */
+        .bg-kumo{background:linear-gradient(180deg,#B3E5FC,#E1F5FE)}
+        .bg-ame{background:linear-gradient(180deg,#81D4FA,#B3E5FC)}
+        .bg-niji{background:linear-gradient(180deg,#B3E5FC,#F3E5F5)}
+        .bg-kaze{background:linear-gradient(180deg,#B0BEC5,#78909C)}
+        .bg-yuki{background:linear-gradient(180deg,#90A4AE,#B0BEC5)}
+        .bg-koori{background:linear-gradient(180deg,#1A237E,#263238)}
+        .bg-kaminari{background:#111}
+        .bg-aurora{background:linear-gradient(180deg,#0D1B2A,#1B2838)}
+        .bg-hoshi{background:linear-gradient(180deg,#0D1B2A,#1A237E)}
+        .bg-ohisama{background:linear-gradient(180deg,#FF8F00,#FFB300,#FFF9C4)}
+
+        /* Snow effect for yuki zone */
+        .bg-yuki::after{
+            content:'';position:absolute;inset:0;pointer-events:none;
+            background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='1.5' fill='%23fff' opacity='0.4'/%3E%3C/svg%3E") repeat;
+            background-size:30px 30px;animation:snowfall 8s linear infinite;
+        }
+        @keyframes snowfall{0%{background-position:0 0}100%{background-position:30px 120px}}
+
+        /* Lightning effect for kaminari */
+        .bg-kaminari::before{
+            content:'';position:absolute;inset:0;
+            background:radial-gradient(circle at 30% 40%,rgba(255,235,59,.05) 0%,transparent 50%),
+                        radial-gradient(circle at 70% 60%,rgba(255,183,77,.05) 0%,transparent 50%);
+            animation:lightningFlash 3s ease-in-out infinite;
+        }
+        @keyframes lightningFlash{0%,90%,100%{opacity:.3}92%,94%{opacity:1}}
+
+        /* --- Bottom Controls --- */
+        .controls-bar{
+            position:absolute;left:56px;right:0;bottom:0;height:80px;
+            background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+            box-shadow:0 -4px 20px rgba(0,0,0,.1);
+            display:flex;align-items:center;justify-content:center;gap:12px;
+            z-index:20;padding:0 16px;
+        }
+
+        .ctrl-btn{
+            display:flex;align-items:center;justify-content:center;
+            width:clamp(44px,8vw,56px);height:clamp(44px,8vw,56px);
+            border:none;border-radius:50%;cursor:pointer;
+            font-size:clamp(1.2rem,3vw,1.6rem);font-weight:bold;
+            transition:all .15s;color:#fff;
+            box-shadow:0 4px 12px rgba(0,0,0,.15);
+            font-family:inherit;
+        }
+        .ctrl-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+        .ctrl-btn:active{transform:translateY(1px) scale(.95)}
+        .ctrl-btn.disabled{opacity:.3;pointer-events:none}
+
+        .ctrl-up{background:linear-gradient(135deg,#66BB6A,#2E7D32)}
+        .ctrl-down{background:linear-gradient(135deg,#FF7043,#D84315)}
+        .ctrl-interact{background:linear-gradient(135deg,#FFB300,#FF8F00);width:auto;border-radius:28px;padding:0 20px;gap:6px}
+        .ctrl-home{background:linear-gradient(135deg,#42A5F5,#1565C0)}
+
+        .ctrl-key-hint{
+            font-size:.55rem;color:rgba(255,255,255,.8);
+            background:rgba(0,0,0,.2);border-radius:4px;
+            padding:1px 5px;margin-top:2px;display:block;
+        }
+        .ctrl-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}
+
+        .ctrl-info{
+            font-size:clamp(.7rem,2vw,.95rem);color:#546E7A;font-weight:bold;
+            text-align:center;min-width:100px;
+        }
+
+        /* --- Tsupi --- */
+        .tsupi-game{
+            position:absolute;z-index:15;
+            transition:all .5s cubic-bezier(.4,0,.2,1);
+            font-size:clamp(2rem,6vw,3rem);
+            filter:drop-shadow(0 3px 8px rgba(0,0,0,.3));
+        }
+        .tsupi-speech-game{
+            position:absolute;z-index:15;
+            background:#fff;padding:8px 14px;border-radius:16px;
+            font-size:clamp(.75rem,2vw,.95rem);color:#37474F;font-weight:bold;
+            box-shadow:0 4px 12px rgba(0,0,0,.15);max-width:200px;
+            opacity:0;transition:opacity .3s;pointer-events:none;
+        }
+        .tsupi-speech-game.show{opacity:1}
+        .tsupi-speech-game::before{
+            content:'';position:absolute;left:-6px;bottom:8px;
+            border:6px solid transparent;border-right-color:#fff;
+        }
+
+        /* --- Rooftop screen --- */
+        #rooftopScreen{
+            background:linear-gradient(180deg,#FF8F00,#FFB300,#FFF9C4);
+            overflow:hidden;
+        }
+        #rooftopScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.4) 0%,transparent 60%)}
+        .rooftop-sun{font-size:clamp(6rem,20vw,12rem);animation:sunSpin 20s linear infinite;position:relative;z-index:1}
+        @keyframes sunSpin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+        .rooftop-text{font-size:clamp(1.1rem,3vw,1.8rem);color:#E65100;position:relative;z-index:1;line-height:1.8;margin:20px 0;text-align:center;padding:0 20px}
+
+        /* --- Sound Popup --- */
+        .sound-popup{
+            position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+            font-size:clamp(4rem,12vw,6rem);z-index:200;pointer-events:none;
+            transition:transform .3s cubic-bezier(.68,-.55,.265,1.55),opacity .3s;opacity:0;
+        }
+        .sound-popup.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+
+        /* --- Key visual feedback --- */
+        .key-flash{
+            position:absolute;inset:0;z-index:50;pointer-events:none;
+            opacity:0;transition:opacity .15s;
+        }
+        .key-flash.up{background:linear-gradient(0deg,transparent 60%,rgba(102,187,106,.15) 100%)}
+        .key-flash.down{background:linear-gradient(180deg,transparent 60%,rgba(255,112,67,.15) 100%)}
+        .key-flash.show{opacity:1}
+
+        /* ===== 10F Celebration Modal ===== */
+        .milestone-modal{
+            position:absolute;inset:0;z-index:50;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            background:rgba(0,0,0,.45);backdrop-filter:blur(4px);
+            opacity:0;pointer-events:none;
+            transition:opacity .2s ease;
+        }
+        .milestone-modal.show{opacity:1;pointer-events:auto}
+        .milestone-card{
+            background:#fff;border-radius:24px;padding:clamp(16px,4vw,32px) clamp(24px,6vw,48px);
+            text-align:center;
+            box-shadow:0 12px 40px rgba(0,0,0,.3);
+            transform:scale(.7);transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+        }
+        .milestone-modal.show .milestone-card{transform:scale(1)}
+        .milestone-emoji{font-size:clamp(3rem,10vw,5rem);margin-bottom:8px}
+        .milestone-text{font-size:clamp(1rem,3vw,1.6rem);font-weight:900;color:#37474F;line-height:1.6}
+        .milestone-floor{font-size:clamp(1.8rem,5vw,2.8rem);font-weight:900;margin-bottom:4px}
+        .milestone-bar{
+            width:100%;height:6px;border-radius:3px;background:#E0E0E0;margin-top:12px;overflow:hidden;
+        }
+        .milestone-bar-fill{
+            height:100%;border-radius:3px;background:linear-gradient(90deg,#66BB6A,#FFB300,#FF7043);
+            transition:width 1s linear;
+        }
+
+        /* ===== Tsupi SVG ===== */
+        .tsupi-svg{display:inline-block;vertical-align:middle}
+        .tsupi-title{width:clamp(5rem,15vw,10rem);height:clamp(5rem,15vw,10rem)}
+        .tsupi-story{width:clamp(4rem,12vw,8rem);height:clamp(4rem,12vw,8rem)}
+        .tsupi-progress{width:1.3rem;height:1.3rem}
+        .tsupi-float-icon{width:clamp(4rem,12vw,7rem);height:clamp(4rem,12vw,7rem)}
+        .tsupi-rooftop{width:2em;height:2em}
+        .tsupi-ctrl{width:1.2em;height:1.2em}
+
+        /* ===== Animations ===== */
+        .float{animation:floatAnim 3s ease-in-out infinite}
+        @keyframes floatAnim{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        .sway{animation:swayAnim 4s ease-in-out infinite}
+        @keyframes swayAnim{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+        .sparkle{animation:sparkleAnim 2s ease-in-out infinite}
+        @keyframes sparkleAnim{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.2)}}
+        .glow{animation:glowAnim 2s ease-in-out infinite}
+        @keyframes glowAnim{0%,100%{filter:drop-shadow(0 0 3px rgba(255,215,0,.3))}50%{filter:drop-shadow(0 0 20px rgba(255,215,0,.8))}}
+        .wiggle{animation:wiggleAnim 2s ease-in-out infinite}
+        @keyframes wiggleAnim{0%,100%{transform:rotate(0)}25%{transform:rotate(8deg)}75%{transform:rotate(-8deg)}}
+        .zap{animation:zapAnim 1.5s ease-in-out infinite}
+        @keyframes zapAnim{0%,80%,100%{opacity:1;transform:scale(1)}85%,95%{opacity:.3;transform:scale(1.2)}}
+
+        /* ===== Celebration particles ===== */
+        .confetti{
+            position:absolute;width:10px;height:10px;z-index:100;
+            pointer-events:none;border-radius:2px;
+        }
+
+        /* ===== Keyboard guide overlay ===== */
+        .key-guide{
+            position:absolute;bottom:90px;right:16px;z-index:15;
+            background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+            border-radius:12px;padding:10px 14px;
+            color:rgba(255,255,255,.8);font-size:.65rem;font-weight:bold;
+            line-height:1.8;
+            opacity:.7;transition:opacity .3s;
+        }
+        .key-guide:hover{opacity:1}
+        .key-guide kbd{
+            display:inline-block;background:rgba(255,255,255,.15);
+            border:1px solid rgba(255,255,255,.3);border-radius:4px;
+            padding:1px 6px;margin-right:4px;font-family:inherit;
+            min-width:22px;text-align:center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== TITLE SCREEN ===== -->
+<div class="screen active" id="titleScreen">
+    <div class="title-bird" id="titleBird"></div>
+    <div class="title-text">☁️ そらの<br>100かいだてのいえ ☁️</div>
+    <div class="title-sub">▼ スペースキーで はじめよう ▼</div>
+    <div class="title-tree" style="left:5%">🌳</div>
+    <div class="title-tree" style="left:25%">🌲</div>
+    <div class="title-tree" style="right:25%">🌳</div>
+    <div class="title-tree" style="right:5%">🌲</div>
+    <div class="title-ground"></div>
+</div>
+
+<!-- ===== STORY SCREEN ===== -->
+<div class="screen" id="storyScreen">
+    <div class="story-emoji" id="storyEmoji"></div>
+    <div class="story-text">
+        シジュウカラの <strong>ツピくん</strong>は<br>
+        ひまわりの たねを もらいました。<br><br>
+        「この たねから はなを さかせたいんです、ツピ。<br>
+        それなら、この いえの 100かいに いくといいよ。」<br><br>
+        バタバタバタバタ！<br>
+        ツピくんは たねを くわえて とびたちました。
+    </div>
+    <div class="title-sub" style="color:#42A5F5;position:relative">▼ スペースキーで すすもう ▼</div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div class="screen" id="gameScreen">
+    <!-- Progress tower -->
+    <div class="progress-tower">
+        <div class="progress-label">100F</div>
+        <div class="progress-track" id="progressTrack">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-bird" id="progressBird"></div>
+        </div>
+        <div class="progress-floor-num" id="progressNum">1</div>
+    </div>
+
+    <!-- Floor display area -->
+    <div class="floor-display" id="floorDisplay">
+        <div class="floor-bg" id="floorBg"></div>
+        <div class="key-flash up" id="flashUp"></div>
+        <div class="key-flash down" id="flashDown"></div>
+
+        <!-- Zone banner -->
+        <div class="zone-banner" id="zoneBanner">
+            <span class="zone-emoji" id="zoneBannerEmoji"></span>
+            <span id="zoneBannerText"></span>
+        </div>
+
+        <!-- Floor card -->
+        <div class="floor-card-container" id="floorCardContainer">
+            <div class="floor-card" id="floorCard">
+                <div class="floor-number-big" id="floorNumberBig"></div>
+                <div class="floor-resident-big" id="floorResident"></div>
+                <div class="floor-items" id="floorItems"></div>
+                <div class="floor-desc-big" id="floorDesc"></div>
+            </div>
+        </div>
+
+        <!-- 10F Milestone Modal -->
+        <div class="milestone-modal" id="milestoneModal">
+            <div class="milestone-card">
+                <div class="milestone-emoji" id="milestoneEmoji"></div>
+                <div class="milestone-floor" id="milestoneFloor"></div>
+                <div class="milestone-text" id="milestoneText"></div>
+                <div class="milestone-bar"><div class="milestone-bar-fill" id="milestoneBar"></div></div>
+            </div>
+        </div>
+
+        <!-- Tsupi -->
+        <div class="tsupi-game" id="tsupiGame" style="right:12%;bottom:30%;"></div>
+        <div class="tsupi-speech-game" id="tsupiSpeechGame" style="right:2%;bottom:36%;"></div>
+
+        <!-- Key guide -->
+        <div class="key-guide" id="keyGuide">
+            <kbd>↑</kbd> うえに のぼる<br>
+            <kbd>↓</kbd> したに おりる<br>
+            <kbd>Space</kbd> たたく！
+        </div>
+    </div>
+
+    <!-- Controls bar -->
+    <div class="controls-bar">
+        <div class="ctrl-btn-wrap">
+            <button class="ctrl-btn ctrl-home" id="btnHome" onclick="goHome()">🏠</button>
+        </div>
+        <div class="ctrl-btn-wrap">
+            <button class="ctrl-btn ctrl-down" id="btnDown" onclick="moveFloor(-1)">▼</button>
+            <span class="ctrl-key-hint">↓</span>
+        </div>
+        <div class="ctrl-btn-wrap">
+            <div class="ctrl-info" id="ctrlInfo"><span class="ctrl-tsupi-icon"></span> 1かい</div>
+        </div>
+        <div class="ctrl-btn-wrap">
+            <button class="ctrl-btn ctrl-up" id="btnUp" onclick="moveFloor(1)">▲</button>
+            <span class="ctrl-key-hint">↑</span>
+        </div>
+        <div class="ctrl-btn-wrap">
+            <button class="ctrl-btn ctrl-interact" id="btnInteract" onclick="interactFloor()">👆 たたく</button>
+            <span class="ctrl-key-hint">Space</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ROOFTOP SCREEN ===== -->
+<div class="screen" id="rooftopScreen">
+    <div class="rooftop-sun">☀️</div>
+    <div class="rooftop-text">
+        🎊 100かいに とうちゃく！ 🎊<br><br>
+        おひさまに たねを みせると<br>
+        ぽかぽか あたたかい ひかりで<br>
+        ひまわりの はなが さきました！ 🌻<br><br>
+        <span id="rooftopTsupi"></span>「やったー！ おはなが さいた ツピ！」
+    </div>
+    <div class="title-sub" style="color:#E65100;position:relative">
+        ↓キーで もどる ／ スペースで もういちど
+    </div>
+</div>
+
+<!-- Sound Popup -->
+<div class="sound-popup" id="soundPopup"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  TSUPI SVG — faithful to the picture book
+// ═══════════════════════════════════════════════
+function tsupiSVG(cssClass, flip) {
+    const tx = flip ? 'transform="scale(-1,1) translate(-100,0)"' : '';
+    return `<svg class="tsupi-svg ${cssClass||''}" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+    <g ${tx}>
+    <!-- Tail -->
+    <path d="M22 72 Q8 80 5 95 Q10 90 18 88 Q12 92 10 100 Q18 94 25 90 Q20 92 18 98 Q26 92 32 85" fill="#6B7B8A" stroke="#4A5568" stroke-width="1"/>
+    <!-- Body -->
+    <ellipse cx="50" cy="68" rx="28" ry="24" fill="#8899A6"/>
+    <!-- Belly (yellow) -->
+    <ellipse cx="52" cy="72" rx="18" ry="19" fill="#F6D55C"/>
+    <!-- Belly center stripe (black, characteristic of Japanese Tit) -->
+    <path d="M52 58 Q52 75 52 91" stroke="#1A1A2E" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- Wing -->
+    <path d="M28 58 Q22 65 24 78 Q30 74 35 68 Q32 72 30 80 Q38 72 40 62 Z" fill="#6B7B8A" stroke="#4A5568" stroke-width="0.8"/>
+    <path d="M30 62 Q28 68 30 74" stroke="#fff" stroke-width="0.8" fill="none" opacity=".4"/>
+    <!-- Head -->
+    <circle cx="55" cy="38" r="20" fill="#1A1A2E"/>
+    <!-- White cheek -->
+    <ellipse cx="62" cy="42" rx="11" ry="10" fill="#FFFFFF"/>
+    <!-- Eye -->
+    <circle cx="63" cy="39" r="3.5" fill="#1A1A2E"/>
+    <circle cx="64" cy="38" r="1.2" fill="#FFFFFF"/>
+    <!-- Beak -->
+    <path d="M72 41 L82 43 L72 46 Z" fill="#5C4033" stroke="#3E2723" stroke-width="0.5"/>
+    <!-- Blue beanie -->
+    <path d="M36 34 Q35 20 50 16 Q65 13 72 28 Q72 34 68 36 Q60 30 50 28 Q40 30 36 34 Z" fill="#3B82F6" stroke="#2563EB" stroke-width="0.8"/>
+    <!-- Beanie ribbing -->
+    <path d="M37 33 Q50 28 70 33" stroke="#2563EB" stroke-width="1.5" fill="none"/>
+    <path d="M38 31 Q50 26 69 31" stroke="#60A5FA" stroke-width="0.6" fill="none" opacity=".5"/>
+    <!-- Pompom -->
+    <circle cx="52" cy="14" r="5" fill="#3B82F6" stroke="#2563EB" stroke-width="0.5"/>
+    <circle cx="50" cy="12" r="1.5" fill="#60A5FA" opacity=".6"/>
+    <circle cx="54" cy="13" r="1" fill="#60A5FA" opacity=".4"/>
+    <!-- Red scarf -->
+    <path d="M38 50 Q45 56 55 55 Q65 54 72 50 Q70 55 65 58 Q55 60 45 58 Q40 56 38 50 Z" fill="#EF4444" stroke="#DC2626" stroke-width="0.8"/>
+    <!-- Scarf tail -->
+    <path d="M40 55 Q35 62 32 72 Q34 68 38 65 Q36 70 35 76 Q38 70 42 64" fill="#EF4444" stroke="#DC2626" stroke-width="0.6"/>
+    <!-- Scarf knot detail -->
+    <ellipse cx="42" cy="56" rx="4" ry="3" fill="#DC2626"/>
+    <!-- Feet -->
+    <path d="M42 90 L38 100 M42 90 L42 101 M42 90 L46 100" stroke="#8B6914" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M58 90 L54 100 M58 90 L58 101 M58 90 L62 100" stroke="#8B6914" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    </g>
+    </svg>`;
+}
+
+// ═══════════════════════════════════════════════
+//  ZONE DATA
+// ═══════════════════════════════════════════════
+const ZONES = [
+    {
+        id:'kumo', name:'くもさん', cardClass:'card-kumo', bgClass:'bg-kumo',
+        animal:'☁️', range:[1,10],
+        titleBg:'linear-gradient(135deg,#90A4AE,#607D8B)',
+        speeches:['ふわふわ〜！','くもの おうちだ ツピ！','きもちいいね','しろくて ふわふわ〜'],
+        floors:[
+            {n:1, items:['☁️','🚪','❄️'], desc:'くもの げんかん', anim:'float'},
+            {n:2, items:['☁️','🌸','🌷'], desc:'くもの おにわ', anim:'float'},
+            {n:3, items:['☁️','🛁','🫧'], desc:'くもの おふろ', anim:'float'},
+            {n:4, items:['☁️','🧶','🪡'], desc:'くもの てづくり', anim:'sway'},
+            {n:5, items:['☁️','🌱','🪴'], desc:'くもの はたけ', anim:'float'},
+            {n:6, items:['☁️','🎠','🎪'], desc:'くもの ゆうえんち', anim:'sway'},
+            {n:7, items:['☁️','🍰','☕'], desc:'くもの カフェ', anim:'float'},
+            {n:8, items:['☁️','🎨','🖌️'], desc:'おえかき へや', anim:'sway'},
+            {n:9, items:['☁️','🌈','✨'], desc:'にじの いりぐち', anim:'sparkle'},
+            {n:10,items:['☁️','👑','⭐'], desc:'くもさんの おへや', anim:'float'},
+        ]
+    },
+    {
+        id:'ame', name:'あめさん', cardClass:'card-ame', bgClass:'bg-ame',
+        animal:'💧', range:[11,20],
+        titleBg:'linear-gradient(135deg,#0288D1,#01579B)',
+        speeches:['ぽつぽつ あめだ ツピ！','ウォータースライダー！','ジャー！','ぬれちゃう〜'],
+        floors:[
+            {n:11,items:['💧','☂️','🌂'], desc:'あめの げんかん', anim:'float'},
+            {n:12,items:['💧','🛝','💦'], desc:'ウォータースライダー', anim:'float'},
+            {n:13,items:['💧','🍜','🍲'], desc:'あめの キッチン', anim:'sway'},
+            {n:14,items:['💧','🎵','🥁'], desc:'あめの おんがく', anim:'sway'},
+            {n:15,items:['💧','🐸','🐌'], desc:'いきものの へや', anim:'wiggle'},
+            {n:16,items:['💧','🌿','🌱'], desc:'あめの はたけ', anim:'float'},
+            {n:17,items:['💧','🎨','🖼️'], desc:'あめの びじゅつかん', anim:'sway'},
+            {n:18,items:['💧','🦋','🌺'], desc:'ちょうちょの へや', anim:'float'},
+            {n:19,items:['💧','🌈','☀️'], desc:'にじが みえる！', anim:'sparkle'},
+            {n:20,items:['💧','👑','💎'], desc:'あめさんの おへや', anim:'float'},
+        ]
+    },
+    {
+        id:'niji', name:'にじさん', cardClass:'card-niji', bgClass:'bg-niji',
+        animal:'🌈', range:[21,30],
+        titleBg:'linear-gradient(135deg,#8E24AA,#E91E63)',
+        speeches:['きれいだね〜 ツピ！','にじの バウムクーヘン！','いろんな あじ！','にじいろ〜！'],
+        floors:[
+            {n:21,items:['🌈','🚪','✨'], desc:'にじの げんかん', anim:'sparkle'},
+            {n:22,items:['🌈','🎵','🎸'], desc:'にじの おんがく', anim:'sway'},
+            {n:23,items:['🌈','🍳','🥘'], desc:'にじの キッチン', anim:'sway'},
+            {n:24,items:['🌈','🧁','🍰'], desc:'バウムクーヘンやさん', anim:'float'},
+            {n:25,items:['🌈','🍭','🍬'], desc:'おかしの へや', anim:'sparkle'},
+            {n:26,items:['🌈','🎪','🎡'], desc:'にじの ゆうえんち', anim:'sway'},
+            {n:27,items:['🌈','🔭','🌠'], desc:'にじの てんもんだい', anim:'sparkle'},
+            {n:28,items:['🌈','🍣','🍱'], desc:'にじの おすしやさん', anim:'float'},
+            {n:29,items:['🌈','🎉','🎊'], desc:'にじの パーティー', anim:'sparkle'},
+            {n:30,items:['🌈','👑','🌟'], desc:'にじさんの おへや', anim:'sparkle'},
+        ]
+    },
+    {
+        id:'kaze', name:'かぜさん', cardClass:'card-kaze', bgClass:'bg-kaze',
+        animal:'🌬️', range:[31,40],
+        titleBg:'linear-gradient(135deg,#546E7A,#37474F)',
+        speeches:['びゅーん！ ツピ！','とばされちゃう！','かぜラーメン おいしいよ！','ピューピュー！'],
+        floors:[
+            {n:31,items:['🌬️','🚪','🍃'], desc:'かぜの げんかん', anim:'sway'},
+            {n:32,items:['🌬️','🎺','📯'], desc:'ラッパの へや', anim:'sway'},
+            {n:33,items:['🌬️','👕','👚'], desc:'せんたくもの へや', anim:'sway'},
+            {n:34,items:['🌬️','📚','🎼'], desc:'かぜの としょかん', anim:'sway'},
+            {n:35,items:['🌬️','🪁','🎏'], desc:'たこあげの へや', anim:'float'},
+            {n:36,items:['🌬️','🧩','🪆'], desc:'パズルの へや', anim:'sway'},
+            {n:37,items:['🌬️','🍜','🍝'], desc:'かぜラーメンやさん', anim:'sway'},
+            {n:38,items:['🌬️','🌪️','💨'], desc:'つむじかぜ', anim:'sway'},
+            {n:39,items:['🌬️','🪴','🌸'], desc:'かぜの おにわ', anim:'sway'},
+            {n:40,items:['🌬️','👑','🌟'], desc:'かぜさんの おへや', anim:'sway'},
+        ]
+    },
+    {
+        id:'yuki', name:'ゆきさん', cardClass:'card-yuki', bgClass:'bg-yuki',
+        animal:'❄️', range:[41,50],
+        titleBg:'linear-gradient(135deg,#546E7A,#37474F)',
+        speeches:['さむーい ツピ！','きれいな けっしょう！','ピクニック いくんだね！','ブルブル！'],
+        floors:[
+            {n:41,items:['❄️','🚪','🎄'], desc:'ゆきの げんかん', anim:'sparkle'},
+            {n:42,items:['❄️','⛷️','🏂'], desc:'スキーじょう', anim:'float'},
+            {n:43,items:['❄️','🧺','🏕️'], desc:'ピクニック', anim:'float'},
+            {n:44,items:['❄️','⛸️','🛷'], desc:'スケートリンク', anim:'sway'},
+            {n:45,items:['❄️','🎿','⛰️'], desc:'やまのぼり', anim:'float'},
+            {n:46,items:['❄️','🔮','💎'], desc:'けっしょうの へや', anim:'sparkle'},
+            {n:47,items:['❄️','🧸','🎁'], desc:'ゆきの おもちゃやさん', anim:'wiggle'},
+            {n:48,items:['❄️','☕','🍫'], desc:'ココアの へや', anim:'float'},
+            {n:49,items:['❄️','🏰','✨'], desc:'こおりの おしろ', anim:'sparkle'},
+            {n:50,items:['❄️','👑','💠'], desc:'ゆきさんの おへや', anim:'sparkle'},
+        ]
+    },
+    {
+        id:'koori', name:'こおりさん', cardClass:'card-koori', bgClass:'bg-koori',
+        animal:'🧊', range:[51,60],
+        titleBg:'linear-gradient(135deg,#37474F,#263238)',
+        speeches:['ブルブル さむい ツピ！','こおりの ちょうこく すごい！','ツルツル！','すべっちゃう〜！'],
+        floors:[
+            {n:51,items:['🧊','🚪','🕯️'], desc:'こおりの げんかん', anim:'sparkle'},
+            {n:52,items:['🧊','🗿','⛏️'], desc:'こおりの ちょうこく', anim:'sparkle'},
+            {n:53,items:['🧊','📚','🔮'], desc:'こおりの としょかん', anim:'float'},
+            {n:54,items:['🧊','🧪','⚗️'], desc:'じっけんしつ', anim:'sparkle'},
+            {n:55,items:['🧊','🎵','🎻'], desc:'こおりの おんがく', anim:'sway'},
+            {n:56,items:['🧊','🍧','🧁'], desc:'アイスクリームやさん', anim:'float'},
+            {n:57,items:['🧊','🐧','🦭'], desc:'どうぶつの へや', anim:'wiggle'},
+            {n:58,items:['🧊','🏊','💨'], desc:'こおりの プール', anim:'float'},
+            {n:59,items:['🧊','🎭','🪄'], desc:'こおりの ショー', anim:'sparkle'},
+            {n:60,items:['🧊','👑','💎'], desc:'こおりさんの おへや', anim:'sparkle'},
+        ]
+    },
+    {
+        id:'kaminari', name:'かみなりさん', cardClass:'card-kaminari', bgClass:'bg-kaminari',
+        animal:'⚡', range:[61,70],
+        titleBg:'linear-gradient(135deg,#F9A825,#E65100)',
+        speeches:['ビリビリ ツピ！','しびれちゃう！','でんきの ちからだ！','ドカーン！'],
+        floors:[
+            {n:61,items:['⚡','🚪','🔌'], desc:'かみなりの げんかん', anim:'zap'},
+            {n:62,items:['⚡','🚂','⚙️'], desc:'でんしゃの へや', anim:'zap'},
+            {n:63,items:['⚡','🗼','📡'], desc:'でんぱとう', anim:'zap'},
+            {n:64,items:['⚡','🦈','🐉'], desc:'でんきの いきもの', anim:'zap'},
+            {n:65,items:['⚡','🥗','🍽️'], desc:'ビリビリサラダ', anim:'zap'},
+            {n:66,items:['⚡','🪜','💡'], desc:'いなずまの はしご', anim:'zap'},
+            {n:67,items:['⚡','🗼','📡'], desc:'こうあつ てっとう', anim:'zap'},
+            {n:68,items:['⚡','🌱','🪴'], desc:'でんきの はたけ', anim:'zap'},
+            {n:69,items:['⚡','🔋','💡'], desc:'でんきの ちからだ！', anim:'sparkle'},
+            {n:70,items:['⚡','👑','🌟'], desc:'かみなりさんの おへや', anim:'zap'},
+        ]
+    },
+    {
+        id:'aurora', name:'オーロラさん', cardClass:'card-aurora', bgClass:'bg-aurora',
+        animal:'🌌', range:[71,80],
+        titleBg:'linear-gradient(135deg,#2E7D32,#9C27B0)',
+        speeches:['きれい〜 ツピ！','せが のびてきた！','オーラリラ〜','ゆめみたい！'],
+        floors:[
+            {n:71,items:['🌌','🚪','🎵'], desc:'オーロラの げんかん', anim:'glow'},
+            {n:72,items:['🌌','🪴','🌱'], desc:'ひまわり そだてよう', anim:'glow'},
+            {n:73,items:['🌌','🎶','🎵'], desc:'ハープの へや', anim:'sway'},
+            {n:74,items:['🌌','🧶','🪡'], desc:'おりもの へや', anim:'sway'},
+            {n:75,items:['🌌','👗','🎀'], desc:'おしゃれの へや', anim:'glow'},
+            {n:76,items:['🌌','💤','🛋️'], desc:'おひるね へや', anim:'float'},
+            {n:77,items:['🌌','🎂','🎉'], desc:'おいわいの へや', anim:'sparkle'},
+            {n:78,items:['🌌','🐱','🐰'], desc:'こねこの へや', anim:'wiggle'},
+            {n:79,items:['🌌','🎁','🧸'], desc:'プレゼントの へや', anim:'sparkle'},
+            {n:80,items:['🌌','👑','💫'], desc:'オーロラさんの おへや', anim:'glow'},
+        ]
+    },
+    {
+        id:'hoshi', name:'おほしさま', cardClass:'card-hoshi', bgClass:'bg-hoshi',
+        animal:'⭐', range:[81,90],
+        titleBg:'linear-gradient(135deg,#1A237E,#0D47A1)',
+        speeches:['キラキラ ツピ！','ねがいごと しよう！','ほしが いっぱい！','おほしさま きれい！'],
+        floors:[
+            {n:81,items:['⭐','🚪','✨'], desc:'ほしの げんかん', anim:'sparkle'},
+            {n:82,items:['⭐','🔭','🌌'], desc:'てんたいかんそく', anim:'sparkle'},
+            {n:83,items:['⭐','🌠','💫'], desc:'ながれぼし', anim:'sparkle'},
+            {n:84,items:['⭐','🎆','🎇'], desc:'はなびの へや', anim:'sparkle'},
+            {n:85,items:['⭐','📖','🪄'], desc:'ほしの ものがたり', anim:'glow'},
+            {n:86,items:['⭐','🎵','🎶'], desc:'ほしの おんがく', anim:'sway'},
+            {n:87,items:['⭐','🚀','🛸'], desc:'うちゅうせん', anim:'float'},
+            {n:88,items:['⭐','💎','🔮'], desc:'ほうせきの へや', anim:'sparkle'},
+            {n:89,items:['⭐','🌠','🎊'], desc:'ねがいの へや', anim:'sparkle'},
+            {n:90,items:['⭐','👑','🌟'], desc:'おほしさまの おへや', anim:'glow'},
+        ]
+    },
+    {
+        id:'ohisama', name:'おひさま', cardClass:'card-ohisama', bgClass:'bg-ohisama',
+        animal:'☀️', range:[91,100],
+        titleBg:'linear-gradient(135deg,#FF8F00,#E65100)',
+        speeches:['あたたかい ツピ！','まぶしいね！','もうすぐ てっぺん！','ぽかぽか〜！'],
+        floors:[
+            {n:91,items:['☀️','🚪','🌻'], desc:'おひさまの げんかん', anim:'glow'},
+            {n:92,items:['☀️','🌻','🌷'], desc:'おはなばたけ', anim:'sway'},
+            {n:93,items:['☀️','🍳','🥞'], desc:'あさごはんの へや', anim:'float'},
+            {n:94,items:['☀️','🧺','👕'], desc:'おせんたく', anim:'sway'},
+            {n:95,items:['☀️','🎨','🖼️'], desc:'ひかりの アート', anim:'sparkle'},
+            {n:96,items:['☀️','🌅','🏖️'], desc:'サンセット へや', anim:'glow'},
+            {n:97,items:['☀️','🔥','✨'], desc:'ほのおの へや', anim:'sparkle'},
+            {n:98,items:['☀️','🌈','💖'], desc:'にじの かいだん', anim:'sparkle'},
+            {n:99,items:['☀️','🎊','🎉'], desc:'おまつりの へや', anim:'sparkle'},
+            {n:100,items:['☀️','👑','🌻'], desc:'おひさまの おへや', anim:'glow'},
+        ]
+    },
+];
+
+// Build flat floor lookup
+const ALL_FLOORS = [];
+ZONES.forEach((zone, zi) => {
+    zone.floors.forEach(f => {
+        ALL_FLOORS[f.n] = { ...f, zoneIndex: zi };
+    });
+});
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let currentScreen = 'title'; // title | story | game | rooftop
+let currentFloor = 1;
+let lastZoneIndex = -1;
+let isTransitioning = false;
+let zoneBannerTimeout = null;
+
+// ═══════════════════════════════════════════
+//  SCREEN MANAGEMENT
+// ═══════════════════════════════════════════
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function goToTitle() {
+    currentScreen = 'title';
+    showScreen('titleScreen');
+}
+
+function goToStory() {
+    currentScreen = 'story';
+    showScreen('storyScreen');
+}
+
+function goToGame() {
+    currentScreen = 'game';
+    currentFloor = 1;
+    lastZoneIndex = -1;
+    showScreen('gameScreen');
+    renderFloor(1, 'none');
+}
+
+function goToRooftop() {
+    currentScreen = 'rooftop';
+    showScreen('rooftopScreen');
+    launchConfetti();
+}
+
+function goHome() {
+    location.href = 'index.html';
+}
+
+// ═══════════════════════════════════════════
+//  FLOOR RENDERING
+// ═══════════════════════════════════════════
+function getZoneForFloor(n) {
+    return ZONES.find(z => n >= z.range[0] && n <= z.range[1]);
+}
+
+function renderFloor(n, direction) {
+    const floorData = ALL_FLOORS[n];
+    if (!floorData) return;
+    const zone = ZONES[floorData.zoneIndex];
+    const container = document.getElementById('floorCardContainer');
+    const card = document.getElementById('floorCard');
+
+    // Animate out
+    if (direction !== 'none') {
+        isTransitioning = true;
+        container.classList.add(direction === 'up' ? 'exit-up' : 'exit-down');
+
+        setTimeout(() => {
+            // Update content while hidden
+            updateFloorContent(n, floorData, zone);
+
+            // Prep enter
+            container.classList.remove('exit-up', 'exit-down');
+            container.classList.add(direction === 'up' ? 'enter-up' : 'enter-down');
+
+            // Force reflow
+            void container.offsetHeight;
+
+            // Animate in
+            requestAnimationFrame(() => {
+                container.classList.remove('enter-up', 'enter-down');
+                isTransitioning = false;
+            });
+        }, 350);
+    } else {
+        updateFloorContent(n, floorData, zone);
+    }
+
+    // Zone change?
+    if (floorData.zoneIndex !== lastZoneIndex) {
+        onZoneChange(floorData.zoneIndex, zone);
+        lastZoneIndex = floorData.zoneIndex;
+    }
+
+    // Milestone modal every 10 floors (10,20,...90)
+    if (n > 0 && n % 10 === 0 && n < 100 && direction !== 'none') {
+        showMilestoneModal(n, zone);
+    }
+
+    // Update progress
+    updateProgress(n);
+
+    // Update control info
+    document.getElementById('ctrlInfo').innerHTML = `${zone.animal} ${n}かい`;
+
+    // Update button states
+    document.getElementById('btnDown').classList.toggle('disabled', n <= 1);
+
+    // Tsupi position
+    updateTsupiPosition(n);
+}
+
+function updateFloorContent(n, floorData, zone) {
+    const card = document.getElementById('floorCard');
+    const bg = document.getElementById('floorBg');
+
+    // Update card class
+    card.className = 'floor-card ' + zone.cardClass;
+
+    // Background
+    bg.className = 'floor-bg ' + zone.bgClass;
+
+    const itemsHtml = floorData.items.map(item =>
+        `<span class="${floorData.anim}">${item}</span>`
+    ).join('');
+
+    // Always rebuild innerHTML to avoid stale ID references
+    if (zone.id === 'niji') {
+        card.innerHTML = `
+            <div class="floor-inner">
+                <div class="floor-number-big" style="position:relative;opacity:.15">${n}</div>
+                <div class="floor-resident-big ${floorData.anim}">${zone.animal}</div>
+                <div class="floor-items">${itemsHtml}</div>
+                <div class="floor-desc-big">${floorData.desc}</div>
+            </div>`;
+    } else {
+        card.innerHTML = `
+            <div class="floor-number-big">${n}</div>
+            <div class="floor-resident-big ${floorData.anim}">${zone.animal}</div>
+            <div class="floor-items">${itemsHtml}</div>
+            <div class="floor-desc-big">${floorData.desc}</div>`;
+    }
+}
+
+let milestoneTimeout = null;
+function showMilestoneModal(n, zone) {
+    const modal = document.getElementById('milestoneModal');
+    const pct = Math.round(n / 100 * 100);
+    document.getElementById('milestoneEmoji').textContent = zone.animal;
+    document.getElementById('milestoneFloor').textContent = `${n}かい とうちゃく！`;
+    document.getElementById('milestoneText').textContent = `${zone.name}の おへやに つきました！`;
+    const bar = document.getElementById('milestoneBar');
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    modal.classList.add('show');
+    // Animate bar across 1s then dismiss
+    requestAnimationFrame(() => {
+        bar.style.transition = 'width 1s linear';
+        bar.style.width = '100%';
+    });
+    if (milestoneTimeout) clearTimeout(milestoneTimeout);
+    milestoneTimeout = setTimeout(() => {
+        modal.classList.remove('show');
+    }, 1000);
+}
+
+function onZoneChange(zi, zone) {
+    // Show zone banner
+    const banner = document.getElementById('zoneBanner');
+    banner.style.background = zone.titleBg;
+    document.getElementById('zoneBannerEmoji').textContent = zone.animal;
+    document.getElementById('zoneBannerText').textContent = `${zone.name}の おうち (${zone.range[0]}〜${zone.range[1]}かい)`;
+    banner.classList.add('show');
+
+    if (zoneBannerTimeout) clearTimeout(zoneBannerTimeout);
+    zoneBannerTimeout = setTimeout(() => banner.classList.remove('show'), 2500);
+
+    // Tsupi speech
+    showGameSpeech(zone.speeches[Math.floor(Math.random() * zone.speeches.length)]);
+
+    // Play zone entry sound
+    playZoneSound(zi);
+}
+
+function updateProgress(n) {
+    const pct = ((n - 1) / 99) * 100;
+    document.getElementById('progressFill').style.height = pct + '%';
+    document.getElementById('progressBird').style.bottom = `calc(${pct}% - 10px)`;
+    document.getElementById('progressNum').textContent = n;
+}
+
+function updateTsupiPosition(n) {
+    const tsupi = document.getElementById('tsupiGame');
+    const yPct = 20 + Math.sin(n * 0.3) * 10;
+    tsupi.style.bottom = yPct + '%';
+    tsupi.style.right = (8 + Math.cos(n * 0.5) * 5) + '%';
+}
+
+// ═══════════════════════════════════════════
+//  MOVEMENT
+// ═══════════════════════════════════════════
+function moveFloor(delta) {
+    if (isTransitioning) return;
+
+    const newFloor = currentFloor + delta;
+
+    // Flash feedback
+    const flashId = delta > 0 ? 'flashUp' : 'flashDown';
+    const flash = document.getElementById(flashId);
+    flash.classList.add('show');
+    setTimeout(() => flash.classList.remove('show'), 200);
+
+    if (newFloor > 100) {
+        goToRooftop();
+        return;
+    }
+    if (newFloor < 1) return;
+
+    currentFloor = newFloor;
+    const direction = delta > 0 ? 'up' : 'down';
+    renderFloor(currentFloor, direction);
+    playNote(currentFloor);
+
+    // Random Tsupi speech
+    if (Math.random() < 0.2) {
+        const zone = getZoneForFloor(currentFloor);
+        if (zone) showGameSpeech(zone.speeches[Math.floor(Math.random() * zone.speeches.length)]);
+    }
+}
+
+function interactFloor() {
+    if (currentScreen !== 'game') return;
+    const floorData = ALL_FLOORS[currentFloor];
+    if (!floorData) return;
+    const zone = ZONES[floorData.zoneIndex];
+
+    // Popup
+    const popup = document.getElementById('soundPopup');
+    const emojis = [zone.animal, ...floorData.items];
+    popup.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    popup.classList.add('show');
+    setTimeout(() => popup.classList.remove('show'), 600);
+
+    // Bounce card
+    const card = document.getElementById('floorCard');
+    card.style.transform = 'scale(1.1)';
+    setTimeout(() => card.style.transform = '', 300);
+
+    // Sound
+    playNote(currentFloor, true);
+
+    // Tsupi speech
+    showGameSpeech(zone.speeches[Math.floor(Math.random() * zone.speeches.length)]);
+}
+
+// ═══════════════════════════════════════════
+//  TSUPI SPEECH
+// ═══════════════════════════════════════════
+let speechTimeout = null;
+function showGameSpeech(msg) {
+    const speech = document.getElementById('tsupiSpeechGame');
+    speech.textContent = msg;
+    speech.classList.add('show');
+    if (speechTimeout) clearTimeout(speechTimeout);
+    speechTimeout = setTimeout(() => speech.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════
+let audioCtx = null;
+function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+function playNote(floorNum, interact = false) {
+    try {
+        ensureAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        // Musical scale: C major pentatonic across 100 floors
+        const pentatonic = [0, 2, 4, 7, 9]; // semitone offsets
+        const octave = Math.floor((floorNum - 1) / 20);
+        const degree = pentatonic[(floorNum - 1) % 5];
+        const freq = 261.63 * Math.pow(2, (octave * 12 + degree) / 12);
+        osc.type = interact ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(Math.min(freq, 2500), audioCtx.currentTime);
+        gain.gain.setValueAtTime(interact ? 0.18 : 0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (interact ? 0.8 : 0.3));
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + (interact ? 0.8 : 0.3));
+    } catch(e) {}
+}
+
+function playZoneSound(zi) {
+    try {
+        ensureAudio();
+        // Play a little chord for zone entry
+        const baseFreq = 261.63 * Math.pow(2, zi / 5);
+        [0, 4, 7].forEach((semi, i) => {
+            setTimeout(() => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(baseFreq * Math.pow(2, semi / 12), audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+                osc.connect(gain).connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.6);
+            }, i * 100);
+        });
+    } catch(e) {}
+}
+
+// ═══════════════════════════════════════════
+//  CONFETTI
+// ═══════════════════════════════════════════
+function launchConfetti() {
+    const screen = document.getElementById('rooftopScreen');
+    const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C084FC','#FF6B9D','#FF8F00'];
+    for (let i = 0; i < 60; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.left = Math.random() * 100 + '%';
+        c.style.top = '-20px';
+        c.style.width = (6 + Math.random() * 8) + 'px';
+        c.style.height = (6 + Math.random() * 8) + 'px';
+        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        c.style.transform = `rotate(${Math.random() * 360}deg)`;
+        screen.appendChild(c);
+
+        const duration = 2000 + Math.random() * 2000;
+        const xDrift = (Math.random() - 0.5) * 200;
+        c.animate([
+            { transform: `translateY(0) translateX(0) rotate(0deg)`, opacity: 1 },
+            { transform: `translateY(${window.innerHeight + 40}px) translateX(${xDrift}px) rotate(${360 + Math.random() * 360}deg)`, opacity: 0 }
+        ], { duration, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards', delay: Math.random() * 500 });
+
+        setTimeout(() => c.remove(), duration + 600);
+    }
+}
+
+// ═══════════════════════════════════════════
+//  KEYBOARD HANDLER
+// ═══════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+    ensureAudio();
+
+    // Prevent default for game keys
+    if (['ArrowUp','ArrowDown','Space',' ','w','W','s','S','Enter'].includes(e.key)) {
+        e.preventDefault();
+    }
+
+    switch (currentScreen) {
+        case 'title':
+            if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowUp') {
+                goToStory();
+            }
+            break;
+
+        case 'story':
+            if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowUp') {
+                goToGame();
+            }
+            break;
+
+        case 'game':
+            // Dismiss milestone modal early on any key
+            if (document.getElementById('milestoneModal').classList.contains('show')) {
+                document.getElementById('milestoneModal').classList.remove('show');
+                if (milestoneTimeout) { clearTimeout(milestoneTimeout); milestoneTimeout = null; }
+                break;
+            }
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                moveFloor(1);
+            } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                moveFloor(-1);
+            } else if (e.key === ' ' || e.key === 'Enter') {
+                interactFloor();
+            } else if (e.key === 'Escape') {
+                goToTitle();
+            }
+            break;
+
+        case 'rooftop':
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                currentScreen = 'game';
+                currentFloor = 100;
+                lastZoneIndex = -1;
+                showScreen('gameScreen');
+                renderFloor(100, 'none');
+            } else if (e.key === ' ' || e.key === 'Enter') {
+                goToTitle();
+            }
+            break;
+    }
+});
+
+// Touch/click support for title & story
+document.getElementById('titleScreen').addEventListener('click', () => {
+    if (currentScreen === 'title') { ensureAudio(); goToStory(); }
+});
+document.getElementById('storyScreen').addEventListener('click', () => {
+    if (currentScreen === 'story') { ensureAudio(); goToGame(); }
+});
+
+// Key repeat for holding arrow keys
+let holdInterval = null;
+let holdKey = null;
+
+document.addEventListener('keydown', (e) => {
+    if (currentScreen !== 'game') return;
+    if (e.repeat) return; // handled by interval
+
+    if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && holdKey !== 'up') {
+        holdKey = 'up';
+        holdInterval = setInterval(() => moveFloor(1), 250);
+    } else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && holdKey !== 'down') {
+        holdKey = 'down';
+        holdInterval = setInterval(() => moveFloor(-1), 250);
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (['ArrowUp','ArrowDown','w','W','s','S'].includes(e.key)) {
+        clearInterval(holdInterval);
+        holdInterval = null;
+        holdKey = null;
+    }
+});
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+
+// Place Tsupi SVGs into all placeholder elements
+document.getElementById('titleBird').innerHTML = tsupiSVG('tsupi-title');
+document.getElementById('storyEmoji').innerHTML = tsupiSVG('tsupi-story') + '💌';
+document.getElementById('progressBird').innerHTML = tsupiSVG('tsupi-progress');
+document.getElementById('tsupiGame').innerHTML = tsupiSVG('tsupi-float-icon', true);
+document.getElementById('rooftopTsupi').innerHTML = tsupiSVG('tsupi-rooftop');
+document.querySelector('.ctrl-tsupi-icon').innerHTML = tsupiSVG('tsupi-ctrl');
+
+document.addEventListener('touchstart', ensureAudio, { once: true });
+document.addEventListener('click', ensureAudio, { once: true });
+</script>
+</body>
+</html>
