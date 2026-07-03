@@ -5,785 +5,853 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎮 Kids Learning Games Collection 🎮</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --glass: rgba(255,255,255,0.12);
+            --glass-border: rgba(255,255,255,0.18);
+            --card-bg: rgba(255,255,255,0.95);
+            --text: #2d3748;
+            --text-muted: #718096;
+            --radius: 20px;
         }
+        * { margin:0; padding:0; box-sizing:border-box; }
 
         body {
-            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 40%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientFlow 20s ease infinite;
             min-height: 100vh;
-            padding: 40px 20px;
-            animation: backgroundShift 15s ease infinite;
+            padding: 0;
+            overflow-x: hidden;
         }
-
-        @keyframes backgroundShift {
-            0%, 100% { background-position: 0% 50%; }
+        @keyframes gradientFlow {
+            0%,100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        /* ── floating orbs ── */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: .25;
+            pointer-events: none;
+            z-index: 0;
         }
+        .orb-1 { width:600px; height:600px; background:#f093fb; top:-200px; left:-200px; animation: float1 25s ease-in-out infinite; }
+        .orb-2 { width:500px; height:500px; background:#667eea; bottom:-150px; right:-150px; animation: float2 30s ease-in-out infinite; }
+        .orb-3 { width:350px; height:350px; background:#ffd700; top:40%; left:60%; animation: float3 20s ease-in-out infinite; }
+        @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(120px,80px)} }
+        @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-100px,-60px)} }
+        @keyframes float3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-60px,40px)} 66%{transform:translate(50px,-30px)} }
 
+        .container { max-width:1400px; margin:0 auto; padding:40px 20px; position:relative; z-index:1; }
+
+        /* ── header ── */
         header {
-            text-align: center;
-            margin-bottom: 50px;
-            animation: slideDown 1s ease-out;
+            text-align:center;
+            margin-bottom:40px;
+            animation: fadeSlideDown .8s ease-out;
         }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        @keyframes fadeSlideDown {
+            from { transform:translateY(-40px); opacity:0; }
+            to { transform:translateY(0); opacity:1; }
         }
-
         h1 {
-            color: white;
-            font-size: 4rem;
-            margin-bottom: 20px;
-            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
-            animation: bounce 2s ease-in-out infinite;
+            color:#fff;
+            font-size:clamp(2.4rem,6vw,4.2rem);
+            font-weight:800;
+            letter-spacing:-.02em;
+            text-shadow: 0 4px 20px rgba(0,0,0,.25);
+            margin-bottom:12px;
         }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
         .subtitle {
-            color: white;
-            font-size: 1.8rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color:rgba(255,255,255,.85);
+            font-size:clamp(1.1rem,2.5vw,1.6rem);
+            font-weight:400;
         }
 
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
+        /* ── live stats bar ── */
+        .stats-bar {
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:14px;
+            margin-bottom:32px;
+            animation: fadeSlideDown .9s ease-out;
         }
-
-        .game-card {
-            background: white;
-            border-radius: 25px;
-            padding: 0;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.6s ease-out backwards;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .game-card:nth-child(1) { animation-delay: 0.1s; }
-        .game-card:nth-child(2) { animation-delay: 0.2s; }
-        .game-card:nth-child(3) { animation-delay: 0.3s; }
-        .game-card:nth-child(4) { animation-delay: 0.4s; }
-        .game-card:nth-child(5) { animation-delay: 0.5s; }
-        .game-card:nth-child(6) { animation-delay: 0.6s; }
-        .game-card:nth-child(7) { animation-delay: 0.7s; }
-        .game-card:nth-child(8) { animation-delay: 0.8s; }
-        .game-card:nth-child(9) { animation-delay: 0.9s; }
-        .game-card:nth-child(10) { animation-delay: 1.0s; }
-        .game-card:nth-child(11) { animation-delay: 1.1s; }
-        .game-card:nth-child(12) { animation-delay: 1.2s; }
-        .game-card:nth-child(13) { animation-delay: 1.3s; }
-        .game-card:nth-child(14) { animation-delay: 1.4s; }
-        .game-card:nth-child(15) { animation-delay: 1.5s; }
-        .game-card:nth-child(16) { animation-delay: 1.6s; }
-        .game-card:nth-child(17) { animation-delay: 1.7s; }
-
-        @keyframes fadeInUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .game-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .game-card:hover::before {
-            opacity: 1;
-        }
-
-        .game-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-        }
-
-        .game-screenshot {
-            width: 100%;
-            height: 250px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .stat-pill {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            padding: 10px 22px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.12);
+            transition: transform .2s;
+        }
+        .stat-pill:hover { transform:scale(1.05); }
+        .stat-pill .num {
+            font-size:1.5rem;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
+        /* ── search + filter ── */
+        .toolbar {
+            display:flex;
+            flex-wrap:wrap;
+            gap:14px;
+            align-items:center;
+            justify-content:center;
+            margin-bottom:36px;
+            animation: fadeSlideDown 1s ease-out;
+        }
+        .search-box {
+            position:relative;
+            flex: 1 1 280px;
+            max-width:420px;
+        }
+        .search-box input {
+            width:100%;
+            padding:14px 20px 14px 48px;
+            border:none;
+            border-radius:999px;
+            font-size:1rem;
+            background:var(--card-bg);
+            box-shadow:0 4px 24px rgba(0,0,0,.15);
+            outline:none;
+            transition: box-shadow .25s;
+        }
+        .search-box input:focus { box-shadow:0 4px 32px rgba(102,126,234,.4); }
+        .search-box::before {
+            content:'🔍';
+            position:absolute;
+            left:18px;
+            top:50%;
+            transform:translateY(-50%);
+            font-size:1.1rem;
+        }
+
+        .filter-pills {
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            justify-content:center;
+        }
+        .filter-pill {
+            padding:8px 18px;
+            border-radius:999px;
+            border:2px solid var(--glass-border);
+            background:var(--glass);
+            backdrop-filter:blur(12px);
+            -webkit-backdrop-filter:blur(12px);
+            color:#fff;
+            font-weight:600;
+            font-size:.9rem;
+            cursor:pointer;
+            transition:all .25s;
+            user-select:none;
+        }
+        .filter-pill:hover { background:rgba(255,255,255,.25); transform:translateY(-2px); }
+        .filter-pill.active {
+            background:#fff;
+            color:var(--secondary);
+            border-color:#fff;
+            box-shadow:0 4px 16px rgba(0,0,0,.15);
+        }
+
+        /* ── grid ── */
+        .games-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+            gap:28px;
+        }
+
+        /* ── card ── */
+        .game-card {
+            background:var(--card-bg);
+            border-radius:var(--radius);
+            overflow:hidden;
+            box-shadow:0 8px 32px rgba(0,0,0,.18);
+            cursor:pointer;
+            display:flex;
+            flex-direction:column;
+            position:relative;
+            opacity:0;
+            transform:translateY(40px);
+            transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s, opacity .5s;
+        }
+        .game-card.visible {
+            opacity:1;
+            transform:translateY(0);
+        }
+        .game-card.hidden {
+            display:none !important;
+        }
+        .game-card:hover {
+            transform:translateY(-8px) scale(1.015);
+            box-shadow:0 20px 50px rgba(0,0,0,.28);
+        }
+
+        /* screenshot / fallback */
+        .game-screenshot {
+            position:relative;
+            width:100%;
+            height:220px;
+            overflow:hidden;
+        }
         .game-screenshot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s;
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            transition:transform .4s;
+        }
+        .game-card:hover .game-screenshot img { transform:scale(1.06); }
+
+        .screenshot-fallback {
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:5rem;
+            background:linear-gradient(135deg,var(--primary),var(--secondary));
         }
 
-        .game-card:hover .game-screenshot img {
-            transform: scale(1.05);
+        /* badge */
+        .category-badge {
+            position:absolute;
+            top:14px;
+            right:14px;
+            padding:6px 16px;
+            background:linear-gradient(135deg,var(--accent),#f5576c);
+            color:#fff;
+            border-radius:999px;
+            font-size:.8rem;
+            font-weight:700;
+            box-shadow:0 3px 12px rgba(0,0,0,.25);
+            z-index:2;
         }
 
         .game-content {
-            padding: 30px;
+            padding:24px 28px 28px;
+            flex:1;
+            display:flex;
+            flex-direction:column;
         }
-
-        .game-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        @keyframes rotate {
-            0%, 100% { transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
-        }
-
+        .game-icon { font-size:2.4rem; margin-bottom:10px; }
         .game-title {
-            font-size: 2rem;
-            color: #667eea;
-            margin-bottom: 15px;
-            font-weight: bold;
+            font-size:1.35rem;
+            font-weight:700;
+            color:var(--primary);
+            margin-bottom:10px;
+            line-height:1.3;
         }
-
         .game-description {
-            color: #666;
-            font-size: 1.2rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
+            color:var(--text-muted);
+            font-size:1rem;
+            line-height:1.6;
+            margin-bottom:16px;
         }
-
         .game-features {
-            list-style: none;
-            margin-bottom: 20px;
+            list-style:none;
+            margin-bottom:20px;
+            flex:1;
         }
-
         .game-features li {
-            color: #764ba2;
-            font-size: 1rem;
-            margin-bottom: 8px;
-            padding-left: 25px;
-            position: relative;
+            color:var(--secondary);
+            font-size:.92rem;
+            margin-bottom:6px;
+            padding-left:22px;
+            position:relative;
         }
-
         .game-features li::before {
-            content: '✨';
-            position: absolute;
-            left: 0;
+            content:'✦';
+            position:absolute;
+            left:0;
+            color:var(--accent);
         }
 
         .play-button {
-            display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            position: relative;
-            z-index: 1;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:12px 32px;
+            background:linear-gradient(135deg,var(--primary),var(--secondary));
+            color:#fff;
+            text-decoration:none;
+            border-radius:999px;
+            font-weight:700;
+            font-size:1.05rem;
+            transition:all .3s;
+            box-shadow:0 4px 16px rgba(102,126,234,.35);
+            position:relative;
+            z-index:1;
+            align-self:flex-start;
         }
-
         .play-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            transform:translateY(-2px);
+            box-shadow:0 6px 24px rgba(102,126,234,.5);
         }
 
-        .play-button:active {
-            transform: translateY(0);
+        /* ── no results ── */
+        .no-results {
+            grid-column:1/-1;
+            text-align:center;
+            padding:60px 20px;
+            color:rgba(255,255,255,.7);
+            font-size:1.4rem;
+            display:none;
         }
+        .no-results.show { display:block; }
 
-        .category-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 8px 20px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            z-index: 10;
-        }
-
+        /* ── footer ── */
         footer {
-            text-align: center;
-            margin-top: 60px;
-            color: white;
-            font-size: 1.2rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-align:center;
+            margin-top:60px;
+            padding:30px 0;
+            color:rgba(255,255,255,.75);
+            font-size:1rem;
         }
+        footer p + p { margin-top:6px; font-size:.9rem; }
 
-        .stats {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        .stats h2 {
-            color: #667eea;
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-item {
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            font-size: 1.2rem;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            .subtitle {
-                font-size: 1.3rem;
-            }
-
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .game-content {
-                padding: 20px;
-            }
-
-            .game-screenshot {
-                height: 200px;
-            }
-
-            .game-icon {
-                font-size: 2.5rem;
-            }
-
-            .game-title {
-                font-size: 1.5rem;
-            }
-
-            .category-badge {
-                padding: 6px 15px;
-                font-size: 0.8rem;
-            }
+        /* ── responsive ── */
+        @media (max-width:768px) {
+            .container { padding:24px 14px; }
+            .games-grid { grid-template-columns:1fr; gap:20px; }
+            .game-screenshot { height:180px; }
+            .game-content { padding:20px 22px 24px; }
+            .stat-pill { padding:8px 16px; font-size:.88rem; }
+            .stat-pill .num { font-size:1.25rem; }
         }
     </style>
 </head>
 <body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
     <div class="container">
         <header>
-            <h1>🎮 Kids Learning Games 🎮</h1>
-            <p class="subtitle">Fun and Educational Games Collection!</p>
+            <h1>🎮 Kids Learning Games</h1>
+            <p class="subtitle">Fun & educational — no install, just play!</p>
         </header>
 
-        <div class="stats">
-            <h2>📊 Collection Overview</h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-number">17</span>
-                    <span class="stat-label">Total Games</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">5</span>
-                    <span class="stat-label">Learning Games</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">4</span>
-                    <span class="stat-label">3D/4D Games</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">2</span>
-                    <span class="stat-label">New Year Special</span>
-                </div>
+        <!-- Dynamic stats — filled by JS -->
+        <div class="stats-bar" id="statsBar"></div>
+
+        <!-- Search + filter -->
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search games…" autocomplete="off">
+            </div>
+            <div class="filter-pills" id="filterPills">
+                <span class="filter-pill active" data-cat="all">All</span>
             </div>
         </div>
 
         <div class="games-grid" id="gamesGrid">
-            <!-- Game 1: ABC Song with Bouncing Balls -->
-            <div class="game-card" data-game="abc-bouncing-balls.html">
+            <!-- Cards are defined declaratively; JS enhances them -->
+
+            <div class="game-card" data-game="abc-bouncing-balls.html" data-cat="baby" data-icon="🎵" data-title="ABC Song with Bouncing Balls!">
                 <div class="game-screenshot">
-                    <img src="screenshots/abc-bouncing-balls.png" alt="ABC Song with Bouncing Balls">
+                    <img src="screenshots/abc-bouncing-balls.png" alt="ABC Song with Bouncing Balls" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">👶 For Babies</span>
                     <div class="game-icon">🎵</div>
                     <h2 class="game-title">ABC Song with Bouncing Balls!</h2>
-                    <p class="game-description">
-                        Watch colorful balls bounce to the ABC song! Tap to create more balls!
-                    </p>
+                    <p class="game-description">Watch colorful balls bounce to the ABC song! Tap to create more balls!</p>
                     <ul class="game-features">
                         <li>Full ABC song with music & voice</li>
                         <li>Balls bounce with physics</li>
                         <li>3 speed modes: slow, normal, fast</li>
-                        <li>Interactive - tap to add balls!</li>
+                        <li>Interactive — tap to add balls!</li>
                     </ul>
-                    <a href="abc-bouncing-balls.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/abc-bouncing-balls.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 2: Baby's 4D Wonder World -->
-            <div class="game-card" data-game="4d-baby-animation.html">
+            <div class="game-card" data-game="4d-baby-animation.html" data-cat="baby" data-icon="🎈" data-title="Baby's 4D Wonder World">
                 <div class="game-screenshot">
-                    <img src="screenshots/4d-baby-animation.png" alt="Baby's 4D Wonder World">
+                    <img src="screenshots/4d-baby-animation.png" alt="Baby's 4D Wonder World" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">👶 For Babies</span>
                     <div class="game-icon">🎈</div>
                     <h2 class="game-title">Baby's 4D Wonder World</h2>
-                    <p class="game-description">
-                        Tap anywhere! Cute animals and objects appear BIG and zoom away with sounds!
-                    </p>
+                    <p class="game-description">Tap anywhere! Cute animals and objects appear BIG and zoom away with sounds!</p>
                     <ul class="game-features">
                         <li>Tap to create cute animations</li>
                         <li>Happy sounds for each tap</li>
                         <li>Auto-spawning balloons & rainbows</li>
                         <li>Perfect for 2-year-olds!</li>
                     </ul>
-                    <a href="4d-baby-animation.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/4d-baby-animation.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 3: Alphabet Typing -->
-            <div class="game-card" data-game="alphabet-typing.html">
+            <div class="game-card" data-game="alphabet-typing.html" data-cat="learning" data-icon="🔤" data-title="Alphabet Typing A→Z">
                 <div class="game-screenshot">
-                    <img src="screenshots/alphabet-typing.png" alt="Alphabet Typing A→Z">
+                    <img src="screenshots/alphabet-typing.png" alt="Alphabet Typing A→Z" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">📚 Learning</span>
                     <div class="game-icon">🔤</div>
                     <h2 class="game-title">Alphabet Typing A→Z</h2>
-                    <p class="game-description">
-                        Learn to type all 26 letters of the alphabet with fun words and emojis!
-                    </p>
+                    <p class="game-description">Learn to type all 26 letters of the alphabet with fun words and emojis!</p>
                     <ul class="game-features">
                         <li>3 modes: Uppercase, Lowercase, Both</li>
                         <li>Voice pronunciation for each letter</li>
                         <li>Progress tracking from A to Z</li>
                         <li>Fun emojis and words</li>
                     </ul>
-                    <a href="alphabet-typing.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/alphabet-typing.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 4: Number Typing -->
-            <div class="game-card" data-game="number-typing.html">
+            <div class="game-card" data-game="number-typing.html" data-cat="learning" data-icon="🔢" data-title="Number Typing Game">
                 <div class="game-screenshot">
-                    <img src="screenshots/number-typing.png" alt="Number Typing Game">
+                    <img src="screenshots/number-typing.png" alt="Number Typing Game" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">📚 Learning</span>
                     <div class="game-icon">🔢</div>
                     <h2 class="game-title">Number Typing Game</h2>
-                    <p class="game-description">
-                        Count and type numbers from 0-100 or 101-200 with cute animals!
-                    </p>
+                    <p class="game-description">Count and type numbers from 0-100 or 101-200 with cute animals!</p>
                     <ul class="game-features">
                         <li>Two modes: 0-100 and 101-200</li>
                         <li>Visual counting with emojis</li>
-                        <li>No time limit - learn at your pace</li>
+                        <li>No time limit — learn at your pace</li>
                         <li>Navigate forward and backward</li>
                     </ul>
-                    <a href="number-typing.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/number-typing.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 5: 3D Number Typing -->
-            <div class="game-card" data-game="3d-number-typing.html">
+            <div class="game-card" data-game="3d-number-typing.html" data-cat="3d4d" data-icon="🦄" data-title="Rainbow Number Adventure">
                 <div class="game-screenshot">
-                    <img src="screenshots/3d-number-typing.png" alt="Rainbow Number Adventure">
+                    <img src="screenshots/3d-number-typing.png" alt="Rainbow Number Adventure" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">🌈 3D Game</span>
                     <div class="game-icon">🦄</div>
                     <h2 class="game-title">🌈 Rainbow Number Adventure</h2>
-                    <p class="game-description">
-                        Super fancy 3D number learning with rainbow effects and a cute unicorn mascot!
-                    </p>
+                    <p class="game-description">Super fancy 3D number learning with rainbow effects and a cute unicorn mascot!</p>
                     <ul class="game-features">
                         <li>100+ rainbow particles & effects</li>
                         <li>Cute unicorn mascot cheering you on</li>
                         <li>Glittering gems & confetti explosions</li>
                         <li>Sound effects & mega fireworks!</li>
                     </ul>
-                    <a href="3d-number-typing.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/3d-number-typing.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 6: 4D Number Journey -->
-            <div class="game-card" data-game="4d-number-rush.html">
+            <div class="game-card" data-game="4d-number-rush.html" data-cat="3d4d" data-icon="⚡" data-title="4D Number Journey">
                 <div class="game-screenshot">
-                    <img src="screenshots/4d-number-rush.png" alt="4D Number Journey">
+                    <img src="screenshots/4d-number-rush.png" alt="4D Number Journey" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">🎮 4D Game</span>
                     <div class="game-icon">⚡</div>
                     <h2 class="game-title">4D Number Journey</h2>
-                    <p class="game-description">
-                        Numbers fly towards you from the distance! Practice typing at your own pace!
-                    </p>
+                    <p class="game-description">Numbers fly towards you from the distance! Practice typing at your own pace!</p>
                     <ul class="game-features">
-                        <li>Relaxed gameplay - no pressure</li>
+                        <li>Relaxed gameplay — no pressure</li>
                         <li>4 difficulty levels</li>
                         <li>Combo multiplier system</li>
                         <li>Stunning tunnel effects</li>
                     </ul>
-                    <a href="4d-number-rush.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/4d-number-rush.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 7: Elevator Game -->
-            <div class="game-card" data-game="elevator-game.html">
+            <div class="game-card" data-game="4d-number-zoom.html" data-cat="3d4d" data-icon="🔍" data-title="4D Number Zoom!">
                 <div class="game-screenshot">
-                    <img src="screenshots/elevator-game.png" alt="Elevator Game - Kids Tower 100">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">📚 Learning</span>
-                    <div class="game-icon">🏢</div>
-                    <h2 class="game-title">Elevator Game - Kids Tower 100</h2>
-                    <p class="game-description">
-                        Type numbers to explore 100 different themed floors! Every floor has real photo backgrounds!
-                    </p>
-                    <ul class="game-features">
-                        <li>Real photo backgrounds on all 100 floors</li>
-                        <li>Compact button layout (10 columns)</li>
-                        <li>Big window view with scenery</li>
-                        <li>Clear moving animations</li>
-                    </ul>
-                    <a href="elevator-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 8: Mochitsuki Game -->
-            <div class="game-card" data-game="mochitsuki-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/mochitsuki-game.png" alt="Mochitsuki Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">🎍 New Year</span>
-                    <div class="game-icon">🎍</div>
-                    <h2 class="game-title">Mochitsuki Game</h2>
-                    <p class="game-description">
-                        Japanese New Year's mochi pounding game! Click fast to make delicious mochi!
-                    </p>
-                    <ul class="game-features">
-                        <li>Traditional mochi pounding action</li>
-                        <li>Combo system for extra points</li>
-                        <li>Level up as you improve</li>
-                        <li>Fun sound effects and animations</li>
-                    </ul>
-                    <a href="mochitsuki-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 9: Tako-age (Kite Flying) Number Game -->
-            <div class="game-card" data-game="tako-age-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/tako-age-game.png" alt="Kite Flying Number Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">🎍 New Year</span>
-                    <div class="game-icon">🪁</div>
-                    <h2 class="game-title">Kite Flying Number Game</h2>
-                    <p class="game-description">
-                        Catch flying kites by typing numbers! Beautiful 3D Japanese scenery with Mt. Fuji & cherry blossoms!
-                    </p>
-                    <ul class="game-features">
-                        <li>Sequence mode: count in order!</li>
-                        <li>4 difficulty levels (0-9 to 0-100)</li>
-                        <li>Stunning 3D Babylon.js graphics</li>
-                        <li>Combo system & fireworks effects</li>
-                    </ul>
-                    <a href="tako-age-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 10: Medicine Game -->
-            <div class="game-card" data-game="medicine-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/medicine-game.png" alt="Medicine Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">👶 For Toddlers</span>
-                    <div class="game-icon">💊</div>
-                    <h2 class="game-title">おくすりゲーム</h2>
-                    <p class="game-description">
-                        Help cute animals take their medicine and feel better! Tap to give medicine!
-                    </p>
-                    <ul class="game-features">
-                        <li>5 cute animal characters</li>
-                        <li>Simple tap interaction for toddlers</li>
-                        <li>Positive reinforcement & praise</li>
-                        <li>Makes medicine-taking fun!</li>
-                    </ul>
-                    <a href="medicine-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 11: Animal Catch Game -->
-            <div class="game-card" data-game="animal-catch-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/animal-catch-game.png" alt="Animal Catch Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">🎮 Action</span>
-                    <div class="game-icon">🦁</div>
-                    <h2 class="game-title">Animal Catch Game</h2>
-                    <p class="game-description">
-                        Catch cute animals that appear on the screen! Click fast to get high scores!
-                    </p>
-                    <ul class="game-features">
-                        <li>10 different cute animals</li>
-                        <li>Combo system for extra points</li>
-                        <li>Beautiful particle effects</li>
-                        <li>60 second challenge</li>
-                    </ul>
-                    <a href="animal-catch-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-            <!-- Game 12: Penguin Nendo Game -->
-            <div class="game-card" data-game="penguin-nendo-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/penguin-nendo-game.png" alt="Penguin Nendo Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">🎨 Creative</span>
-                    <div class="game-icon">🐧</div>
-                    <h2 class="game-title">Penguin Nendo Game</h2>
-                    <p class="game-description">
-                        Shape clay (nendo) into an adorable penguin step by step! Tap to mold each part!
-                    </p>
-                    <ul class="game-features">
-                        <li>8 sculpting steps with animations</li>
-                        <li>Satisfying squishy clay effects</li>
-                        <li>Collect penguins in your gallery</li>
-                        <li>Snowy penguin theme with sounds</li>
-                    </ul>
-                    <a href="penguin-nendo-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 13: Moomin Valley Adventure -->
-            <div class="game-card" data-game="moomin-valley-adventure.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/moomin-valley-adventure.png" alt="Moomin Valley Adventure">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">🌸 Adventure</span>
-                    <div class="game-icon">🦛</div>
-                    <h2 class="game-title">🌸 Moomin Valley Adventure</h2>
-                    <p class="game-description">
-                        Help Moomin explore the beautiful valley and collect magical treasures!
-                    </p>
-                    <ul class="game-features">
-                        <li>Click to move Moomin around</li>
-                        <li>Collect 15 treasures in 60 seconds</li>
-                        <li>Beautiful animated scenery</li>
-                        <li>Fun sound effects & particle effects</li>
-                    </ul>
-                    <a href="moomin-valley-adventure.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 14: Mountain Climb Number Game -->
-            <div class="game-card" data-game="mountain-climb-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/mountain-climb-game.png" alt="Mountain Climb Number Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">📚 Learning</span>
-                    <div class="game-icon">⛰️</div>
-                    <h2 class="game-title">⛰️ 山登りナンバーゲーム</h2>
-                    <p class="game-description">
-                        Climb the mountain by typing numbers digit by digit! Choose your difficulty!
-                    </p>
-                    <ul class="game-features">
-                        <li>4 modes: 1-20, 1-30, 1-50, 1-100</li>
-                        <li>Type each digit — big input display!</li>
-                        <li>Watch your climber ascend the mountain</li>
-                        <li>No time limit - learn at your own pace</li>
-                    </ul>
-                    <a href="mountain-climb-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 15: Toilet Training Game -->
-            <div class="game-card" data-game="toilet-training-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/toilet-training-game.png" alt="Toilet Training Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">🚽 Toilet Training</span>
-                    <div class="game-icon">🚽</div>
-                    <h2 class="game-title">トイレでいっしょ！</h2>
-                    <p class="game-description">
-                        キャラクターをタップしてトイレまで連れて行こう！楽しくトイトレの習慣を身につけよう！
-                    </p>
-                    <ul class="game-features">
-                        <li>タップするだけの簡単操作</li>
-                        <li>成功するたびにキャラクターが変身</li>
-                        <li>ポジティブな励ましメッセージ</li>
-                        <li>紙吹雪やキラキラエフェクト満載</li>
-                    </ul>
-                    <a href="toilet-training-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
-
-            <!-- Game 16: 4D Number Zoom -->
-            <div class="game-card" data-game="4d-number-zoom.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/4d-number-zoom.png" alt="4D Number Zoom">
+                    <img src="screenshots/4d-number-zoom.png" alt="4D Number Zoom" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">🎮 4D Game</span>
                     <div class="game-icon">🔍</div>
                     <h2 class="game-title">4D Number Zoom!</h2>
-                    <p class="game-description">
-                        Numbers appear BIG right in front of you and zoom away! Type them before they disappear!
-                    </p>
+                    <p class="game-description">Numbers appear BIG right in front of you and zoom away! Type them before they disappear!</p>
                     <ul class="game-features">
                         <li>Numbers zoom from big to small</li>
                         <li>Type fast before they vanish</li>
                         <li>Exciting visual effects</li>
                         <li>Great for number recognition</li>
                     </ul>
-                    <a href="4d-number-zoom.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/4d-number-zoom.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 17: Typhoon Safe Area Game -->
-            <div class="game-card" data-game="typhoon-safe-area-game.html">
+            <div class="game-card" data-game="elevator-game.html" data-cat="learning" data-icon="🏢" data-title="Elevator Game — Kids Tower 100">
                 <div class="game-screenshot">
-                    <img src="screenshots/typhoon-safe-area-game.png" alt="Typhoon Safe Area Game">
+                    <img src="screenshots/elevator-game.png" alt="Elevator Game — Kids Tower 100" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">📚 Learning</span>
+                    <div class="game-icon">🏢</div>
+                    <h2 class="game-title">Elevator Game — Kids Tower 100</h2>
+                    <p class="game-description">Type numbers to explore 100 different themed floors! Every floor has real photo backgrounds!</p>
+                    <ul class="game-features">
+                        <li>Real photo backgrounds on all 100 floors</li>
+                        <li>Compact button layout (10 columns)</li>
+                        <li>Big window view with scenery</li>
+                        <li>Clear moving animations</li>
+                    </ul>
+                    <a href="games/elevator-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="mountain-climb-game.html" data-cat="learning" data-icon="⛰️" data-title="山登りナンバーゲーム">
+                <div class="game-screenshot">
+                    <img src="screenshots/mountain-climb-game.png" alt="Mountain Climb Number Game" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">📚 Learning</span>
+                    <div class="game-icon">⛰️</div>
+                    <h2 class="game-title">⛰️ 山登りナンバーゲーム</h2>
+                    <p class="game-description">Climb the mountain by typing numbers digit by digit! Choose your difficulty!</p>
+                    <ul class="game-features">
+                        <li>4 modes: 1-20, 1-30, 1-50, 1-100</li>
+                        <li>Type each digit — big input display!</li>
+                        <li>Watch your climber ascend the mountain</li>
+                        <li>No time limit — learn at your own pace</li>
+                    </ul>
+                    <a href="games/mountain-climb-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="100-kadate-game.html" data-cat="learning" data-icon="🏠" data-title="100かいだてのいえ">
+                <div class="game-screenshot">
+                    <img src="screenshots/100-kadate-game.png" alt="100-Story House Game" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">📚 Learning</span>
+                    <div class="game-icon">🏠</div>
+                    <h2 class="game-title">100かいだてのいえ</h2>
+                    <p class="game-description">Climb a 100-story house by typing numbers! 5 book variations with unique animal residents!</p>
+                    <ul class="game-features">
+                        <li>5 variations: Land, Underground, Sea, Sky, Forest</li>
+                        <li>10 themed zones × 10 floors = 100 floors</li>
+                        <li>Big colorful emoji — easy to see!</li>
+                        <li>Sky changes as you climb higher!</li>
+                    </ul>
+                    <a href="games/100-kadate-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="mochitsuki-game.html" data-cat="seasonal" data-icon="🎍" data-title="Mochitsuki Game">
+                <div class="game-screenshot">
+                    <img src="screenshots/mochitsuki-game.png" alt="Mochitsuki Game" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎍 New Year</span>
+                    <div class="game-icon">🎍</div>
+                    <h2 class="game-title">Mochitsuki Game</h2>
+                    <p class="game-description">Japanese New Year's mochi pounding game! Click fast to make delicious mochi!</p>
+                    <ul class="game-features">
+                        <li>Traditional mochi pounding action</li>
+                        <li>Combo system for extra points</li>
+                        <li>Level up as you improve</li>
+                        <li>Fun sound effects and animations</li>
+                    </ul>
+                    <a href="games/mochitsuki-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="tako-age-game.html" data-cat="seasonal" data-icon="🪁" data-title="Kite Flying Number Game">
+                <div class="game-screenshot">
+                    <img src="screenshots/tako-age-game.png" alt="Kite Flying Number Game" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎍 New Year</span>
+                    <div class="game-icon">🪁</div>
+                    <h2 class="game-title">Kite Flying Number Game</h2>
+                    <p class="game-description">Catch flying kites by typing numbers! Beautiful 3D Japanese scenery with Mt. Fuji & cherry blossoms!</p>
+                    <ul class="game-features">
+                        <li>Sequence mode: count in order!</li>
+                        <li>4 difficulty levels (0-9 to 0-100)</li>
+                        <li>Stunning 3D Babylon.js graphics</li>
+                        <li>Combo system & fireworks effects</li>
+                    </ul>
+                    <a href="games/tako-age-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="medicine-game.html" data-cat="toddler" data-icon="💊" data-title="おくすりゲーム">
+                <div class="game-screenshot">
+                    <img src="screenshots/medicine-game.png" alt="おくすりゲーム" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">👶 For Toddlers</span>
+                    <div class="game-icon">💊</div>
+                    <h2 class="game-title">おくすりゲーム</h2>
+                    <p class="game-description">Help cute animals take their medicine and feel better! Tap to give medicine!</p>
+                    <ul class="game-features">
+                        <li>5 cute animal characters</li>
+                        <li>Simple tap interaction for toddlers</li>
+                        <li>Positive reinforcement & praise</li>
+                        <li>Makes medicine-taking fun!</li>
+                    </ul>
+                    <a href="games/medicine-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="toilet-training-game.html" data-cat="toddler" data-icon="🚽" data-title="トイレでいっしょ！">
+                <div class="game-screenshot">
+                    <img src="screenshots/toilet-training-game.png" alt="トイレでいっしょ！" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🚽 Life Skills</span>
+                    <div class="game-icon">🚽</div>
+                    <h2 class="game-title">トイレでいっしょ！</h2>
+                    <p class="game-description">キャラクターをタップしてトイレまで連れて行こう！楽しくトイトレの習慣を身につけよう！</p>
+                    <ul class="game-features">
+                        <li>タップするだけの簡単操作</li>
+                        <li>成功するたびにキャラクターが変身</li>
+                        <li>ポジティブな励ましメッセージ</li>
+                        <li>紙吹雪やキラキラエフェクト満載</li>
+                    </ul>
+                    <a href="games/toilet-training-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="animal-catch-game.html" data-cat="action" data-icon="🦁" data-title="Animal Catch Game">
+                <div class="game-screenshot">
+                    <img src="screenshots/animal-catch-game.png" alt="Animal Catch Game" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎮 Action</span>
+                    <div class="game-icon">🦁</div>
+                    <h2 class="game-title">Animal Catch Game</h2>
+                    <p class="game-description">Catch cute animals that appear on the screen! Click fast to get high scores!</p>
+                    <ul class="game-features">
+                        <li>10 different cute animals</li>
+                        <li>Combo system for extra points</li>
+                        <li>Beautiful particle effects</li>
+                        <li>60 second challenge</li>
+                    </ul>
+                    <a href="games/animal-catch-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="typhoon-safe-area-game.html" data-cat="action" data-icon="🏠" data-title="Typhoon Safe Area Game">
+                <div class="game-screenshot">
+                    <img src="screenshots/typhoon-safe-area-game.png" alt="Typhoon Safe Area Game" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">🌀 Drag & Drop</span>
                     <div class="game-icon">🏠</div>
                     <h2 class="game-title">Typhoon Safe Area Game</h2>
-                    <p class="game-description">
-                        A typhoon is coming! Drag your family, pets, and toys into the safe house before the storm hits!
-                    </p>
+                    <p class="game-description">A typhoon is coming! Drag your family, pets, and toys into the safe house before the storm hits!</p>
                     <ul class="game-features">
                         <li>Easy drag & drop for small kids</li>
                         <li>5 levels with increasing challenge</li>
                         <li>Realistic rain, wind & lightning</li>
                         <li>No adult help needed!</li>
                     </ul>
-                    <a href="typhoon-safe-area-game.html" class="play-button">🎮 Play Now!</a>
+                    <a href="games/typhoon-safe-area-game.html" class="play-button">🎮 Play Now!</a>
                 </div>
             </div>
 
-            <!-- Game 17: 100-Kadate (100-Story House) -->
-            <div class="game-card" data-game="sora-100-kadate.html">
+            <div class="game-card" data-game="penguin-nendo-game.html" data-cat="creative" data-icon="🐧" data-title="Penguin Nendo Game">
                 <div class="game-screenshot">
-                    <img src="screenshots/sora-100-kadate.png" alt="Sky 100-Story House">
+                    <img src="screenshots/penguin-nendo-game.png" alt="Penguin Nendo Game" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🎨 Creative</span>
+                    <div class="game-icon">🐧</div>
+                    <h2 class="game-title">Penguin Nendo Game</h2>
+                    <p class="game-description">Shape clay (nendo) into an adorable penguin step by step! Tap to mold each part!</p>
+                    <ul class="game-features">
+                        <li>8 sculpting steps with animations</li>
+                        <li>Satisfying squishy clay effects</li>
+                        <li>Collect penguins in your gallery</li>
+                        <li>Snowy penguin theme with sounds</li>
+                    </ul>
+                    <a href="games/penguin-nendo-game.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="moomin-valley-adventure.html" data-cat="adventure" data-icon="🦛" data-title="Moomin Valley Adventure">
+                <div class="game-screenshot">
+                    <img src="screenshots/moomin-valley-adventure.png" alt="Moomin Valley Adventure" loading="lazy">
+                </div>
+                <div class="game-content">
+                    <span class="category-badge">🌸 Adventure</span>
+                    <div class="game-icon">🦛</div>
+                    <h2 class="game-title">🌸 Moomin Valley Adventure</h2>
+                    <p class="game-description">Help Moomin explore the beautiful valley and collect magical treasures!</p>
+                    <ul class="game-features">
+                        <li>Click to move Moomin around</li>
+                        <li>Collect 15 treasures in 60 seconds</li>
+                        <li>Beautiful animated scenery</li>
+                        <li>Fun sound effects & particle effects</li>
+                    </ul>
+                    <a href="games/moomin-valley-adventure.html" class="play-button">🎮 Play Now!</a>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="sora-100-kadate.html" data-cat="storybook" data-icon="☁️" data-title="そらの100かいだてのいえ">
+                <div class="game-screenshot">
+                    <img src="screenshots/sora-100-kadate.png" alt="Sky 100-Story House" loading="lazy">
                 </div>
                 <div class="game-content">
                     <span class="category-badge">📖 Storybook</span>
                     <div class="game-icon">☁️</div>
                     <h2 class="game-title">そらの100かいだてのいえ</h2>
-                    <p class="game-description">
-                        ツピくんと一緒に空の100階建ての家を探検！くもさん、あめさん、にじさん…10種の住人に会おう！
-                    </p>
+                    <p class="game-description">ツピくんと一緒に空の100階建ての家を探検！くもさん、あめさん、にじさん…10種の住人に会おう！</p>
                     <ul class="game-features">
                         <li>絵本「そらの100かいだてのいえ」を再現</li>
                         <li>各ゾーン独特の部屋の形（雲・傘・虹・六角形…）</li>
                         <li>タッチで音が鳴るインタラクティブ体験</li>
                         <li>スクロールで空を登っていく！</li>
                     </ul>
-                    <a href="sora-100-kadate.html" class="play-button">📖 よんでみよう！</a>
+                    <a href="games/sora-100-kadate.html" class="play-button">📖 よんでみよう！</a>
                 </div>
             </div>
 
-            <div class="game-card" data-game="100-kadate-game.html">
-                <div class="game-screenshot">
-                    <img src="screenshots/100-kadate-game.png" alt="100-Story House Game">
-                </div>
-                <div class="game-content">
-                    <span class="category-badge">📚 Learning</span>
-                    <div class="game-icon">🏠</div>
-                    <h2 class="game-title">100かいだてのいえ</h2>
-                    <p class="game-description">
-                        Climb a 100-story house by typing numbers! 5 book variations with unique animal residents!
-                    </p>
-                    <ul class="game-features">
-                        <li>5 variations: Land, Underground, Sea, Sky, Forest</li>
-                        <li>10 themed zones × 10 floors = 100 floors</li>
-                        <li>Big colorful emoji - easy to see!</li>
-                        <li>Sky changes as you climb higher!</li>
-                    </ul>
-                    <a href="100-kadate-game.html" class="play-button">🎮 Play Now!</a>
-                </div>
-            </div>
+            <div class="no-results" id="noResults">😕 No games found — try a different search!</div>
         </div>
 
         <footer>
             <p>✨ Made with love for young learners! ✨</p>
-            <p style="margin-top: 10px; font-size: 1rem;">All games are browser-based and require no installation!</p>
+            <p>All games are browser-based and require no installation.</p>
         </footer>
     </div>
 
     <script>
-        // Click tracking and popularity order (requires server: python server.py)
-        const API_BASE = window.location.origin;
+    (function () {
+        /* ── refs ── */
+        var grid      = document.getElementById('gamesGrid');
+        var cards     = Array.from(grid.querySelectorAll('.game-card'));
+        var searchIn  = document.getElementById('searchInput');
+        var pillsWrap = document.getElementById('filterPills');
+        var statsBar  = document.getElementById('statsBar');
+        var noResults = document.getElementById('noResults');
+
+        /* ── category meta (built dynamically) ── */
+        var catLabels = {
+            all:       '🎯 All',
+            baby:      '👶 Baby',
+            learning:  '📚 Learning',
+            '3d4d':    '🌀 3D / 4D',
+            seasonal:  '🎍 Seasonal',
+            toddler:   '🧸 Toddler',
+            action:    '🎮 Action',
+            creative:  '🎨 Creative',
+            adventure: '🌸 Adventure',
+            storybook: '📖 Storybook'
+        };
+
+        /* ── build category counts & filter pills ── */
+        var catCounts = {};
+        cards.forEach(function (c) {
+            var cat = c.dataset.cat;
+            catCounts[cat] = (catCounts[cat] || 0) + 1;
+        });
+
+        Object.keys(catLabels).forEach(function (key) {
+            if (key === 'all') return;            // already in HTML
+            if (!catCounts[key]) return;           // skip unused
+            var pill = document.createElement('span');
+            pill.className = 'filter-pill';
+            pill.dataset.cat = key;
+            pill.textContent = catLabels[key];
+            pillsWrap.appendChild(pill);
+        });
+
+        /* ── build stat pills dynamically ── */
+        var statDefs = [
+            { emoji: '🎮', label: 'Games',       value: cards.length },
+            { emoji: '📚', label: 'Learning',     value: catCounts.learning || 0 },
+            { emoji: '🌀', label: '3D / 4D',      value: catCounts['3d4d'] || 0 },
+            { emoji: '🧸', label: 'Toddler',      value: (catCounts.baby || 0) + (catCounts.toddler || 0) },
+            { emoji: '🎍', label: 'Seasonal',      value: catCounts.seasonal || 0 }
+        ];
+        statDefs.forEach(function (s) {
+            var pill = document.createElement('div');
+            pill.className = 'stat-pill';
+            pill.innerHTML = '<span class="num">' + s.value + '</span> ' + s.emoji + ' ' + s.label;
+            statsBar.appendChild(pill);
+        });
+
+        /* ── handle missing screenshots → emoji fallback ── */
+        cards.forEach(function (card) {
+            var img = card.querySelector('.game-screenshot img');
+            if (!img) return;
+            img.addEventListener('error', function () {
+                var wrap = card.querySelector('.game-screenshot');
+                var icon = card.dataset.icon || '🎮';
+                wrap.innerHTML = '<div class="screenshot-fallback">' + icon + '</div>';
+            });
+        });
+
+        /* ── intersection observer for staggered reveal ── */
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    observer.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.08 });
+
+        cards.forEach(function (c, i) {
+            c.style.transitionDelay = (i * 0.06) + 's';
+            observer.observe(c);
+        });
+
+        /* ── filter + search ── */
+        var activeCat = 'all';
+
+        function applyFilters() {
+            var query = searchIn.value.toLowerCase().trim();
+            var visible = 0;
+
+            cards.forEach(function (c) {
+                var matchCat = (activeCat === 'all' || c.dataset.cat === activeCat);
+                var matchSearch = !query
+                    || (c.dataset.title || '').toLowerCase().indexOf(query) !== -1
+                    || c.textContent.toLowerCase().indexOf(query) !== -1;
+                var show = matchCat && matchSearch;
+                c.classList.toggle('hidden', !show);
+                if (show) {
+                    visible++;
+                    if (!c.classList.contains('visible')) c.classList.add('visible');
+                }
+            });
+            noResults.classList.toggle('show', visible === 0);
+        }
+
+        pillsWrap.addEventListener('click', function (e) {
+            var pill = e.target.closest('.filter-pill');
+            if (!pill) return;
+            pillsWrap.querySelectorAll('.filter-pill').forEach(function (p) { p.classList.remove('active'); });
+            pill.classList.add('active');
+            activeCat = pill.dataset.cat;
+            applyFilters();
+        });
+
+        searchIn.addEventListener('input', applyFilters);
+
+        /* ── click tracking (server.py optional) ── */
+        var API_BASE = window.location.origin;
 
         function recordClick(gameId) {
             navigator.sendBeacon(API_BASE + '/api/click?game=' + encodeURIComponent(gameId));
@@ -795,69 +863,31 @@
                 .then(function (stats) {
                     var clicksMap = {};
                     stats.forEach(function (s) { clicksMap[s.game_id] = s.clicks; });
-                    var grid = document.getElementById('gamesGrid');
-                    var cards = Array.from(grid.querySelectorAll('.game-card'));
-                    cards.sort(function (a, b) {
+                    var sorted = cards.slice().sort(function (a, b) {
                         return (clicksMap[b.dataset.game] || 0) - (clicksMap[a.dataset.game] || 0);
                     });
-                    cards.forEach(function (c) { grid.appendChild(c); });
+                    sorted.forEach(function (c) { grid.appendChild(c); });
+                    // keep no-results at the end
+                    grid.appendChild(noResults);
                 })
-                .catch(function () { /* ignore when not using server */ });
+                .catch(function () { /* server not running – keep default order */ });
         }
 
-        document.getElementById('gamesGrid').addEventListener('click', function (e) {
+        grid.addEventListener('click', function (e) {
             var card = e.target.closest('.game-card');
             if (!card) return;
             e.preventDefault();
-            var game = card.dataset.game;
+            recordClick(card.dataset.game);
             var link = card.querySelector('a.play-button');
-            recordClick(game);
-            window.location.href = link.href;
+            if (link) window.location.href = link.href;
         });
 
         applyPopularityOrder();
-
-        // Re-fetch stats when returning to this page and periodically
         document.addEventListener('visibilitychange', function () {
-            if (!document.hidden) {
-                applyPopularityOrder();
-            }
+            if (!document.hidden) applyPopularityOrder();
         });
         setInterval(applyPopularityOrder, 30000);
-
-        // Add subtle particle effect
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.style.position = 'fixed';
-            particle.style.width = '10px';
-            particle.style.height = '10px';
-            particle.style.background = 'white';
-            particle.style.borderRadius = '50%';
-            particle.style.pointerEvents = 'none';
-            particle.style.opacity = '0.6';
-            particle.style.left = Math.random() * window.innerWidth + 'px';
-            particle.style.top = '-10px';
-            particle.style.zIndex = '0';
-            
-            document.body.appendChild(particle);
-            
-            const duration = Math.random() * 3 + 2;
-            const drift = (Math.random() - 0.5) * 100;
-            
-            particle.animate([
-                { transform: 'translateY(0) translateX(0)', opacity: 0.6 },
-                { transform: `translateY(${window.innerHeight}px) translateX(${drift}px)`, opacity: 0 }
-            ], {
-                duration: duration * 1000,
-                easing: 'linear'
-            });
-            
-            setTimeout(() => particle.remove(), duration * 1000);
-        }
-        
-        // Create particles periodically
-        setInterval(createParticle, 500);
+    })();
     </script>
 </body>
 </html>
-

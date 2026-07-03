@@ -579,7 +579,7 @@
 
         function preloadAudio(number) {
             if (numberAudioCache[number]) return;
-            const audio = new Audio(`assets/audio/numbers/${number}.mp3`);
+            const audio = new Audio(`../assets/audio/numbers/${number}.mp3`);
             audio.preload = 'auto';
             numberAudioCache[number] = audio;
         }
