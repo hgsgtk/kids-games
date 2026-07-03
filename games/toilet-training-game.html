@@ -3,791 +3,705 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>トイレでいっしょ！ 🚽✨</title>
+    <title>トイレたんけんたい！ 🚽✨</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
+        *{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+        body{font-family:'Hiragino Maru Gothic ProN','Arial Rounded MT Bold',sans-serif;overflow:hidden;height:100vh;display:flex;justify-content:center;align-items:center;background:#222}
+        #game{width:100vw;height:100vh;position:relative;overflow:hidden;transition:background 0.8s}
 
-        body {
-            font-family: 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        /* ── hud ── */
+        #hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;z-index:20}
+        .pill{background:rgba(255,255,255,.92);padding:7px 16px;border-radius:99px;font-weight:bold;font-size:clamp(.85em,3.5vw,1.15em);color:#6c63ff;box-shadow:0 3px 10px rgba(0,0,0,.15);display:flex;align-items:center;gap:6px;cursor:pointer}
 
-        #gameContainer {
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(to bottom, #aee7ff 0%, #e8f9ff 60%, #fff4e0 100%);
-            position: relative;
-            overflow: hidden;
-        }
+        /* ── progress track ── */
+        #track{position:absolute;top:56px;left:50%;transform:translateX(-50%);display:flex;gap:5px;background:rgba(255,255,255,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:6px 14px;border-radius:99px;z-index:15;max-width:96%;flex-wrap:nowrap;overflow-x:auto}
+        .dot{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:1.05em;box-shadow:inset 0 0 0 2px #d4d0ff;transition:all .35s;flex-shrink:0}
+        .dot.done{background:#b6f5c8;box-shadow:inset 0 0 0 2px #45c46a;transform:scale(.9)}
+        .dot.done::after{content:"✓";position:absolute;font-size:.5em;color:#45c46a}
+        .dot.current{transform:scale(1.2);background:#fff6b3;box-shadow:inset 0 0 0 3px #ffce2e,0 0 16px rgba(255,206,46,.5);animation:dotPulse 1s ease-in-out infinite}
+        @keyframes dotPulse{0%,100%{box-shadow:inset 0 0 0 3px #ffce2e,0 0 8px rgba(255,206,46,.4)}50%{box-shadow:inset 0 0 0 3px #ffce2e,0 0 22px rgba(255,206,46,.6)}}
 
-        /* tiled bathroom floor */
-        #gameContainer::after {
-            content: "";
-            position: absolute;
-            left: 0; right: 0; bottom: 0;
-            height: 22%;
-            background:
-                repeating-linear-gradient(90deg, rgba(255,255,255,0.6) 0 2px, transparent 2px 56px),
-                repeating-linear-gradient(0deg, rgba(255,255,255,0.6) 0 2px, transparent 2px 56px),
-                linear-gradient(to bottom, #ffe4c2, #ffd29e);
-            z-index: 0;
-        }
+        /* ── stage (shared) ── */
+        #stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;padding:20px;pointer-events:none}
+        #stage>*{pointer-events:auto}
+        #speech{background:rgba(255,255,255,.93);border-radius:22px;padding:14px 24px;font-size:clamp(1.05em,4.2vw,1.55em);font-weight:bold;color:#4a4a8a;box-shadow:0 5px 16px rgba(0,0,0,.18);text-align:center;max-width:90%;margin-bottom:16px;position:relative;line-height:1.5}
+        #speech::after{content:"";position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);border-width:12px 12px 0;border-style:solid;border-color:rgba(255,255,255,.93) transparent transparent}
 
-        .screen {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-            padding: 20px;
-        }
+        #charWrap{position:relative;margin-bottom:12px}
+        #char{font-size:clamp(80px,24vw,130px);line-height:1;transition:transform .3s}
+        #fxLayer{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:70px;opacity:0}
 
-        #gameScreen, #successScreen { display: none; }
+        /* ── action zone (bottom) ── */
+        #actionZone{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:12;width:92%;max-width:500px;display:flex;flex-direction:column;align-items:center;gap:14px}
 
-        .title {
-            font-size: clamp(2em, 8vw, 3.4em);
-            color: #fff;
-            text-shadow: 3px 3px 0 #ff9ad1, 5px 5px 8px rgba(0,0,0,0.25);
-            margin-bottom: 18px;
-            text-align: center;
-            animation: bounce 1.4s ease-in-out infinite;
-        }
+        /* big tap button */
+        .bigBtn{font-size:clamp(1.3em,5.5vw,1.9em);padding:18px 50px;background:linear-gradient(135deg,#ff8fc7,#ff5fa2);color:#fff;border:none;border-radius:99px;cursor:pointer;font-weight:bold;box-shadow:0 8px 0 #d63b80,0 12px 20px rgba(0,0,0,.25);transition:transform .1s,box-shadow .1s;white-space:nowrap}
+        .bigBtn:active{transform:translateY(5px);box-shadow:0 3px 0 #d63b80,0 5px 10px rgba(0,0,0,.25)}
+        .bigBtn.green{background:linear-gradient(135deg,#6dd5a0,#36b37e);box-shadow:0 8px 0 #1e8a56,0 12px 20px rgba(0,0,0,.25)}
+        .bigBtn.green:active{box-shadow:0 3px 0 #1e8a56}
+        .bigBtn.blue{background:linear-gradient(135deg,#74b9ff,#0984e3);box-shadow:0 8px 0 #0764b0,0 12px 20px rgba(0,0,0,.25)}
+        .bigBtn.blue:active{box-shadow:0 3px 0 #0764b0}
+        .bigBtn.gold{background:linear-gradient(135deg,#ffd32a,#f0a500);box-shadow:0 8px 0 #c48600,0 12px 20px rgba(0,0,0,.25)}
+        .bigBtn.gold:active{box-shadow:0 3px 0 #c48600}
 
-        .subtitle {
-            font-size: clamp(1em, 4vw, 1.5em);
-            color: #fff;
-            background: rgba(0,0,0,0.22);
-            padding: 14px 26px;
-            border-radius: 20px;
-            text-align: center;
-            line-height: 1.6;
-            margin-bottom: 24px;
-            max-width: 90%;
-        }
+        /* progress bar */
+        .progWrap{width:100%;height:36px;background:rgba(255,255,255,.7);border-radius:99px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,.1)}
+        .progFill{height:100%;width:0%;border-radius:99px;transition:width .25s;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-weight:bold;color:#fff;font-size:.9em}
+        .progFill.pink{background:linear-gradient(90deg,#f9a8d4,#ec4899)}
+        .progFill.blue{background:linear-gradient(90deg,#93c5fd,#3b82f6)}
+        .progFill.green{background:linear-gradient(90deg,#86efac,#22c55e)}
+        .progFill.gold{background:linear-gradient(90deg,#fde68a,#f59e0b)}
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
-        }
 
-        .button {
-            font-size: clamp(1.4em, 6vw, 2em);
-            padding: 18px 56px;
-            background: linear-gradient(135deg, #ff8fc7 0%, #ff5fa2 100%);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 10px 0 #d63b80, 0 14px 24px rgba(0,0,0,0.3);
-            transition: transform 0.12s, box-shadow 0.12s;
-            font-weight: bold;
-        }
 
-        .button:active {
-            transform: translateY(6px);
-            box-shadow: 0 4px 0 #d63b80, 0 6px 12px rgba(0,0,0,0.3);
-        }
+        /* tap ripple */
+        .ripple{position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:rippleOut .6s ease-out;pointer-events:none;z-index:30}
+        @keyframes rippleOut{to{transform:scale(3);opacity:0}}
 
-        /* character chooser on start screen */
-        #charPick {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 26px;
-            max-width: 92%;
-        }
-        .charOption {
-            font-size: 2.4em;
-            width: 70px; height: 70px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.85);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.15s;
-        }
-        .charOption.selected {
-            transform: scale(1.18);
-            box-shadow: 0 0 0 5px #ffd34d, 0 6px 14px rgba(0,0,0,0.3);
-        }
+        /* scene objects */
+        .sceneObj{position:absolute;font-size:50px;transition:all .4s;z-index:5}
 
-        /* ---------- HUD ---------- */
-        #hud {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 18px;
-            z-index: 5;
-        }
-        .pill {
-            background: white;
-            padding: 8px 18px;
-            border-radius: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-            font-weight: bold;
-            font-size: clamp(1em, 4vw, 1.4em);
-            color: #764ba2;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        /* toilet flush water */
+        .water{position:absolute;width:100%;height:0;bottom:0;left:0;background:linear-gradient(to top,rgba(96,165,250,.8),rgba(147,197,253,.3));border-radius:0 0 20px 20px;transition:height 1s ease-in-out;z-index:6}
 
-        /* ---------- step progress track ---------- */
-        #track {
-            position: absolute;
-            top: 64px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 6px;
-            background: rgba(255,255,255,0.55);
-            padding: 8px 12px;
-            border-radius: 30px;
-            z-index: 4;
-            max-width: 96%;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .dot {
-            width: 38px; height: 38px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.9);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2em;
-            box-shadow: inset 0 0 0 2px #cdd6ff;
-            transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-            position: relative;
-        }
-        .dot.done {
-            background: #b6f5c8;
-            box-shadow: inset 0 0 0 2px #45c46a;
-        }
-        .dot.done::after {
-            content: "✓";
-            position: absolute;
-            bottom: -2px; right: -2px;
-            font-size: 0.6em;
-            background: #45c46a;
-            color: white;
-            border-radius: 50%;
-            width: 16px; height: 16px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .dot.current {
-            transform: scale(1.25);
-            background: #fff2b3;
-            box-shadow: inset 0 0 0 3px #ffce2e, 0 0 14px #ffce2e;
-            animation: dotPulse 1s ease-in-out infinite;
-        }
-        @keyframes dotPulse {
-            0%,100% { box-shadow: inset 0 0 0 3px #ffce2e, 0 0 8px #ffce2e; }
-            50% { box-shadow: inset 0 0 0 3px #ffce2e, 0 0 20px #ffce2e; }
-        }
-
-        /* ---------- stage ---------- */
-        #stage {
-            position: absolute;
-            top: 46%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 3;
-            width: 100%;
-        }
-        #speech {
-            background: white;
-            border-radius: 24px;
-            padding: 14px 26px;
-            font-size: clamp(1.1em, 4.5vw, 1.7em);
-            font-weight: bold;
-            color: #4a4a8a;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-            position: relative;
-            margin-bottom: 18px;
-            text-align: center;
-            max-width: 88%;
-        }
-        #speech::after {
-            content: "";
-            position: absolute;
-            bottom: -14px; left: 50%;
-            transform: translateX(-50%);
-            border-width: 14px 14px 0;
-            border-style: solid;
-            border-color: white transparent transparent;
-        }
-        #charBig {
-            font-size: clamp(70px, 22vw, 120px);
-            animation: waddle 1.6s ease-in-out infinite;
-            line-height: 1;
-        }
-        @keyframes waddle {
-            0%, 100% { transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
-        }
-        #charBig.hop { animation: hop 0.6s ease; }
-        @keyframes hop {
-            0% { transform: translateY(0) scale(1); }
-            30% { transform: translateY(-40px) scale(1.1); }
-            60% { transform: translateY(0) scale(1); }
-            80% { transform: translateY(-12px); }
-            100% { transform: translateY(0); }
-        }
-        #actionFx {
-            position: absolute;
-            top: -10px; left: 50%;
-            font-size: 80px;
-            transform: translateX(-50%);
-            opacity: 0;
-            pointer-events: none;
-        }
-        #actionFx.play { animation: fxPop 1s ease-out; }
-        @keyframes fxPop {
-            0% { transform: translate(-50%, 0) scale(0); opacity: 0; }
-            40% { transform: translate(-50%, -60px) scale(1.3); opacity: 1; }
-            100% { transform: translate(-50%, -130px) scale(1); opacity: 0; }
-        }
-
-        /* ---------- choices ---------- */
-        #choices {
-            position: absolute;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 14px;
-            z-index: 6;
-            width: 96%;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .choice {
-            flex: 1 1 130px;
-            max-width: 200px;
-            min-height: 120px;
-            background: white;
-            border-radius: 22px;
-            border: 4px solid #cdd6ff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-            box-shadow: 0 8px 0 #b9c2f0, 0 10px 18px rgba(0,0,0,0.18);
-            transition: transform 0.1s, box-shadow 0.1s, border-color 0.2s;
-            padding: 12px 8px;
-        }
-        .choice:active {
-            transform: translateY(6px);
-            box-shadow: 0 2px 0 #b9c2f0;
-        }
-        .choice .em { font-size: clamp(2.4em, 9vw, 3.2em); line-height: 1; }
-        .choice .lbl { font-size: clamp(0.85em, 3.4vw, 1.15em); font-weight: bold; color: #4a4a8a; text-align: center; }
-        .choice.wrong { animation: shake 0.4s; border-color: #ff8a8a; }
-        .choice.hint { border-color: #ffce2e; animation: hintGlow 0.9s ease-in-out infinite; }
-        .choice.correct { border-color: #45c46a; background: #e6ffec; }
-        @keyframes shake {
-            0%,100% { transform: translateX(0); }
-            20% { transform: translateX(-10px); }
-            40% { transform: translateX(10px); }
-            60% { transform: translateX(-8px); }
-            80% { transform: translateX(8px); }
-        }
-        @keyframes hintGlow {
-            0%,100% { box-shadow: 0 8px 0 #b9c2f0, 0 0 8px #ffce2e; }
-            50% { box-shadow: 0 8px 0 #b9c2f0, 0 0 22px #ffce2e; }
-        }
-
-        /* ---------- sticker chart ---------- */
-        #stickerChart {
-            position: absolute;
-            bottom: 160px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 6px;
-            z-index: 4;
-            background: rgba(255,255,255,0.6);
-            padding: 6px 12px;
-            border-radius: 30px;
-        }
-        .stickerSlot {
-            width: 34px; height: 34px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.7);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2em;
-            box-shadow: inset 0 0 0 2px #ffd5ec;
-        }
-        .stickerSlot.got { animation: stickerPop 0.5s ease; box-shadow: inset 0 0 0 2px #ff8fc7; }
-        @keyframes stickerPop {
-            0% { transform: scale(0); }
-            60% { transform: scale(1.4); }
-            100% { transform: scale(1); }
-        }
-
-        /* clouds */
-        .cloud {
-            position: absolute;
-            font-size: 60px;
-            opacity: 0.85;
-            z-index: 1;
-            animation: cloudFloat 36s linear infinite;
-        }
-        @keyframes cloudFloat {
-            0% { transform: translateX(-120px); }
-            100% { transform: translateX(calc(100vw + 120px)); }
-        }
+        /* bubbles */
+        .bubble{position:absolute;width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(147,197,253,.4));z-index:25;animation:bubbleUp 2s ease-out forwards;pointer-events:none}
+        @keyframes bubbleUp{0%{transform:scale(0) translateY(0);opacity:1}50%{transform:scale(1) translateY(-80px);opacity:.8}100%{transform:scale(.6) translateY(-180px);opacity:0}}
 
         /* confetti */
-        .confetti {
-            position: absolute;
-            width: 12px; height: 12px;
-            z-index: 20;
-            animation: confettiFall 3s linear;
-        }
-        @keyframes confettiFall {
-            0% { transform: translateY(-40px) rotate(0); opacity: 1; }
-            100% { transform: translateY(calc(100vh + 60px)) rotate(720deg); opacity: 0; }
-        }
+        .confetti{position:absolute;width:10px;height:10px;z-index:30;animation:confettiFall 2.5s linear forwards;pointer-events:none}
+        @keyframes confettiFall{0%{transform:translateY(-30px) rotate(0);opacity:1}100%{transform:translateY(calc(100vh + 40px)) rotate(720deg);opacity:0}}
 
-        /* success */
-        #successMessage {
-            font-size: clamp(2.2em, 9vw, 4em);
-            color: #FFD700;
-            text-shadow: 3px 3px 0 #ff6fae, 5px 5px 10px rgba(0,0,0,0.4);
-            margin-bottom: 18px;
-            text-align: center;
-            animation: celebrate 1s infinite;
-        }
-        @keyframes celebrate {
-            0%,100% { transform: scale(1) rotate(-4deg); }
-            50% { transform: scale(1.12) rotate(4deg); }
-        }
-        #finalStickers {
-            display: flex; gap: 8px; margin-bottom: 22px; font-size: 2.4em;
-        }
-        #finalNote {
-            font-size: clamp(1.1em, 4.5vw, 1.6em);
-            color: #fff;
-            background: rgba(0,0,0,0.25);
-            padding: 14px 28px;
-            border-radius: 20px;
-            margin-bottom: 26px;
-            text-align: center;
-            max-width: 88%;
-            line-height: 1.6;
-        }
-        .celebration-emoji {
-            position: absolute;
-            font-size: 50px;
-            z-index: 20;
-            animation: celebrationPop 2s ease-out;
-        }
-        @keyframes celebrationPop {
-            0% { transform: scale(0) rotate(0); opacity: 0; }
-            50% { transform: scale(1.5) rotate(180deg); opacity: 1; }
-            100% { transform: scale(0) rotate(360deg); opacity: 0; }
-        }
+        /* star burst */
+        .starBurst{position:absolute;font-size:40px;z-index:28;animation:starPop 1s ease-out forwards;pointer-events:none}
+        @keyframes starPop{0%{transform:scale(0) rotate(0);opacity:0}30%{transform:scale(1.4) rotate(180deg);opacity:1}100%{transform:scale(0) rotate(360deg);opacity:0}}
 
-        /* sound toggle */
-        #soundToggle {
-            position: absolute;
-            top: 14px; left: 50%;
-            transform: translateX(-50%);
-            display: none;
-        }
+        /* character animations */
+        @keyframes waddle{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+        @keyframes hop{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-50px) scale(1.15)}60%{transform:translateY(0) scale(1)}80%{transform:translateY(-15px)}100%{transform:translateY(0)}}
+        @keyframes wiggle{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+        @keyframes sitDown{0%{transform:translateY(0) scale(1)}100%{transform:translateY(30px) scale(.92)}}
+        @keyframes relief{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+        @keyframes handWash{0%,100%{transform:rotate(0)}25%{transform:rotate(15deg)}50%{transform:rotate(0)}75%{transform:rotate(-15deg)}}
+        @keyframes celebrate{0%,100%{transform:scale(1) rotate(-3deg)}50%{transform:scale(1.1) rotate(3deg)}}
+
+        .waddle{animation:waddle 1.4s ease-in-out infinite}
+        .hop{animation:hop .7s ease}
+        .wiggle{animation:wiggle .4s ease-in-out 3}
+        .sitAnim{animation:sitDown .6s ease forwards}
+        .reliefAnim{animation:relief .8s ease}
+        .washAnim{animation:handWash .6s ease-in-out infinite}
+        .celebrateAnim{animation:celebrate 1s ease-in-out infinite}
+
+        /* fx pop */
+        #fxLayer.show{animation:fxPop .9s ease-out forwards}
+        @keyframes fxPop{0%{opacity:0;transform:scale(0) translateY(0)}40%{opacity:1;transform:scale(1.3) translateY(-40px)}100%{opacity:0;transform:scale(1) translateY(-100px)}}
+
+        /* screens */
+        .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;padding:20px}
+        #gameUI{z-index:10}
+        .title{font-size:clamp(2.2em,8vw,3.6em);color:#fff;text-shadow:3px 3px 0 #ff9ad1,5px 5px 10px rgba(0,0,0,.25);margin-bottom:16px;text-align:center;animation:bounce 1.4s ease-in-out infinite}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+        .subtitle{font-size:clamp(1em,4vw,1.45em);color:#fff;background:rgba(0,0,0,.2);padding:14px 26px;border-radius:20px;text-align:center;line-height:1.7;margin-bottom:22px;max-width:90%}
+
+        /* character picker */
+        #charPick{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:24px;max-width:92%}
+        .charOpt{font-size:2.2em;width:66px;height:66px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.85);border-radius:50%;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.2);transition:transform .15s,box-shadow .15s}
+        .charOpt.sel{transform:scale(1.15);box-shadow:0 0 0 4px #ffd34d,0 6px 14px rgba(0,0,0,.3)}
+
+        /* success screen */
+        #successScreen{display:none;background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);background-size:400% 400%;animation:gradShift 4s ease infinite}
+        @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        #successMsg{font-size:clamp(2.2em,9vw,4em);color:#FFD700;text-shadow:3px 3px 0 #ff6fae,5px 5px 10px rgba(0,0,0,.35);margin-bottom:14px;text-align:center;animation:celebrate 1s ease-in-out infinite}
+        #stickers{display:flex;gap:8px;margin-bottom:18px;font-size:2.2em;flex-wrap:wrap;justify-content:center}
+        #successNote{font-size:clamp(1em,4vw,1.4em);color:#fff;background:rgba(0,0,0,.22);padding:14px 26px;border-radius:20px;text-align:center;line-height:1.6;margin-bottom:24px;max-width:88%}
+
+        /* floor tile pattern */
+        .floor{position:absolute;left:0;right:0;bottom:0;height:20%;background:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 2px,transparent 2px 50px),repeating-linear-gradient(0deg,rgba(255,255,255,.5) 0 2px,transparent 2px 50px);z-index:2;pointer-events:none}
+
+        /* scene backgrounds */
+        .bgRoom{background:linear-gradient(to bottom,#ffecd2 0%,#fcb69f 50%,#ffe5d0 100%)}
+        .bgHall{background:linear-gradient(to right,#ffecd2,#e0f7fa,#dcedc8)}
+        .bgBath{background:linear-gradient(to bottom,#e0f2f1 0%,#b2dfdb 60%,#e8eaf6 100%)}
+        .bgSit{background:linear-gradient(to bottom,#f3e5f5 0%,#e1bee7 60%,#f8bbd0 100%)}
+        .bgWait{background:linear-gradient(to bottom,#fff9c4 0%,#fff59d 60%,#ffe082 100%)}
+        .bgPaper{background:linear-gradient(to bottom,#e8eaf6 0%,#c5cae9 60%,#e3f2fd 100%)}
+        .bgFlush{background:linear-gradient(to bottom,#e0f7fa 0%,#80deea 60%,#4dd0e1 100%)}
+        .bgWash{background:linear-gradient(to bottom,#e0f2f1 0%,#80cbc4 60%,#4db6ac 100%)}
+        .bgStart{background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);background-size:400% 400%;animation:gradShift 6s ease infinite}
+
+        /* toilet scene object */
+        .toilet{position:absolute;bottom:20%;left:50%;transform:translateX(-50%);font-size:80px;z-index:3;transition:transform .5s}
+        .toilet.open{transform:translateX(-50%) scale(1.05)}
+
+        /* soap & faucet */
+        .soap{position:absolute;font-size:50px;z-index:5;cursor:pointer;transition:transform .2s}
+        .soap:active{transform:scale(.85)}
+        .faucet{position:absolute;font-size:50px;z-index:5}
     </style>
 </head>
 <body>
-    <div id="gameContainer">
+<div id="game" class="bgStart">
 
-        <!-- ===== Start Screen ===== -->
-        <div id="startScreen" class="screen">
-            <div class="title">🚽 トイレでいっしょ！ ✨</div>
-            <div class="subtitle">
-                ただしい じゅんばんで<br>
-                トイレを してみよう！<br>
-                ぜんぶ できたら ごほうびシール 🌟
-            </div>
-            <div id="charPick"></div>
-            <button class="button" onclick="startGame()">スタート！ ▶</button>
+    <!-- ===== Start ===== -->
+    <div id="startScreen" class="screen">
+        <div class="title">🚽 トイレたんけんたい！ ✨</div>
+        <div class="subtitle">
+            トイレの じゅんばんを<br>
+            たのしく やってみよう！<br>
+            ぜんぶ できるかな？ 🌟
         </div>
-
-        <!-- ===== Game Screen ===== -->
-        <div id="gameScreen">
-            <div id="hud">
-                <div class="pill" id="soundBtn" onclick="toggleSound()">🔊 おと</div>
-                <div class="pill">🌟 <span id="stickerCount">0</span>/5</div>
-            </div>
-
-            <div id="track"></div>
-
-            <div id="stage">
-                <div id="speech">つぎは なにかな？</div>
-                <div style="position:relative;">
-                    <div id="actionFx">✨</div>
-                    <div id="charBig">🐻</div>
-                </div>
-            </div>
-
-            <div id="stickerChart"></div>
-
-            <div id="choices"></div>
-        </div>
-
-        <!-- ===== Success Screen ===== -->
-        <div id="successScreen" class="screen">
-            <div id="successMessage">🏆 トイレマスター！ 🏆</div>
-            <div id="finalStickers"></div>
-            <div id="finalNote"></div>
-            <button class="button" onclick="restartGame()">もういちど！ 🔁</button>
-        </div>
+        <div id="charPick"></div>
+        <button class="bigBtn" onclick="startGame()">スタート！ ▶</button>
     </div>
 
-    <script>
-        /* ============================================================
-           トイレの ただしい じゅんばん (educational routine)
-           ============================================================ */
-        const ROUTINE = [
-            { id:'go',    emoji:'🚪', label:'トイレにいく',     say:'トイレに いきたく なったら、がまんしないで いこうね' },
-            { id:'pants', emoji:'🩲', label:'パンツをおろす',   say:'パンツを じょうずに おろそう' },
-            { id:'sit',   emoji:'🚽', label:'べんきにすわる',   say:'べんきに ちゃんと すわろう' },
-            { id:'pee',   emoji:'💧', label:'おしっこ・うんち', say:'ゆっくり ふんばって、すっきり だそう' },
-            { id:'wipe',  emoji:'🧻', label:'おしりをふく',     say:'かみで きれいに ふこう' },
-            { id:'up',    emoji:'👖', label:'パンツをはく',     say:'パンツを じょうずに はこう' },
-            { id:'flush', emoji:'💦', label:'みずをながす',     say:'レバーで みずを ながそう' },
-            { id:'wash',  emoji:'🧼', label:'てをあらう',       say:'せっけんで バイキンと さようなら！' }
-        ];
+    <!-- ===== Game ===== -->
+    <div id="gameUI" style="display:none">
+        <div id="hud">
+            <div class="pill" id="soundBtn" onclick="toggleSound()">🔊</div>
+            <div class="pill" id="stepLabel">1/8</div>
+        </div>
+        <div id="track"></div>
+        <div id="sceneLayer"></div>
+        <div id="stage">
+            <div id="speech"></div>
+            <div id="charWrap">
+                <div id="fxLayer"></div>
+                <div id="char" class="waddle">🐻</div>
+            </div>
+        </div>
+        <div id="actionZone"></div>
+    </div>
 
-        const CHARACTERS = ['🐻','🐰','🐼','🐨','🦊','🐱','🐶','🐸','🐯','🦁'];
-        const GOAL_STICKERS = 5;
-        const STICKER_FACES = ['🌟','🦄','🌈','🍓','🎀','🚀','🐥','🍪','⚽','🎈'];
+    <!-- ===== Success ===== -->
+    <div id="successScreen" class="screen">
+        <div id="successMsg">🏆 トイレマスター！ 🏆</div>
+        <div id="stickers"></div>
+        <div id="successNote"></div>
+        <button class="bigBtn gold" onclick="restart()">もういちど！ 🔁</button>
+    </div>
+</div>
 
-        const PRAISE = ['やったね！','せいかい！','じょうず！','えらい！','ばっちり！','すごいね！'];
+<script>
+(function(){
+/* ================================================================
+   CONFIG
+   ================================================================ */
+const CHARS = ['🐻','🐰','🐼','🐨','🦊','🐱','🐶','🐸'];
+const STEPS = [
+    { id:'notice',  emoji:'💡', bg:'bgRoom',  label:'きづく' },
+    { id:'go',      emoji:'🚶', bg:'bgHall',  label:'いく' },
+    { id:'pants',   emoji:'🩲', bg:'bgBath',  label:'おろす' },
+    { id:'sit',     emoji:'🚽', bg:'bgSit',   label:'すわる' },
+    { id:'do',      emoji:'✨', bg:'bgWait',  label:'がんばる' },
+    { id:'wipe',    emoji:'🧻', bg:'bgPaper', label:'ふく' },
+    { id:'flush',   emoji:'💦', bg:'bgFlush', label:'ながす' },
+    { id:'wash',    emoji:'🧼', bg:'bgWash',  label:'あらう' }
+];
+const PRAISE = ['やったね！','すごい！','えらい！','ばっちり！','じょうず！','かんぺき！','さいこう！'];
+const STICKER_POOL = ['🌟','⭐','🦄','🌈','🍓','🎀','🚀','🐥'];
 
-        let chosenChar = 0;
-        let charIndex = 0;
-        let currentStep = 0;
-        let stickers = 0;
-        let attempts = 0;
-        let soundOn = true;
-        let busy = false;
+let chosen = 0, step = 0, soundOn = true, busy = false;
+let earnedStickers = [];
 
-        /* ---------- audio ---------- */
-        let audioCtx = null;
-        function tone(freqs, dur=0.22){
-            if(!soundOn) return;
-            try{
-                audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
-                freqs.forEach((f,i)=>{
-                    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-                    o.type='triangle'; o.frequency.value=f;
-                    o.connect(g); g.connect(audioCtx.destination);
-                    const t=audioCtx.currentTime + i*0.11;
-                    g.gain.setValueAtTime(0.0001,t);
-                    g.gain.exponentialRampToValueAtTime(0.3,t+0.02);
-                    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-                    o.start(t); o.stop(t+dur+0.02);
-                });
-            }catch(e){}
+/* ── audio ── */
+let ctx = null;
+function tone(freqs, dur){
+    if(!soundOn) return;
+    try{
+        ctx = ctx || new (window.AudioContext||window.webkitAudioContext)();
+        freqs.forEach((f,i)=>{
+            const o=ctx.createOscillator(), g=ctx.createGain();
+            o.type='triangle'; o.frequency.value=f;
+            o.connect(g); g.connect(ctx.destination);
+            const t=ctx.currentTime+i*.1;
+            g.gain.setValueAtTime(.0001,t);
+            g.gain.exponentialRampToValueAtTime(.28,t+.02);
+            g.gain.exponentialRampToValueAtTime(.0001,t+(dur||.2));
+            o.start(t); o.stop(t+(dur||.2)+.02);
+        });
+    }catch(e){}
+}
+const sndTap=()=>tone([520],.08);
+const sndGood=()=>tone([523,659,784],.2);
+const sndGreat=()=>tone([523,659,784,1047],.25);
+const sndWin=()=>tone([523,659,784,1047,1319],.3);
+const sndWhoosh=()=>tone([400,600,800],.15);
+const sndWater=()=>tone([300,350,400,350,300],.18);
+const sndBubble=()=>tone([800,900,1000],.12);
+
+function speak(t){
+    if(!soundOn||!('speechSynthesis' in window)) return;
+    try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='ja-JP'; u.rate=.92; u.pitch=1.3; speechSynthesis.speak(u); }catch(e){}
+}
+
+/* ── helpers ── */
+const $ = id => document.getElementById(id);
+const game=$('game'), stage=$('stage'), charEl=$('char'), speechEl=$('speech'), fxEl=$('fxLayer'), actionZone=$('actionZone'), sceneLayer=$('sceneLayer');
+function clearAction(){ actionZone.innerHTML=''; }
+function clearScene(){ if(sceneLayer) sceneLayer.innerHTML=''; }
+function setChar(c){ charEl.textContent=c; }
+function setSpeech(t){ speechEl.textContent=t; }
+function setCharAnim(cls){ charEl.className=''; if(cls) charEl.classList.add(cls); }
+function playFx(emoji){ fxEl.textContent=emoji; fxEl.classList.remove('show'); void fxEl.offsetWidth; fxEl.classList.add('show'); }
+function praise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function rippleAt(x,y){ const r=document.createElement('div'); r.className='ripple'; r.style.left=(x-30)+'px'; r.style.top=(y-30)+'px'; game.appendChild(r); setTimeout(()=>r.remove(),600); }
+
+function confetti(n){
+    const colors=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#F7DC6F','#BB8FCE','#85C1E2','#ff8fc7'];
+    for(let i=0;i<(n||25);i++){
+        setTimeout(()=>{
+            const c=document.createElement('div'); c.className='confetti';
+            c.style.left=Math.random()*innerWidth+'px'; c.style.top='-10px';
+            c.style.background=colors[Math.floor(Math.random()*colors.length)];
+            c.style.borderRadius=Math.random()>.5?'50%':'2px';
+            c.style.width=(6+Math.random()*10)+'px'; c.style.height=(6+Math.random()*10)+'px';
+            game.appendChild(c); setTimeout(()=>c.remove(),2600);
+        }, i*35);
+    }
+}
+function starBurst(cx,cy,n){
+    const em=['⭐','✨','🌟','💫'];
+    for(let i=0;i<(n||8);i++){
+        setTimeout(()=>{
+            const s=document.createElement('div'); s.className='starBurst';
+            s.textContent=em[Math.floor(Math.random()*em.length)];
+            s.style.left=(cx-20+Math.random()*40)+'px';
+            s.style.top=(cy-20+Math.random()*40)+'px';
+            game.appendChild(s); setTimeout(()=>s.remove(),1000);
+        }, i*60);
+    }
+}
+function bubbles(cx,cy,n){
+    for(let i=0;i<(n||6);i++){
+        setTimeout(()=>{
+            const b=document.createElement('div'); b.className='bubble';
+            b.style.left=(cx-12+Math.random()*24)+'px'; b.style.top=cy+'px';
+            const sz=14+Math.random()*18; b.style.width=sz+'px'; b.style.height=sz+'px';
+            game.appendChild(b); setTimeout(()=>b.remove(),2100);
+        },i*120);
+    }
+}
+
+/* ── sound toggle ── */
+window.toggleSound=function(){
+    soundOn=!soundOn;
+    $('soundBtn').textContent=soundOn?'🔊':'🔇';
+    if(!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+};
+
+/* ── char picker ── */
+function buildPicker(){
+    const w=$('charPick'); w.innerHTML='';
+    CHARS.forEach((c,i)=>{
+        const d=document.createElement('div');
+        d.className='charOpt'+(i===chosen?' sel':'');
+        d.textContent=c;
+        d.onclick=()=>{ chosen=i; [...w.children].forEach(el=>el.classList.remove('sel')); d.classList.add('sel'); sndTap(); };
+        w.appendChild(d);
+    });
+}
+
+/* ── track ── */
+function buildTrack(){
+    const t=$('track'); t.innerHTML='';
+    STEPS.forEach((s,i)=>{
+        const d=document.createElement('div'); d.className='dot'; d.id='dot'+i; d.textContent=s.emoji; t.appendChild(d);
+    });
+    refreshTrack();
+}
+function refreshTrack(){
+    STEPS.forEach((_,i)=>{
+        const d=$('dot'+i); if(!d) return;
+        d.classList.remove('done','current');
+        if(i<step) d.classList.add('done');
+        else if(i===step) d.classList.add('current');
+    });
+    $('stepLabel').textContent=(step+1)+'/'+STEPS.length;
+}
+
+/* ================================================================
+   MINI-GAMES (one per step)
+   ================================================================ */
+
+/* ── Step 0: notice the feeling (tap tummy) ── */
+async function playNotice(){
+    game.className=STEPS[0].bg;
+    setSpeech('おなかが ムズムズ…\nタップして きづいてあげよう！');
+    speak('おなかが ムズムズしてるよ。タップして きづいてあげよう！');
+    setCharAnim('wiggle');
+    let taps=0, need=5;
+    clearAction();
+    const prog=makeProgress('pink');
+    const btn=document.createElement('button');
+    btn.className='bigBtn';
+    btn.textContent='🤲 おなかを タップ！';
+    btn.onclick=()=>{
+        if(busy) return;
+        taps++;
+        sndTap();
+        setCharAnim(''); void charEl.offsetWidth; setCharAnim('wiggle');
+        playFx('💡');
+        rippleAt(innerWidth/2, innerHeight/2);
+        prog.fill.style.width=(taps/need*100)+'%';
+        if(taps>=need){
+            busy=true;
+            stepDone('きづいた！ トイレに いこう！','おなかの きもちに きづけたね！');
         }
-        const sndCorrect = ()=>tone([523,659,784],0.22);
-        const sndWrong   = ()=>tone([300,230],0.2);
-        const sndSticker = ()=>tone([523,659,784,1047],0.25);
-        const sndWin     = ()=>tone([523,659,784,1047,1319],0.3);
+    };
+    actionZone.appendChild(prog.wrap);
+    actionZone.appendChild(btn);
+}
 
-        function speak(text){
-            if(!soundOn || !('speechSynthesis' in window)) return;
-            try{
-                window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang='ja-JP'; u.rate=0.95; u.pitch=1.25;
-                window.speechSynthesis.speak(u);
-            }catch(e){}
+/* ── Step 1: walk to toilet (tap to move) ── */
+async function playGo(){
+    game.className=STEPS[1].bg;
+    setSpeech('トイレまで あるこう！\nタップして すすもう 🚶');
+    speak('トイレまで あるこう！ タップして すすもう！');
+    setCharAnim('waddle');
+
+    // put a toilet on the right
+    clearScene();
+    const toilet=document.createElement('div');
+    toilet.className='sceneObj';
+    toilet.textContent='🚽';
+    toilet.style.right='12%'; toilet.style.bottom='25%'; toilet.style.fontSize='70px';
+    sceneLayer.appendChild(toilet);
+
+    // character starts on left
+    charEl.style.transition='transform .3s';
+    let progress=0, need=8;
+    clearAction();
+    const prog=makeProgress('green');
+    const btn=document.createElement('button');
+    btn.className='bigBtn green';
+    btn.textContent='👣 あるく！';
+    btn.onclick=()=>{
+        if(busy) return;
+        progress++;
+        sndTap();
+        setCharAnim(''); void charEl.offsetWidth; setCharAnim('hop');
+        playFx('👣');
+        prog.fill.style.width=(progress/need*100)+'%';
+        if(progress>=need){
+            busy=true;
+            clearScene();
+            stepDone('ついた！ トイレに とうちゃく！','じょうずに あるけたね！');
         }
+    };
+    actionZone.appendChild(prog.wrap);
+    actionZone.appendChild(btn);
+}
 
-        function toggleSound(){
-            soundOn = !soundOn;
-            document.getElementById('soundBtn').textContent = soundOn ? '🔊 おと' : '🔇 おと';
-            if(!soundOn && 'speechSynthesis' in window){ window.speechSynthesis.cancel(); }
+/* ── Step 2: pull down pants (tap) ── */
+async function playPants(){
+    game.className=STEPS[2].bg;
+    setSpeech('パンツを おろそう！\nボタンを タップ！ 🩲');
+    speak('パンツを おろそう！ ボタンを タップしてね！');
+    setCharAnim('waddle');
+
+    let pulled=0, need=3;
+    clearAction();
+    const prog=makeProgress('pink');
+    const btn=document.createElement('button');
+    btn.className='bigBtn';
+    btn.textContent='🩲 よいしょ！';
+    const msgs=['いっかい！','にかい！','おろせた！'];
+    btn.onclick=()=>{
+        if(busy) return;
+        pulled++;
+        sndWhoosh();
+        playFx('🩲');
+        prog.fill.style.width=(pulled/need*100)+'%';
+        setCharAnim(''); void charEl.offsetWidth; setCharAnim('hop');
+        setSpeech(msgs[Math.min(pulled-1, msgs.length-1)]);
+        if(pulled>=need){
+            busy=true;
+            stepDone('じょうずに おろせた！','パンツ おろすの うまいね！');
         }
+    };
+    actionZone.appendChild(prog.wrap);
+    actionZone.appendChild(btn);
+}
 
-        /* ---------- start screen ---------- */
-        function buildCharPick(){
-            const wrap = document.getElementById('charPick');
-            wrap.innerHTML='';
-            CHARACTERS.slice(0,8).forEach((c,i)=>{
-                const d=document.createElement('div');
-                d.className='charOption'+(i===chosenChar?' selected':'');
-                d.textContent=c;
-                d.onclick=()=>{
-                    chosenChar=i;
-                    [...wrap.children].forEach(el=>el.classList.remove('selected'));
-                    d.classList.add('selected');
-                    tone([660],0.1);
-                };
-                wrap.appendChild(d);
-            });
+/* ── Step 3: sit down (tap toilet) ── */
+async function playSit(){
+    game.className=STEPS[3].bg;
+    setSpeech('べんきに すわろう！\nトイレを タップ 🚽');
+    speak('べんきに すわろう！ トイレを タップしてね！');
+    setCharAnim('waddle');
+
+    clearAction();
+    const btn=document.createElement('button');
+    btn.className='bigBtn';
+    btn.innerHTML='🚽 すわる！';
+    btn.style.fontSize='clamp(1.5em,7vw,2.4em)';
+    btn.style.padding='24px 60px';
+    let tapped=false;
+    btn.onclick=()=>{
+        if(busy||tapped) return;
+        tapped=true; busy=true;
+        sndGood();
+        setCharAnim('sitAnim');
+        playFx('🚽');
+        rippleAt(innerWidth/2,innerHeight*.6);
+        setSpeech('よいしょ… すわれた！');
+        speak('よいしょっ！ じょうずに すわれたね！');
+        setTimeout(()=>stepDone('すわれた！','べんきに すわるの じょうずだね！'),1200);
+    };
+    actionZone.appendChild(btn);
+}
+
+/* ── Step 4: do your thing (tap to cheer) ── */
+async function playDo(){
+    game.className=STEPS[4].bg;
+    setSpeech('がんばれ〜！ たくさん タップしよう！');
+    speak('がんばれー！ たくさん タップしてね！');
+    setCharAnim('waddle');
+
+    let taps=0, need=6;
+    clearAction();
+    const prog=makeProgress('gold');
+    const btn=document.createElement('button');
+    btn.className='bigBtn gold';
+    btn.textContent='💪 うーん！';
+    const msgs=['がんばれ〜！','もうすこし！','いいぞ！','すごいぞ！','あとちょっと！','すっきり〜！'];
+    btn.onclick=()=>{
+        if(busy) return;
+        taps++;
+        sndTap();
+        playFx('✨');
+        prog.fill.style.width=(taps/need*100)+'%';
+        setCharAnim(''); void charEl.offsetWidth; setCharAnim('hop');
+        setSpeech(msgs[Math.min(taps-1, msgs.length-1)]);
+        if(taps>=need){
+            busy=true;
+            sndGreat();
+            setCharAnim('reliefAnim');
+            setSpeech('すっきり〜！ 🎉');
+            speak('すっきりしたね！ きもちいいね！');
+            playFx('🎉');
+            setTimeout(()=>stepDone('すっきり！','がんばったね！'),1200);
         }
+    };
+    actionZone.appendChild(prog.wrap);
+    actionZone.appendChild(btn);
+}
 
-        /* ---------- game flow ---------- */
-        function startGame(){
-            document.getElementById('startScreen').style.display='none';
-            document.getElementById('successScreen').style.display='none';
-            document.getElementById('gameScreen').style.display='block';
+/* ── Step 5: wipe (tap paper roll) ── */
+async function playWipe(){
+    game.className=STEPS[5].bg;
+    setSpeech('かみで きれいに ふこう！\nタップして ちぎろう 🧻');
+    speak('トイレットペーパーで きれいに ふこう！');
+    setCharAnim('waddle');
 
-            stickers = 0;
-            charIndex = chosenChar;
-            updateStickerCount();
-            buildStickerChart();
-            createClouds();
-            startRoutine();
+    let tears=0, need=4;
+    clearAction();
+    const prog=makeProgress('blue');
+    const btn=document.createElement('button');
+    btn.className='bigBtn blue';
+    btn.textContent='🧻 ちぎる！';
+    btn.onclick=()=>{
+        if(busy) return;
+        tears++;
+        sndTap();
+        playFx('🧻');
+        prog.fill.style.width=(tears/need*100)+'%';
+        setCharAnim(''); void charEl.offsetWidth; setCharAnim('hop');
+        const msgs=['いちまい！','にまい！','さんまい！','きれいに ふけた！'];
+        setSpeech(msgs[Math.min(tears-1, msgs.length-1)]);
+        if(tears>=need){
+            busy=true;
+            stepDone('きれいに ふけた！','おしりピカピカ！');
         }
+    };
+    actionZone.appendChild(prog.wrap);
+    actionZone.appendChild(btn);
+}
 
-        function startRoutine(){
-            currentStep = 0;
-            document.getElementById('charBig').textContent = CHARACTERS[charIndex];
-            buildTrack();
-            showStep();
-        }
+/* ── Step 6: flush (tap button) ── */
+async function playFlush(){
+    game.className=STEPS[6].bg;
+    setSpeech('みずを ながそう！\nボタンを おそう 💦');
+    speak('ボタンを おして みずを ながそう！');
+    setCharAnim('waddle');
 
-        function buildTrack(){
-            const track=document.getElementById('track');
-            track.innerHTML='';
-            ROUTINE.forEach((s,i)=>{
-                const d=document.createElement('div');
-                d.className='dot';
-                d.id='dot'+i;
-                d.textContent=s.emoji;
-                track.appendChild(d);
-            });
-            refreshTrack();
-        }
-        function refreshTrack(){
-            ROUTINE.forEach((s,i)=>{
-                const d=document.getElementById('dot'+i);
-                if(!d) return;
-                d.classList.remove('done','current');
-                if(i<currentStep) d.classList.add('done');
-                else if(i===currentStep) d.classList.add('current');
-            });
-        }
+    clearAction();
+    const btn=document.createElement('button');
+    btn.className='bigBtn blue';
+    btn.textContent='💦 ジャー！';
+    btn.style.fontSize='clamp(1.5em,7vw,2.4em)';
+    btn.style.padding='24px 60px';
+    let flushed=false;
 
-        function showStep(){
-            busy=false;
-            attempts=0;
-            refreshTrack();
-            const step = ROUTINE[currentStep];
-            document.getElementById('speech').textContent = 'つぎは？ → ' + step.label + ' は どれ？';
-            speak('つぎは、' + step.label.replace(/・/g,' か ') + '、は どれかな？');
-            buildChoices(step);
-        }
+    btn.onclick=()=>{
+        if(busy||flushed) return;
+        flushed=true; busy=true;
+        sndWater();
+        playFx('💦');
+        setSpeech('ジャーーー！ 💦💦💦');
+        speak('ジャーーー！ みず ながれたね！');
 
-        function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+        const cx=innerWidth/2, cy=innerHeight*.5;
+        bubbles(cx,cy,10);
+        starBurst(cx,cy,6);
+        setCharAnim('hop');
 
-        function buildChoices(correct){
-            const choices=document.getElementById('choices');
-            choices.innerHTML='';
-            const distractors = shuffle(ROUTINE.filter(s=>s.id!==correct.id)).slice(0,2);
-            const opts = shuffle([correct, ...distractors]);
-            opts.forEach(opt=>{
-                const c=document.createElement('div');
-                c.className='choice';
-                c.innerHTML = `<div class="em">${opt.emoji}</div><div class="lbl">${opt.label}</div>`;
-                c.onclick=()=>onChoice(opt, correct, c);
-                choices.appendChild(c);
-            });
-        }
+        setTimeout(()=>stepDone('ながせた！','みずを ながすの じょうずだね！'),1600);
+    };
 
-        function onChoice(opt, correct, el){
+    actionZone.appendChild(btn);
+}
+
+/* ── Step 7: wash hands (tap sequence: soap → scrub → rinse) ── */
+async function playWash(){
+    game.className=STEPS[7].bg;
+    setCharAnim('waddle');
+
+    const phases=[
+        { msg:'せっけんを つけよう！\n🧴 タップ！', btn:'🧴 せっけん！', fx:'🧼', say:'せっけんを つけよう！', cls:'' },
+        { msg:'ゴシゴシ あらおう！\n🤲 タップ！', btn:'🤲 ゴシゴシ！', fx:'🫧', say:'ゴシゴシ あらおう！', cls:'washAnim' },
+        { msg:'みずで ながそう！\n🚿 タップ！', btn:'🚿 ジャー！', fx:'💦', say:'みずで ながそう！', cls:'hop' }
+    ];
+    let phase=0;
+    clearAction();
+    const prog=makeProgress('green');
+    actionZone.appendChild(prog.wrap);
+
+    function showPhase(){
+        const p=phases[phase];
+        setSpeech(p.msg);
+        speak(p.say);
+        if(p.cls) setCharAnim(p.cls);
+        // clear old btn
+        const old=actionZone.querySelector('.bigBtn');
+        if(old) old.remove();
+
+        const btn=document.createElement('button');
+        btn.className='bigBtn green';
+        btn.textContent=p.btn;
+        btn.onclick=()=>{
             if(busy) return;
-            if(opt.id===correct.id){
+            sndBubble();
+            playFx(p.fx);
+            setCharAnim(''); void charEl.offsetWidth; setCharAnim('hop');
+            bubbles(innerWidth/2, innerHeight*.45, 5);
+            phase++;
+            prog.fill.style.width=(phase/phases.length*100)+'%';
+            if(phase>=phases.length){
                 busy=true;
-                el.classList.add('correct');
-                sndCorrect();
-                playActionFx(correct.emoji);
-                hopChar();
-                document.getElementById('speech').textContent = PRAISE[Math.floor(Math.random()*PRAISE.length)] + ' ' + correct.label;
-                speak(correct.say);
-                setTimeout(nextStep, 1300);
+                setSpeech('ピッカピカ！ ✨🤲✨');
+                speak('てが ピッカピカだね！ バイキン バイバイ！');
+                setTimeout(()=>stepDone('てが ピッカピカ！','バイキンと さようなら！'),1200);
             } else {
-                attempts++;
-                el.classList.add('wrong');
-                sndWrong();
-                document.getElementById('speech').textContent = 'うーん、ちがうみたい。もういちど！';
-                speak('うーん、ちがうみたい。もういちど！');
-                setTimeout(()=>el.classList.remove('wrong'), 450);
-                if(attempts>=2){
-                    // give a hint
-                    [...document.getElementById('choices').children].forEach(c=>{
-                        if(c.querySelector('.lbl').textContent===correct.label) c.classList.add('hint');
-                    });
-                    document.getElementById('dot'+currentStep).classList.add('current');
-                }
+                setTimeout(showPhase, 400);
             }
-        }
+        };
+        actionZone.appendChild(btn);
+    }
+    showPhase();
+}
 
-        function playActionFx(emoji){
-            const fx=document.getElementById('actionFx');
-            fx.textContent=emoji;
-            fx.classList.remove('play'); void fx.offsetWidth; fx.classList.add('play');
-        }
-        function hopChar(){
-            const ch=document.getElementById('charBig');
-            ch.classList.remove('hop'); void ch.offsetWidth; ch.classList.add('hop');
-            setTimeout(()=>ch.classList.remove('hop'),700);
-        }
+/* ── progress bar helper ── */
+function makeProgress(color){
+    const wrap=document.createElement('div'); wrap.className='progWrap';
+    const fill=document.createElement('div'); fill.className='progFill '+(color||'pink');
+    wrap.appendChild(fill);
+    return {wrap,fill};
+}
 
-        function nextStep(){
-            currentStep++;
-            if(currentStep>=ROUTINE.length){
-                completeRoutine();
-            } else {
-                showStep();
-            }
-        }
+/* ── step completion handler ── */
+async function stepDone(msg, speakMsg){
+    // cleanup listeners
+    if(actionZone._cleanup){ actionZone._cleanup(); actionZone._cleanup=null; }
+    setSpeech(praise()+' '+msg);
+    speak(speakMsg||msg);
+    sndGood();
+    playFx('⭐');
+    confetti(18);
+    starBurst(innerWidth/2, innerHeight*.35, 6);
 
-        function completeRoutine(){
-            refreshTrack();
-            stickers++;
-            updateStickerCount();
-            awardSticker(stickers-1);
-            createConfetti();
-            sndSticker();
-            document.getElementById('speech').textContent='ぜんぶ できた！ ごほうびシール ' + STICKER_FACES[(charIndex)%STICKER_FACES.length] + ' ゲット！';
-            speak('ぜんぶ できたね！ ごほうび シールを あげる！');
-            document.getElementById('choices').innerHTML='';
+    // earn sticker for this step
+    earnedStickers.push(STICKER_POOL[step % STICKER_POOL.length]);
 
-            if(stickers>=GOAL_STICKERS){
-                setTimeout(winGame, 1800);
-            } else {
-                // next animal, new routine
-                setTimeout(()=>{
-                    charIndex = (charIndex+1)%CHARACTERS.length;
-                    startRoutine();
-                }, 2000);
-            }
-        }
+    await wait(1800);
+    step++;
+    if(step>=STEPS.length){
+        winGame();
+    } else {
+        runStep();
+    }
+}
 
-        /* ---------- sticker chart ---------- */
-        function buildStickerChart(){
-            const chart=document.getElementById('stickerChart');
-            chart.innerHTML='';
-            for(let i=0;i<GOAL_STICKERS;i++){
-                const s=document.createElement('div');
-                s.className='stickerSlot';
-                s.id='slot'+i;
-                s.textContent='○';
-                chart.appendChild(s);
-            }
-        }
-        function awardSticker(i){
-            const s=document.getElementById('slot'+i);
-            if(s){ s.textContent=STICKER_FACES[i%STICKER_FACES.length]; s.classList.add('got'); }
-        }
-        function updateStickerCount(){
-            document.getElementById('stickerCount').textContent=stickers;
-        }
+/* ── step dispatcher ── */
+function runStep(){
+    busy=false;
+    clearAction();
+    clearScene();
+    refreshTrack();
+    setChar(CHARS[chosen]);
+    const handlers=[playNotice, playGo, playPants, playSit, playDo, playWipe, playFlush, playWash];
+    handlers[step]();
+}
 
-        /* ---------- win ---------- */
-        function winGame(){
-            document.getElementById('gameScreen').style.display='none';
-            const ss=document.getElementById('successScreen');
-            ss.style.display='flex';
-            const fs=document.getElementById('finalStickers');
-            fs.innerHTML='';
-            for(let i=0;i<GOAL_STICKERS;i++){
-                const span=document.createElement('span');
-                span.textContent=STICKER_FACES[i%STICKER_FACES.length];
-                fs.appendChild(span);
-            }
-            document.getElementById('finalNote').innerHTML =
-                'シールを 5こ あつめたよ！<br>トイレの じゅんばん かんぺき！🚽✨';
-            speak('やったね！ トイレマスターだ！ おめでとう！');
-            sndWin();
-            createBigCelebration();
-        }
+/* ================================================================
+   GAME FLOW
+   ================================================================ */
+window.startGame=function(){
+    $('startScreen').style.display='none';
+    $('successScreen').style.display='none';
+    $('gameUI').style.display='block';
+    step=0;
+    earnedStickers=[];
+    buildTrack();
+    runStep();
+};
 
-        function restartGame(){
-            document.getElementById('successScreen').style.display='none';
-            document.getElementById('startScreen').style.display='flex';
-            document.querySelectorAll('.cloud').forEach(c=>c.remove());
-            if('speechSynthesis' in window) window.speechSynthesis.cancel();
-        }
+function winGame(){
+    $('gameUI').style.display='none';
+    const ss=$('successScreen');
+    ss.style.display='flex';
 
-        /* ---------- decorations ---------- */
-        function createClouds(){
-            for(let i=0;i<3;i++){
-                const cloud=document.createElement('div');
-                cloud.className='cloud';
-                cloud.textContent='☁️';
-                cloud.style.top=(Math.random()*120+20)+'px';
-                cloud.style.left=(Math.random()*window.innerWidth)+'px';
-                cloud.style.animationDelay=(i*12)+'s';
-                document.getElementById('gameContainer').appendChild(cloud);
-            }
-        }
-        function createConfetti(){
-            const colors=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2'];
-            for(let i=0;i<28;i++){
-                setTimeout(()=>{
-                    const c=document.createElement('div');
-                    c.className='confetti';
-                    c.style.left=Math.random()*window.innerWidth+'px';
-                    c.style.top='-10px';
-                    c.style.background=colors[Math.floor(Math.random()*colors.length)];
-                    c.style.borderRadius=Math.random()>0.5?'50%':'0';
-                    document.getElementById('gameContainer').appendChild(c);
-                    setTimeout(()=>c.remove(),3000);
-                }, i*40);
-            }
-        }
-        function createBigCelebration(){
-            const emojis=['🎉','🎊','✨','🌟','💫','🎈','🎁','🏆','🦄','🌈'];
-            for(let i=0;i<46;i++){
-                setTimeout(()=>{
-                    const e=document.createElement('div');
-                    e.className='celebration-emoji';
-                    e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-                    e.style.left=Math.random()*window.innerWidth+'px';
-                    e.style.top=Math.random()*window.innerHeight+'px';
-                    document.getElementById('gameContainer').appendChild(e);
-                    setTimeout(()=>e.remove(),2000);
-                }, i*90);
-            }
-        }
+    const stickersEl=$('stickers');
+    stickersEl.innerHTML='';
+    earnedStickers.forEach((s,i)=>{
+        setTimeout(()=>{
+            const sp=document.createElement('span');
+            sp.textContent=s;
+            sp.style.animation='stickerPop .5s ease';
+            stickersEl.appendChild(sp);
+            sndTap();
+        }, i*200);
+    });
 
-        /* prevent double-tap zoom */
-        let lastTouchEnd=0;
-        document.addEventListener('touchend',(e)=>{
-            const now=Date.now();
-            if(now-lastTouchEnd<=300) e.preventDefault();
-            lastTouchEnd=now;
-        },false);
+    $('successNote').innerHTML='ぜんぶ できたよ！<br>トイレの じゅんばん かんぺき！ 🚽✨';
+    setTimeout(()=>{
+        speak('やったね！ トイレマスターだ！ おめでとう！');
+        sndWin();
+        confetti(50);
+        for(let i=0;i<5;i++){
+            setTimeout(()=>starBurst(Math.random()*innerWidth, Math.random()*innerHeight, 8), i*400);
+        }
+    }, earnedStickers.length*200+300);
+}
 
-        /* init */
-        buildCharPick();
-    </script>
+window.restart=function(){
+    $('successScreen').style.display='none';
+    $('gameUI').style.display='none';
+    $('startScreen').style.display='flex';
+    game.className='bgStart';
+    if('speechSynthesis' in window) speechSynthesis.cancel();
+};
+
+/* ── prevent double-tap zoom ── */
+let lastTap=0;
+document.addEventListener('touchend',e=>{ const now=Date.now(); if(now-lastTap<=300) e.preventDefault(); lastTap=now; },false);
+
+/* ── init ── */
+buildPicker();
+
+})();
+</script>
 </body>
 </html>
