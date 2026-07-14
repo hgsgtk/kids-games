@@ -1,1267 +1,1455 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏔️ Moomin's Day in Moominvalley 🏔️</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🏔️ ムーミン谷のぼうけん 🏔️</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Comic Sans MS', 'Marker Felt', 'Arial', sans-serif;
-            background: linear-gradient(to bottom, #87CEEB 0%, #E8F4F8 40%, #B8E6B8 100%);
-            min-height: 100vh;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            background: #1a1a2e;
             overflow: hidden;
-            position: relative;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
-
-        /* Animated background elements */
-        .background-layer {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .cloud {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 100px;
-            animation: float-across 30s infinite linear;
-        }
-
-        .cloud::before, .cloud::after {
-            content: '';
-            position: absolute;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 100px;
-        }
-
-        .cloud1 { width: 120px; height: 50px; top: 10%; animation-delay: 0s; }
-        .cloud1::before { width: 60px; height: 50px; top: -25px; left: 15px; }
-        .cloud1::after { width: 80px; height: 40px; top: -15px; right: 10px; }
-
-        .cloud2 { width: 100px; height: 40px; top: 25%; animation-delay: 10s; }
-        .cloud2::before { width: 50px; height: 40px; top: -20px; left: 10px; }
-        .cloud2::after { width: 60px; height: 35px; top: -12px; right: 10px; }
-
-        .cloud3 { width: 140px; height: 55px; top: 15%; animation-delay: 20s; }
-        .cloud3::before { width: 70px; height: 55px; top: -28px; left: 20px; }
-        .cloud3::after { width: 85px; height: 45px; top: -18px; right: 15px; }
-
-        @keyframes float-across {
-            from { transform: translateX(-200px); }
-            to { transform: translateX(calc(100vw + 200px)); }
-        }
-
-        /* Sun with rays */
-        .sun {
-            position: fixed;
-            top: 50px;
-            right: 80px;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, #FFD700, #FFA500);
-            border-radius: 50%;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.6);
-            animation: sun-pulse 4s infinite ease-in-out;
-            pointer-events: none;
-        }
-
-        .sun::before {
-            content: '';
-            position: absolute;
-            width: 120%;
-            height: 120%;
-            top: -10%;
-            left: -10%;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.3), transparent 70%);
-            border-radius: 50%;
-            animation: rotate-rays 20s infinite linear;
-        }
-
-        @keyframes sun-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes rotate-rays {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* Game container */
-        .game-wrapper {
-            position: relative;
+        canvas {
+            display: block;
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
         }
-
-        .game-scene {
-            position: absolute;
-            width: 200%;
-            height: 100%;
-            display: flex;
-            transition: transform 0.5s ease-out;
-        }
-
-        .scene-section {
-            width: 50%;
-            height: 100%;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        /* Header */
-        .game-header {
+        /* HUD overlay */
+        .hud {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            z-index: 100;
+            top: 0; left: 0; right: 0;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 10;
+            pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
         }
-
-        .game-title {
-            font-size: clamp(1.2rem, 3vw, 2rem);
-            color: #2E5266;
-            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        .hud > * { pointer-events: auto; }
+        .hud-left { display: flex; gap: 8px; align-items: center; }
+        .hud-center { flex: 1; max-width: 300px; margin: 0 12px; }
+        .hud-right { display: flex; gap: 8px; align-items: center; }
+        .hud-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .game-stats {
+        .hud-btn:active { transform: scale(0.92); }
+        /* Progress bar */
+        .progress-wrap {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            height: 24px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FF6B9D);
+            border-radius: 10px;
+            transition: width 0.6s ease;
+            width: 0%;
+        }
+        .progress-text {
+            position: absolute;
+            inset: 0;
             display: flex;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+        /* Mission panel */
+        .mission-panel {
+            position: fixed;
+            bottom: 90px; left: 12px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 14px 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 10;
+            max-width: 220px;
+            font-size: 13px;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .mission-panel.hidden {
+            transform: translateX(-120%);
+            opacity: 0;
+        }
+        .mission-title {
+            font-weight: bold;
+            color: #2E5266;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .mission-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            color: #555;
+        }
+        .mission-item.done {
+            color: #28a745;
+            text-decoration: line-through;
+        }
+        .mission-check {
+            width: 18px; height: 18px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .mission-item.done .mission-check {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        /* D-pad controls */
+        .dpad {
+            position: fixed;
+            bottom: 16px; left: 16px;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 56px 56px 56px;
+            grid-template-rows: 56px 56px 56px;
+            gap: 4px;
+        }
+        .dpad-btn {
+            background: rgba(255,255,255,0.85);
+            border: none;
+            border-radius: 14px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+        }
+        .dpad-btn:active, .dpad-btn.pressed {
+            background: rgba(255,200,100,0.95);
+            transform: scale(0.93);
+        }
+        .dpad-placeholder { visibility: hidden; }
+        /* Action button */
+        .action-area {
+            position: fixed;
+            bottom: 24px; right: 16px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             align-items: center;
         }
-
-        .stat-item {
-            font-size: 1.3rem;
-            color: #2E5266;
-            font-weight: bold;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-right: 5px;
-        }
-
-        /* Moomin character - more detailed */
-        .moomin {
-            position: absolute;
-            width: 90px;
-            height: 110px;
-            z-index: 50;
-            transition: left 0.8s ease-out, bottom 0.8s ease-out, transform 0.3s;
-            cursor: pointer;
-        }
-
-        .moomin:hover {
-            transform: scale(1.05);
-        }
-
-        .moomin-body {
-            position: absolute;
-            width: 70px;
-            height: 80px;
-            background: white;
-            border-radius: 45% 45% 40% 40%;
-            border: 4px solid #222;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .moomin-snout {
-            position: absolute;
-            width: 38px;
-            height: 32px;
-            background: white;
+        .action-btn {
+            width: 72px; height: 72px;
             border-radius: 50%;
-            border: 4px solid #222;
-            border-top: none;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-        }
-
-        .moomin-nose {
-            position: absolute;
-            width: 10px;
-            height: 12px;
-            background: #222;
-            border-radius: 50%;
-            bottom: 22px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .moomin-eye {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #222;
-            border-radius: 50%;
-            top: 25px;
-        }
-
-        .moomin-eye-left { left: 20px; }
-        .moomin-eye-right { right: 20px; }
-
-        .moomin-tail {
-            position: absolute;
-            width: 24px;
-            height: 38px;
-            background: white;
-            border: 4px solid #222;
-            border-radius: 50%;
-            bottom: 18px;
-            right: -2px;
-            transform: rotate(-25deg);
-        }
-
-        .moomin-ears {
-            position: absolute;
-            width: 100%;
-            top: 8px;
-        }
-
-        .moomin-ear {
-            position: absolute;
-            width: 18px;
-            height: 25px;
-            background: white;
-            border: 4px solid #222;
-            border-radius: 50% 50% 40% 40%;
-            top: 0;
-        }
-
-        .moomin-ear-left { left: 8px; transform: rotate(-15deg); }
-        .moomin-ear-right { right: 8px; transform: rotate(15deg); }
-
-        /* Friends and items */
-        .character {
-            position: absolute;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s;
-            z-index: 40;
-        }
-
-        .character:hover {
-            transform: scale(1.15) translateY(-5px);
-        }
-
-        .character-icon {
-            font-size: 60px;
-            display: block;
-            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-        }
-
-        .character-name {
-            font-size: 0.85rem;
-            color: #fff;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 4px 10px;
-            border-radius: 12px;
-            margin-top: 5px;
-            display: inline-block;
-            font-weight: bold;
-        }
-
-        .item {
-            position: absolute;
-            font-size: 45px;
-            cursor: pointer;
-            transition: transform 0.3s;
-            z-index: 30;
-            animation: item-float 3s infinite ease-in-out;
-        }
-
-        .item:hover {
-            transform: scale(1.3) rotate(15deg);
-            filter: brightness(1.3);
-        }
-
-        @keyframes item-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-        }
-
-        /* Moominhouse */
-        .moominhouse {
-            position: absolute;
-            left: 12%;
-            bottom: 15%;
-            width: 180px;
-            height: 220px;
-            z-index: 20;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .moominhouse:hover {
-            transform: scale(1.05);
-        }
-
-        .house-body {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            height: 150px;
-            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
-            border-radius: 10px;
-            border: 5px solid #2C5F8D;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .house-roof {
-            position: absolute;
-            bottom: 135px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 90px solid transparent;
-            border-right: 90px solid transparent;
-            border-bottom: 70px solid #8B4513;
-            filter: drop-shadow(0 -5px 10px rgba(0, 0, 0, 0.2));
-        }
-
-        .house-chimney {
-            position: absolute;
-            width: 25px;
-            height: 50px;
-            background: #8B4513;
-            border: 3px solid #654321;
-            border-radius: 5px;
-            bottom: 175px;
-            left: 35%;
-        }
-
-        .house-door {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 65px;
-            background: #8B4513;
-            border: 3px solid #654321;
-            border-radius: 8px 8px 3px 3px;
-        }
-
-        .house-window {
-            position: absolute;
-            width: 30px;
-            height: 35px;
-            background: #FFE4B5;
-            border: 3px solid #654321;
-            border-radius: 5px;
-        }
-
-        .window-1 { top: 40px; left: 20px; }
-        .window-2 { top: 40px; right: 20px; }
-        .window-3 { top: 85px; left: 20px; }
-        .window-4 { top: 85px; right: 20px; }
-
-        /* Trees and nature */
-        .tree {
-            position: absolute;
-            z-index: 15;
-        }
-
-        .tree-trunk {
-            width: 35px;
-            height: 80px;
-            background: linear-gradient(to right, #8B4513 0%, #A0522D 50%, #8B4513 100%);
-            border-radius: 8px;
-            margin: 0 auto;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .tree-foliage {
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, #228B22 0%, #006400 100%);
-            border-radius: 50%;
-            position: relative;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .tree-foliage::before,
-        .tree-foliage::after {
-            content: '';
-            position: absolute;
-            background: radial-gradient(circle, #228B22 0%, #006400 100%);
-            border-radius: 50%;
-        }
-
-        .tree-foliage::before {
-            width: 75px;
-            height: 75px;
-            top: -25px;
-            left: -15px;
-        }
-
-        .tree-foliage::after {
-            width: 75px;
-            height: 75px;
-            top: -25px;
-            right: -15px;
-        }
-
-        /* Bridge between scenes */
-        .bridge {
-            position: absolute;
-            right: 0;
-            bottom: 25%;
-            width: 150px;
-            height: 80px;
-            z-index: 25;
-        }
-
-        .bridge-platform {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 20px;
-            background: #8B4513;
-            border: 3px solid #654321;
-            border-radius: 5px;
-        }
-
-        .bridge-rail {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            height: 50px;
-            border-left: 3px solid #654321;
-            border-right: 3px solid #654321;
-        }
-
-        .bridge-post {
-            position: absolute;
-            width: 8px;
-            height: 50px;
-            background: #654321;
-            bottom: 20px;
-        }
-
-        .post-1 { left: 15px; }
-        .post-2 { left: 50%; transform: translateX(-50%); }
-        .post-3 { right: 15px; }
-
-        /* Mountain in background */
-        .mountain {
-            position: absolute;
-            bottom: 0;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            z-index: 5;
-        }
-
-        .mountain-1 {
-            right: 20%;
-            border-width: 0 150px 250px 150px;
-            border-color: transparent transparent #6B8E99 transparent;
-        }
-
-        .mountain-2 {
-            right: 35%;
-            border-width: 0 120px 200px 120px;
-            border-color: transparent transparent #7A9AA8 transparent;
-        }
-
-        /* Water/river in second scene */
-        .river {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 30%;
-            background: linear-gradient(to bottom, rgba(64, 164, 223, 0.6) 0%, rgba(34, 126, 185, 0.8) 100%);
-            z-index: 3;
-            overflow: hidden;
-        }
-
-        .wave {
-            position: absolute;
-            width: 200%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 40px,
-                rgba(255, 255, 255, 0.3) 40px,
-                rgba(255, 255, 255, 0.3) 80px
-            );
-            animation: wave-move 3s linear infinite;
-        }
-
-        @keyframes wave-move {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-
-        /* Flowers */
-        .flower {
-            position: absolute;
-            font-size: 28px;
-            z-index: 10;
-            animation: sway 4s infinite ease-in-out;
-        }
-
-        @keyframes sway {
-            0%, 100% { transform: rotate(-3deg); }
-            50% { transform: rotate(3deg); }
-        }
-
-        /* Message bubble */
-        .message-bubble {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            background: rgba(255, 255, 255, 0.98);
-            padding: 40px 50px;
-            border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            text-align: center;
-            z-index: 200;
-            max-width: 500px;
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        .message-bubble.show {
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .message-bubble h2 {
-            color: #2E5266;
-            font-size: 2rem;
-            margin-bottom: 15px;
-        }
-
-        .message-bubble p {
-            color: #555;
-            font-size: 1.2rem;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        .message-icon {
-            font-size: 4rem;
-            margin-bottom: 15px;
-        }
-
-        .button {
-            background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+            border: 3px solid rgba(255,255,255,0.5);
+            background: linear-gradient(135deg, #FF6B9D, #C06C84);
             color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 25px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
-            transition: all 0.3s ease;
+            font-size: 14px;
             font-weight: bold;
-            margin: 5px;
-        }
-
-        .button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5);
-        }
-
-        .button:active {
-            transform: translateY(-1px);
-        }
-
-        /* Friends collected display */
-        .friends-panel {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 20px;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            z-index: 90;
-            max-width: 300px;
-        }
-
-        .friends-panel h3 {
-            color: #2E5266;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .friends-list {
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(255,107,157,0.5);
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 30px;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            line-height: 1.1;
         }
-
-        .friend-icon {
-            opacity: 0.3;
-            filter: grayscale(100%);
+        .action-btn:active { transform: scale(0.9); }
+        .action-btn .action-icon { font-size: 24px; }
+        .action-btn .action-label { font-size: 10px; margin-top: 2px; }
+        .action-hint {
+            color: rgba(255,255,255,0.85);
+            font-size: 11px;
+            text-align: center;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            max-width: 100px;
+        }
+        /* Dialog */
+        .dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .dialog-overlay.show { display: flex; }
+        .dialog {
+            background: white;
+            border-radius: 24px;
+            padding: 36px 40px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            animation: dialog-pop 0.35s cubic-bezier(0.68, -0.3, 0.265, 1.25);
+        }
+        @keyframes dialog-pop {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .dialog-emoji { font-size: 56px; margin-bottom: 12px; }
+        .dialog h2 { color: #2E5266; font-size: 1.6rem; margin-bottom: 10px; }
+        .dialog p { color: #555; font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px; }
+        .dialog-btn {
+            background: linear-gradient(135deg, #FF6B9D, #C06C84);
+            color: white; border: none;
+            padding: 14px 36px;
+            border-radius: 22px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 16px rgba(255,107,157,0.4);
+            margin: 4px;
+        }
+        .dialog-btn:active { transform: scale(0.95); }
+        .dialog-btn.secondary {
+            background: linear-gradient(135deg, #6C9BD2, #4A7FB5);
+            box-shadow: 0 4px 16px rgba(74,127,181,0.4);
+        }
+        /* Scene indicator */
+        .scene-indicator {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .scene-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            border: 2px solid rgba(255,255,255,0.6);
             transition: all 0.3s;
         }
-
-        .friend-icon.collected {
-            opacity: 1;
-            filter: grayscale(0%);
-            animation: friend-appear 0.5s ease;
+        .scene-dot.active {
+            background: #FFD700;
+            border-color: #FFA500;
+            transform: scale(1.2);
         }
-
-        @keyframes friend-appear {
-            0% { transform: scale(0) rotate(-180deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-
-        /* Navigation hint */
-        .nav-hint {
-            position: absolute;
-            font-size: 3rem;
-            animation: bounce-hint 2s infinite ease-in-out;
-            cursor: pointer;
-            z-index: 60;
-            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-        }
-
-        @keyframes bounce-hint {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(20px); }
-        }
-
-        /* Controls */
-        .controls {
+        /* Tutorial overlay */
+        .tutorial {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.5s;
         }
-
-        .control-btn {
-            background: rgba(255, 255, 255, 0.95);
-            border: none;
-            padding: 12px 18px;
-            border-radius: 15px;
-            font-size: 1.3rem;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+        .tutorial.fade-out { opacity: 0; pointer-events: none; }
+        .tutorial-card {
+            background: white;
+            border-radius: 28px;
+            padding: 40px;
+            max-width: 380px;
+            width: 90%;
+            text-align: center;
         }
-
-        .control-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        .tutorial-card h1 {
+            font-size: 1.5rem;
+            color: #2E5266;
+            margin: 16px 0 8px;
         }
-
-        /* Particle effects */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            z-index: 100;
-            animation: particle-float 1.5s ease-out forwards;
+        .tutorial-card .tutorial-moomin { font-size: 80px; }
+        .tutorial-steps {
+            text-align: left;
+            margin: 16px 0;
+            font-size: 1rem;
+            color: #555;
+            line-height: 2;
         }
-
-        @keyframes particle-float {
-            0% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-120px) scale(0);
-                opacity: 0;
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .game-title { font-size: 1.2rem; }
-            .stat-item { font-size: 1rem; }
-            .moominhouse { width: 140px; height: 170px; }
-            .house-body { width: 110px; height: 120px; }
-            .message-bubble { padding: 30px; max-width: 90%; }
+        .tutorial-steps li { margin-bottom: 4px; }
+        @media (max-width: 500px) {
+            .mission-panel { max-width: 180px; font-size: 12px; bottom: 85px; }
+            .dpad { bottom: 10px; left: 10px; }
+            .dpad-btn { width: 50px; height: 50px; font-size: 20px; }
+            .action-btn { width: 64px; height: 64px; }
         }
     </style>
 </head>
 <body>
-    <!-- Background elements -->
-    <div class="background-layer">
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-        <div class="cloud cloud3"></div>
-        <div class="sun"></div>
-    </div>
+<canvas id="gameCanvas"></canvas>
 
-    <!-- Controls -->
-    <div class="controls">
-        <button class="control-btn" onclick="window.location.href='index.html'" title="Home">🏠</button>
-        <button class="control-btn" id="soundToggle" title="Sound">🔊</button>
+<!-- HUD -->
+<div class="hud">
+    <div class="hud-left">
+        <button class="hud-btn" onclick="window.location.href='index.html'">🏠</button>
+        <button class="hud-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+        <button class="hud-btn" id="missionBtn" onclick="toggleMission()">📋</button>
     </div>
-
-    <!-- Game header -->
-    <div class="game-header">
-        <div class="game-title">🏔️ Moomin's Day in Moominvalley 🏔️</div>
-        <div class="game-stats">
-            <div class="stat-item">
-                <span class="stat-label">Friends:</span>
-                <span id="friendCount">0</span>/6
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Items:</span>
-                <span id="itemCount">0</span>/8
-            </div>
+    <div class="hud-center">
+        <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0 / 14</div>
         </div>
     </div>
-
-    <!-- Friends panel -->
-    <div class="friends-panel">
-        <h3>Meet Your Friends!</h3>
-        <div class="friends-list">
-            <span class="friend-icon" data-friend="snorkmaiden">🎀</span>
-            <span class="friend-icon" data-friend="snufkin">🎩</span>
-            <span class="friend-icon" data-friend="little-my">😈</span>
-            <span class="friend-icon" data-friend="sniff">🐾</span>
-            <span class="friend-icon" data-friend="moominpappa">📖</span>
-            <span class="friend-icon" data-friend="moominmamma">👜</span>
-        </div>
+    <div class="hud-right">
+        <span style="color:white;font-size:13px;text-shadow:0 1px 4px rgba(0,0,0,0.5)" id="areaLabel">ムーミン谷</span>
     </div>
+</div>
 
-    <!-- Game wrapper -->
-    <div class="game-wrapper">
-        <div class="game-scene" id="gameScene">
-            <!-- Scene 1: Moominvalley -->
-            <div class="scene-section" id="scene1">
-                <!-- Moominhouse -->
-                <div class="moominhouse" data-interaction="house">
-                    <div class="house-chimney"></div>
-                    <div class="house-roof"></div>
-                    <div class="house-body">
-                        <div class="house-window window-1"></div>
-                        <div class="house-window window-2"></div>
-                        <div class="house-window window-3"></div>
-                        <div class="house-window window-4"></div>
-                        <div class="house-door"></div>
-                    </div>
-                </div>
+<!-- Mission Panel -->
+<div class="mission-panel" id="missionPanel">
+    <div class="mission-title">🎯 きょうのミッション</div>
+    <div id="missionList"></div>
+</div>
 
-                <!-- Trees -->
-                <div class="tree" style="left: 5%; bottom: 20%;">
-                    <div class="tree-foliage"></div>
-                    <div class="tree-trunk"></div>
-                </div>
-                <div class="tree" style="right: 25%; bottom: 10%;">
-                    <div class="tree-foliage"></div>
-                    <div class="tree-trunk"></div>
-                </div>
+<!-- D-Pad -->
+<div class="dpad">
+    <div class="dpad-placeholder"></div>
+    <button class="dpad-btn" data-dir="up">⬆️</button>
+    <div class="dpad-placeholder"></div>
+    <button class="dpad-btn" data-dir="left">⬅️</button>
+    <button class="dpad-btn" data-dir="action">🔍</button>
+    <button class="dpad-btn" data-dir="right">➡️</button>
+    <div class="dpad-placeholder"></div>
+    <button class="dpad-btn" data-dir="down">⬇️</button>
+    <div class="dpad-placeholder"></div>
+</div>
 
-                <!-- Mountains -->
-                <div class="mountain mountain-1"></div>
-                <div class="mountain mountain-2"></div>
+<!-- Action Area -->
+<div class="action-area">
+    <button class="action-btn" id="actionBtn" onclick="doAction()">
+        <span class="action-icon" id="actionIcon">🔍</span>
+        <span class="action-label" id="actionLabel">しらべる</span>
+    </button>
+    <div class="action-hint" id="actionHint"></div>
+</div>
 
-                <!-- Flowers -->
-                <div class="flower" style="left: 30%; bottom: 12%;">🌸</div>
-                <div class="flower" style="left: 35%; bottom: 15%; animation-delay: 1s;">🌺</div>
-                <div class="flower" style="left: 25%; bottom: 18%; animation-delay: 2s;">🌼</div>
-                <div class="flower" style="left: 65%; bottom: 8%;">🌻</div>
-                <div class="flower" style="left: 70%; bottom: 12%; animation-delay: 1.5s;">🌷</div>
+<!-- Scene Indicator -->
+<div class="scene-indicator">
+    <div class="scene-dot active" id="dot0"></div>
+    <div class="scene-dot" id="dot1"></div>
+</div>
 
-                <!-- Characters -->
-                <div class="character" data-friend="snorkmaiden" style="left: 45%; bottom: 25%;">
-                    <span class="character-icon">🎀</span>
-                    <span class="character-name">Snorkmaiden</span>
-                </div>
-
-                <div class="character" data-friend="snufkin" style="left: 75%; bottom: 18%;">
-                    <span class="character-icon">🎩</span>
-                    <span class="character-name">Snufkin</span>
-                </div>
-
-                <div class="character" data-friend="little-my" style="left: 55%; bottom: 35%;">
-                    <span class="character-icon">😈</span>
-                    <span class="character-name">Little My</span>
-                </div>
-
-                <!-- Items -->
-                <div class="item" data-item="coffee" style="left: 20%; bottom: 28%;">☕</div>
-                <div class="item" data-item="pancake" style="left: 18%; bottom: 35%;">🥞</div>
-                <div class="item" data-item="jam" style="left: 28%; bottom: 40%;">🍓</div>
-                <div class="item" data-item="book" style="left: 50%; bottom: 15%;">📚</div>
-
-                <!-- Bridge to scene 2 -->
-                <div class="bridge">
-                    <div class="bridge-rail">
-                        <div class="bridge-post post-1"></div>
-                        <div class="bridge-post post-2"></div>
-                        <div class="bridge-post post-3"></div>
-                    </div>
-                    <div class="bridge-platform"></div>
-                </div>
-
-                <!-- Navigation hint -->
-                <div class="nav-hint" style="right: 10%; bottom: 30%;" onclick="moveToScene(2)">➡️</div>
-            </div>
-
-            <!-- Scene 2: Beach & Forest -->
-            <div class="scene-section" id="scene2">
-                <!-- River/Beach -->
-                <div class="river">
-                    <div class="wave"></div>
-                </div>
-
-                <!-- Trees -->
-                <div class="tree" style="left: 15%; bottom: 35%;">
-                    <div class="tree-foliage"></div>
-                    <div class="tree-trunk"></div>
-                </div>
-                <div class="tree" style="right: 15%; bottom: 35%;">
-                    <div class="tree-foliage"></div>
-                    <div class="tree-trunk"></div>
-                </div>
-                <div class="tree" style="left: 40%; bottom: 40%;">
-                    <div class="tree-foliage"></div>
-                    <div class="tree-trunk"></div>
-                </div>
-
-                <!-- Flowers -->
-                <div class="flower" style="left: 25%; bottom: 35%;">🌸</div>
-                <div class="flower" style="left: 30%; bottom: 38%; animation-delay: 0.8s;">🌺</div>
-                <div class="flower" style="left: 60%; bottom: 35%; animation-delay: 1.2s;">🌼</div>
-                <div class="flower" style="left: 65%; bottom: 40%;">🌷</div>
-
-                <!-- Characters -->
-                <div class="character" data-friend="sniff" style="left: 25%; bottom: 42%;">
-                    <span class="character-icon">🐾</span>
-                    <span class="character-name">Sniff</span>
-                </div>
-
-                <div class="character" data-friend="moominpappa" style="left: 55%; bottom: 45%;">
-                    <span class="character-icon">📖</span>
-                    <span class="character-name">Moominpappa</span>
-                </div>
-
-                <div class="character" data-friend="moominmamma" style="left: 70%; bottom: 42%;">
-                    <span class="character-icon">👜</span>
-                    <span class="character-name">Moominmamma</span>
-                </div>
-
-                <!-- Items -->
-                <div class="item" data-item="seashell" style="left: 30%; bottom: 18%;">🐚</div>
-                <div class="item" data-item="fish" style="left: 45%; bottom: 15%;">🐟</div>
-                <div class="item" data-item="flower-crown" style="left: 35%; bottom: 50%;">💐</div>
-                <div class="item" data-item="hat" style="left: 65%; bottom: 52%;">🎩</div>
-
-                <!-- Navigation hint back -->
-                <div class="nav-hint" style="left: 5%; bottom: 30%; transform: scaleX(-1);" onclick="moveToScene(1)">➡️</div>
-            </div>
-        </div>
-
-        <!-- Moomin character -->
-        <div class="moomin" id="moomin">
-            <div class="moomin-ears">
-                <div class="moomin-ear moomin-ear-left"></div>
-                <div class="moomin-ear moomin-ear-right"></div>
-            </div>
-            <div class="moomin-body">
-                <div class="moomin-eye moomin-eye-left"></div>
-                <div class="moomin-eye moomin-eye-right"></div>
-                <div class="moomin-tail"></div>
-            </div>
-            <div class="moomin-snout">
-                <div class="moomin-nose"></div>
-            </div>
-        </div>
+<!-- Dialog -->
+<div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog">
+        <div class="dialog-emoji" id="dialogEmoji"></div>
+        <h2 id="dialogTitle"></h2>
+        <p id="dialogText"></p>
+        <button class="dialog-btn" id="dialogBtn" onclick="closeDialog()">つぎへ</button>
     </div>
+</div>
 
-    <!-- Message bubble -->
-    <div class="message-bubble" id="messageBubble">
-        <div class="message-icon" id="messageIcon"></div>
-        <h2 id="messageTitle"></h2>
-        <p id="messageText"></p>
-        <button class="button" id="messageButton" onclick="closeMessage()">Continue</button>
+<!-- Tutorial -->
+<div class="tutorial" id="tutorial">
+    <div class="tutorial-card">
+        <div class="tutorial-moomin">🏔️</div>
+        <h1>ムーミン谷のぼうけん</h1>
+        <ul class="tutorial-steps">
+            <li>⬆️⬇️⬅️➡️ ボタンでムーミンをうごかそう</li>
+            <li>🔍 ちかづいたらしらべるボタンをおそう</li>
+            <li>🎯 6にんのなかまと8このアイテムをあつめよう</li>
+            <li>➡️ マップのはしでとなりのエリアへ</li>
+        </ul>
+        <button class="dialog-btn" onclick="startGame()">ぼうけんスタート！</button>
     </div>
+</div>
 
-    <script>
-        // Game state
-        let currentScene = 1;
-        let friendsFound = new Set();
-        let itemsCollected = new Set();
-        let soundEnabled = true;
-        let moominPosition = { x: 100, y: 200 };
+<script>
+// ============================================================
+// CANVAS & CORE SETUP
+// ============================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, scale;
 
-        // DOM elements
-        const moomin = document.getElementById('moomin');
-        const gameScene = document.getElementById('gameScene');
-        const messageBubble = document.getElementById('messageBubble');
-        const messageIcon = document.getElementById('messageIcon');
-        const messageTitle = document.getElementById('messageTitle');
-        const messageText = document.getElementById('messageText');
-        const friendCount = document.getElementById('friendCount');
-        const itemCount = document.getElementById('itemCount');
-        const soundToggle = document.getElementById('soundToggle');
+function resize() {
+    W = canvas.width = window.innerWidth * devicePixelRatio;
+    H = canvas.height = window.innerHeight * devicePixelRatio;
+    scale = devicePixelRatio;
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
 
-        // Sound system
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const vw = () => window.innerWidth;
+const vh = () => window.innerHeight;
 
-        function playSound(freq, duration, type = 'sine') {
-            if (!soundEnabled) return;
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.frequency.value = freq;
-            osc.type = type;
-            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + duration);
+// ============================================================
+// SOUND
+// ============================================================
+let soundEnabled = true;
+let audioCtx;
+function getAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+function playTone(freq, dur, type='sine', vol=0.08) {
+    if (!soundEnabled) return;
+    try {
+        const a = getAudio();
+        const o = a.createOscillator();
+        const g = a.createGain();
+        o.connect(g); g.connect(a.destination);
+        o.frequency.value = freq; o.type = type;
+        g.gain.setValueAtTime(vol, a.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + dur);
+        o.start(a.currentTime); o.stop(a.currentTime + dur);
+    } catch(e) {}
+}
+function sfxStep() { playTone(220, 0.04, 'triangle', 0.04); }
+function sfxCollect() {
+    playTone(523, 0.08); setTimeout(()=>playTone(659, 0.08), 80);
+    setTimeout(()=>playTone(784, 0.12), 160);
+}
+function sfxFriend() {
+    [523, 659, 784, 1047].forEach((n,i) => setTimeout(()=>playTone(n, 0.15), i*100));
+}
+function sfxVictory() {
+    [523,587,659,698,784,880,988,1047].forEach((n,i) => setTimeout(()=>playTone(n, 0.15), i*120));
+}
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const GROUND_Y = 0.72; // ground level as fraction of vh
+const SCENE_COUNT = 2;
+let currentScene = 0;
+let gameStarted = false;
+
+// Moomin state
+const moomin = {
+    x: 200, y: 0, // y will be set relative to ground
+    vx: 0, vy: 0,
+    dir: 1, // 1=right, -1=left
+    frame: 0,
+    walkTimer: 0,
+    size: 60,
+    bobble: 0,
+};
+
+// Collections
+const friendsFound = new Set();
+const itemsCollected = new Set();
+
+// NPCs & items per scene
+const friends = [
+    // Scene 0
+    { id: 'snorkmaiden', scene: 0, x: 0.45, y: 0, emoji: '🎀', name: 'スノークのおじょうさん',
+      msg: '「きょうはぼうけんびよりね！いっしょにあそびましょう！」' },
+    { id: 'snufkin', scene: 0, x: 0.72, y: 0, emoji: '🎩', name: 'スナフキン',
+      msg: '「いちばんのたびは、いいともだちとのたびさ。」' },
+    { id: 'littlemy', scene: 0, x: 0.58, y: 0, emoji: '👧', name: 'ちびのミイ',
+      msg: '「なにかおもしろいことないの？あたし、たいくつなのきらいよ！」' },
+    // Scene 1
+    { id: 'sniff', scene: 1, x: 0.25, y: 0, emoji: '🐾', name: 'スニフ',
+      msg: '「たからもの、みつけた？ぼく、あつめるのだいすき！」' },
+    { id: 'moominpappa', scene: 1, x: 0.55, y: 0, emoji: '🎩', name: 'ムーミンパパ',
+      msg: '「ぼうけんは、いちばんのものがたりになるんだよ。」' },
+    { id: 'moominmamma', scene: 1, x: 0.75, y: 0, emoji: '👜', name: 'ムーミンママ',
+      msg: '「おかえりなさい。パンケーキ、たべる？」' },
+];
+
+const items = [
+    // Scene 0
+    { id: 'coffee', scene: 0, x: 0.18, y: -20, emoji: '☕', name: 'コーヒー' },
+    { id: 'pancake', scene: 0, x: 0.22, y: -30, emoji: '🥞', name: 'パンケーキ' },
+    { id: 'jam', scene: 0, x: 0.35, y: -10, emoji: '🍓', name: 'いちごジャム' },
+    { id: 'book', scene: 0, x: 0.62, y: -15, emoji: '📚', name: 'ぼうけんのほん' },
+    // Scene 1
+    { id: 'seashell', scene: 1, x: 0.20, y: 25, emoji: '🐚', name: 'きれいなかいがら' },
+    { id: 'fish', scene: 1, x: 0.40, y: 30, emoji: '🐟', name: 'おさかな' },
+    { id: 'flowercrown', scene: 1, x: 0.50, y: -10, emoji: '💐', name: 'はなのかんむり' },
+    { id: 'hat', scene: 1, x: 0.65, y: -20, emoji: '🎩', name: 'ふしぎなぼうし' },
+];
+
+// Total collectibles
+const TOTAL = friends.length + items.length;
+
+function getGroundY() { return vh() * GROUND_Y; }
+
+// ============================================================
+// MISSIONS UI
+// ============================================================
+let missionVisible = true;
+function toggleMission() {
+    missionVisible = !missionVisible;
+    document.getElementById('missionPanel').classList.toggle('hidden', !missionVisible);
+}
+
+function updateMissionUI() {
+    const list = document.getElementById('missionList');
+    const missions = [
+        { label: `なかまをみつけよう (${friendsFound.size}/6)`, done: friendsFound.size >= 6 },
+        { label: `アイテムをあつめよう (${itemsCollected.size}/8)`, done: itemsCollected.size >= 8 },
+        { label: 'すべてあつめてぼうけんかんりょう！', done: friendsFound.size >= 6 && itemsCollected.size >= 8 },
+    ];
+    list.innerHTML = missions.map(m =>
+        `<div class="mission-item ${m.done?'done':''}">
+            <div class="mission-check">${m.done?'✓':''}</div>
+            <span>${m.label}</span>
+        </div>`
+    ).join('');
+
+    // Progress
+    const total = friendsFound.size + itemsCollected.size;
+    const pct = Math.round(total / TOTAL * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `${total} / ${TOTAL}`;
+}
+
+// ============================================================
+// DRAWING – Background
+// ============================================================
+function drawSky(t) {
+    const w = vw(), h = vh();
+    // Sky gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+    grad.addColorStop(0, '#87CEEB');
+    grad.addColorStop(0.6, '#B8D8E8');
+    grad.addColorStop(1, '#E8F4F8');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Sun
+    const sunX = w - 100, sunY = 80;
+    const sunR = 45 + Math.sin(t * 0.001) * 3;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunR + 20, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,215,0,0.15)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+    const sg = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+    sg.addColorStop(0, '#FFE44D');
+    sg.addColorStop(1, '#FFA500');
+    ctx.fillStyle = sg;
+    ctx.fill();
+    ctx.restore();
+
+    // Clouds
+    drawCloud(((t * 0.015) % (w + 300)) - 150, h * 0.10, 1.0);
+    drawCloud(((t * 0.010 + 400) % (w + 300)) - 150, h * 0.18, 0.7);
+    drawCloud(((t * 0.012 + 800) % (w + 300)) - 150, h * 0.08, 1.2);
+}
+
+function drawCloud(cx, cy, s) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 50*s, 22*s, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx - 25*s, cy - 8*s, 30*s, 20*s, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + 25*s, cy - 5*s, 35*s, 22*s, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+}
+
+function drawMountains() {
+    const w = vw(), gy = getGroundY();
+    // Far mountains
+    ctx.fillStyle = '#7A9AA8';
+    drawMountain(w * 0.3, gy, 200, 180);
+    ctx.fillStyle = '#6B8E99';
+    drawMountain(w * 0.65, gy, 250, 220);
+    ctx.fillStyle = '#8BAABC';
+    drawMountain(w * 0.5, gy, 180, 150);
+    // Snow caps
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    drawSnowCap(w * 0.3, gy, 200, 180, 0.25);
+    drawSnowCap(w * 0.65, gy, 250, 220, 0.25);
+}
+
+function drawMountain(cx, baseY, halfW, height) {
+    ctx.beginPath();
+    ctx.moveTo(cx - halfW, baseY);
+    ctx.quadraticCurveTo(cx - halfW * 0.3, baseY - height * 0.7, cx, baseY - height);
+    ctx.quadraticCurveTo(cx + halfW * 0.3, baseY - height * 0.7, cx + halfW, baseY);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawSnowCap(cx, baseY, halfW, height, pct) {
+    const topY = baseY - height;
+    const capH = height * pct;
+    ctx.beginPath();
+    ctx.moveTo(cx - halfW * pct * 1.2, topY + capH);
+    ctx.quadraticCurveTo(cx - halfW * 0.1, topY + capH * 0.3, cx, topY);
+    ctx.quadraticCurveTo(cx + halfW * 0.1, topY + capH * 0.3, cx + halfW * pct * 1.2, topY + capH);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawGround(scene, t) {
+    const w = vw(), h = vh(), gy = getGroundY();
+    if (scene === 0) {
+        // Green valley ground
+        const grd = ctx.createLinearGradient(0, gy, 0, h);
+        grd.addColorStop(0, '#5DBE5D');
+        grd.addColorStop(0.3, '#4CAF50');
+        grd.addColorStop(1, '#3D8B3D');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, gy, w, h - gy);
+
+        // Grass tufts
+        ctx.strokeStyle = '#3D8B3D';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 60; i++) {
+            const gx = (i * 37 + 13) % w;
+            const gy2 = gy + (i * 19 % 30);
+            ctx.beginPath();
+            ctx.moveTo(gx, gy2);
+            ctx.quadraticCurveTo(gx + 3, gy2 - 12, gx + 1, gy2 - 18);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(gx + 5, gy2);
+            ctx.quadraticCurveTo(gx + 8, gy2 - 10, gx + 10, gy2 - 16);
+            ctx.stroke();
         }
 
-        function playHappySound() {
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            notes.forEach((note, i) => {
-                setTimeout(() => playSound(note, 0.15), i * 100);
-            });
+        // Flowers
+        const flowers = ['#FF6B9D','#FFD700','#FF4500','#DA70D6','#FF69B4'];
+        for (let i = 0; i < 25; i++) {
+            const fx = (i * 53 + 20) % w;
+            const fy = gy + 5 + (i * 31 % 50);
+            const sway = Math.sin(t * 0.002 + i) * 3;
+            drawFlower(fx + sway, fy, flowers[i % flowers.length], 6 + (i % 3) * 2);
         }
 
-        function playCollectSound() {
-            playSound(523.25, 0.08);
-            setTimeout(() => playSound(659.25, 0.08), 80);
-            setTimeout(() => playSound(783.99, 0.12), 160);
+        // Draw Moominhouse
+        drawMoominhouse(w * 0.12, gy);
+
+        // Trees
+        drawTree(w * 0.04, gy + 10, 0.9);
+        drawTree(w * 0.85, gy - 5, 1.1);
+        drawTree(w * 0.92, gy + 5, 0.8);
+    } else {
+        // Beach/forest scene
+        // Sandy ground
+        const grd = ctx.createLinearGradient(0, gy, 0, h);
+        grd.addColorStop(0, '#5DBE5D');
+        grd.addColorStop(0.4, '#C2B280');
+        grd.addColorStop(0.6, '#DEB887');
+        grd.addColorStop(1, '#C2A060');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, gy, w, h - gy);
+
+        // Water
+        const waterY = gy + (h - gy) * 0.5;
+        const wgrd = ctx.createLinearGradient(0, waterY, 0, h);
+        wgrd.addColorStop(0, 'rgba(64,164,223,0.7)');
+        wgrd.addColorStop(1, 'rgba(34,126,185,0.9)');
+        ctx.fillStyle = wgrd;
+        ctx.fillRect(0, waterY, w, h - waterY);
+
+        // Waves
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 5; i++) {
+            const wy = waterY + 15 + i * 20;
+            ctx.beginPath();
+            for (let x = 0; x < w; x += 5) {
+                const yy = wy + Math.sin(x * 0.02 + t * 0.003 + i) * 4;
+                x === 0 ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy);
+            }
+            ctx.stroke();
         }
 
-        function playVictorySound() {
-            const melody = [523, 587, 659, 698, 784, 880, 988, 1047];
-            melody.forEach((note, i) => {
-                setTimeout(() => playSound(note, 0.15), i * 120);
-            });
-        }
+        // Trees
+        drawTree(w * 0.10, gy - 10, 1.0);
+        drawTree(w * 0.35, gy - 15, 1.2);
+        drawTree(w * 0.85, gy - 5, 0.9);
 
-        soundToggle.addEventListener('click', () => {
-            soundEnabled = !soundEnabled;
-            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+        // Flowers on ground
+        const flowers = ['#FF6B9D','#FFD700','#DA70D6'];
+        for (let i = 0; i < 12; i++) {
+            const fx = (i * 71 + 40) % w;
+            const fy = gy + 5 + (i * 23 % 30);
+            drawFlower(fx, fy, flowers[i % flowers.length], 5);
+        }
+    }
+}
+
+function drawFlower(x, y, color, r) {
+    ctx.save();
+    // Stem
+    ctx.strokeStyle = '#228B22';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y - r * 2.5);
+    ctx.stroke();
+    // Petals
+    ctx.fillStyle = color;
+    for (let i = 0; i < 5; i++) {
+        const a = (Math.PI * 2 / 5) * i;
+        ctx.beginPath();
+        ctx.ellipse(x + Math.cos(a) * r * 0.7, y - r * 2.5 + Math.sin(a) * r * 0.7, r * 0.5, r * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // Center
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(x, y - r * 2.5, r * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawTree(x, baseY, s) {
+    ctx.save();
+    // Trunk
+    const tw = 16 * s, th = 60 * s;
+    const tg = ctx.createLinearGradient(x - tw/2, baseY, x + tw/2, baseY);
+    tg.addColorStop(0, '#8B4513');
+    tg.addColorStop(0.5, '#A0522D');
+    tg.addColorStop(1, '#8B4513');
+    ctx.fillStyle = tg;
+    roundRect(x - tw/2, baseY - th, tw, th, 5);
+    ctx.fill();
+    // Foliage layers
+    const colors = ['#006400','#228B22','#2E8B57'];
+    for (let i = 2; i >= 0; i--) {
+        ctx.fillStyle = colors[i];
+        ctx.beginPath();
+        const fy = baseY - th - i * 22 * s;
+        ctx.ellipse(x, fy, (50 - i * 8) * s, (38 - i * 6) * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+function drawMoominhouse(x, groundY) {
+    ctx.save();
+    const bw = 120, bh = 130;
+    const baseX = x, baseY = groundY;
+
+    // Body
+    const bg = ctx.createLinearGradient(baseX, baseY - bh, baseX + bw, baseY);
+    bg.addColorStop(0, '#5B9BD5');
+    bg.addColorStop(1, '#3A7DC5');
+    ctx.fillStyle = bg;
+    roundRect(baseX, baseY - bh, bw, bh, 8);
+    ctx.fill();
+    ctx.strokeStyle = '#2C5F8D';
+    ctx.lineWidth = 3;
+    roundRect(baseX, baseY - bh, bw, bh, 8);
+    ctx.stroke();
+
+    // Roof
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.moveTo(baseX - 15, baseY - bh);
+    ctx.lineTo(baseX + bw / 2, baseY - bh - 60);
+    ctx.lineTo(baseX + bw + 15, baseY - bh);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#654321';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Chimney
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(baseX + bw * 0.35, baseY - bh - 75, 20, 40);
+    ctx.strokeStyle = '#654321';
+    ctx.strokeRect(baseX + bw * 0.35, baseY - bh - 75, 20, 40);
+
+    // Door
+    ctx.fillStyle = '#654321';
+    roundRect(baseX + bw/2 - 16, baseY - 55, 32, 55, 8);
+    ctx.fill();
+    // Door knob
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(baseX + bw/2 + 8, baseY - 28, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Windows
+    const winColor = '#FFE4B5';
+    [[baseX + 18, baseY - bh + 25], [baseX + bw - 44, baseY - bh + 25],
+     [baseX + 18, baseY - bh + 68], [baseX + bw - 44, baseY - bh + 68]].forEach(([wx, wy]) => {
+        ctx.fillStyle = winColor;
+        ctx.fillRect(wx, wy, 26, 30);
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(wx, wy, 26, 30);
+        // Cross
+        ctx.beginPath();
+        ctx.moveTo(wx + 13, wy);
+        ctx.lineTo(wx + 13, wy + 30);
+        ctx.moveTo(wx, wy + 15);
+        ctx.lineTo(wx + 26, wy + 15);
+        ctx.stroke();
+    });
+    ctx.restore();
+}
+
+// ============================================================
+// DRAWING – Moomin Character (Realistic Canvas)
+// ============================================================
+function drawMoomin(t) {
+    const gy = getGroundY();
+    const mx = moomin.x;
+    const my = gy + moomin.y - 5;
+    const s = moomin.size / 60;
+    const dir = moomin.dir;
+
+    // Walking animation
+    const isWalking = moomin.vx !== 0;
+    const walkPhase = isWalking ? Math.sin(t * 0.008 * 5) : 0;
+    const bobY = isWalking ? Math.abs(Math.sin(t * 0.008 * 5)) * 4 : 0;
+    const bodyY = my - bobY;
+
+    ctx.save();
+    ctx.translate(mx, bodyY);
+    ctx.scale(dir * s, s);
+
+    // Shadow
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(0, 5 + bobY, 28, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Tail
+    ctx.save();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.fillStyle = '#FAFAFA';
+    ctx.beginPath();
+    const tailWag = isWalking ? Math.sin(t * 0.01 * 3) * 8 : Math.sin(t * 0.002) * 3;
+    ctx.moveTo(-18, -35);
+    ctx.quadraticCurveTo(-32 + tailWag, -55, -28 + tailWag, -68);
+    ctx.quadraticCurveTo(-24 + tailWag, -72, -20 + tailWag, -68);
+    ctx.quadraticCurveTo(-26 + tailWag, -50, -14, -35);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Legs (back)
+    const legAngle1 = walkPhase * 15;
+    const legAngle2 = -walkPhase * 15;
+    ctx.save();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2.5;
+    // Left leg (back)
+    ctx.save();
+    ctx.translate(-10, -5);
+    ctx.rotate(legAngle1 * Math.PI / 180);
+    roundRect(-6, -3, 12, 22, 6);
+    ctx.fill(); ctx.stroke();
+    // Foot
+    ctx.fillStyle = '#FAFAFA';
+    ctx.beginPath();
+    ctx.ellipse(0, 20, 10, 5, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    // Right leg (back)
+    ctx.save();
+    ctx.translate(10, -5);
+    ctx.rotate(legAngle2 * Math.PI / 180);
+    roundRect(-6, -3, 12, 22, 6);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.beginPath();
+    ctx.ellipse(0, 20, 10, 5, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+
+    // Body
+    ctx.save();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, -38, 24, 32, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Arms
+    ctx.save();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2.5;
+    const armSwing = isWalking ? Math.sin(t * 0.008 * 5) * 12 : Math.sin(t * 0.002) * 3;
+    // Left arm
+    ctx.save();
+    ctx.translate(-22, -45);
+    ctx.rotate((armSwing + 10) * Math.PI / 180);
+    ctx.beginPath();
+    ctx.ellipse(0, 10, 6, 14, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    // Right arm
+    ctx.save();
+    ctx.translate(22, -45);
+    ctx.rotate((-armSwing - 10) * Math.PI / 180);
+    ctx.beginPath();
+    ctx.ellipse(0, 10, 6, 14, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+
+    // Head
+    ctx.save();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, -72, 20, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Ears
+    ctx.save();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2.5;
+    // Left ear
+    ctx.beginPath();
+    ctx.ellipse(-14, -98, 7, 14, -0.2, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    // Right ear
+    ctx.beginPath();
+    ctx.ellipse(14, -98, 7, 14, 0.2, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // Snout (muzzle)
+    ctx.save();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(0, -62, 14, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Nose (at tip of snout)
+    ctx.save();
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.ellipse(0, -57, 4, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Eyes
+    ctx.save();
+    ctx.fillStyle = '#333';
+    // Left eye
+    ctx.beginPath();
+    ctx.ellipse(-9, -78, 3.5, 4.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Right eye
+    ctx.beginPath();
+    ctx.ellipse(9, -78, 3.5, 4.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Eye highlights
+    ctx.fillStyle = '#FFF';
+    ctx.beginPath();
+    ctx.ellipse(-8, -80, 1.5, 1.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(10, -80, 1.5, 1.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Mouth (slight smile)
+    ctx.save();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, -60, 6, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
+}
+
+// ============================================================
+// DRAWING – NPCs & Items
+// ============================================================
+function drawNPC(f, t) {
+    if (friendsFound.has(f.id)) return;
+    const w = vw(), gy = getGroundY();
+    const x = f.x * w;
+    const y = gy + f.y;
+    const bob = Math.sin(t * 0.003 + f.x * 10) * 5;
+
+    ctx.save();
+    ctx.font = '48px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(f.emoji, x, y - 10 + bob);
+
+    // Name tag
+    ctx.font = 'bold 12px sans-serif';
+    const tw = ctx.measureText(f.name).width;
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    roundRect(x - tw/2 - 8, y + 4 + bob, tw + 16, 22, 10);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.fillText(f.name, x, y + 20 + bob);
+
+    // Glow indicator if nearby
+    const dist = Math.abs(moomin.x - x);
+    if (dist < 80) {
+        ctx.strokeStyle = 'rgba(255,215,0,0.6)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.ellipse(x, y - 5, 35, 45, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    ctx.restore();
+}
+
+function drawItem(item, t) {
+    if (itemsCollected.has(item.id)) return;
+    const w = vw(), gy = getGroundY();
+    const x = item.x * w;
+    const y = gy + item.y;
+    const bob = Math.sin(t * 0.004 + item.x * 8) * 8;
+
+    ctx.save();
+    // Glow circle
+    ctx.fillStyle = 'rgba(255,255,100,0.15)';
+    ctx.beginPath();
+    ctx.arc(x, y - 10 + bob, 25, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = '36px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.emoji, x, y + bob);
+
+    // Sparkle
+    const sparkle = Math.sin(t * 0.005 + item.x * 5) > 0.7;
+    if (sparkle) {
+        ctx.font = '14px serif';
+        ctx.fillText('✨', x + 18, y - 20 + bob);
+    }
+
+    // If nearby highlight
+    const dist = Math.abs(moomin.x - x);
+    if (dist < 70) {
+        ctx.strokeStyle = 'rgba(255,200,0,0.7)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(x, y - 5 + bob, 28, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    ctx.restore();
+}
+
+// ============================================================
+// DRAWING – Scene Edge Arrows
+// ============================================================
+function drawSceneArrows(t) {
+    const w = vw(), gy = getGroundY();
+    const pulse = 0.6 + Math.sin(t * 0.004) * 0.4;
+
+    if (currentScene === 0) {
+        // Right arrow
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.fillStyle = '#FFD700';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'center';
+        const ax = w - 30;
+        const ay = gy - 40;
+        // Arrow bg
+        ctx.fillStyle = 'rgba(255,215,0,0.3)';
+        ctx.beginPath();
+        ctx.arc(ax, ay, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFF';
+        ctx.font = '28px serif';
+        ctx.fillText('➡️', ax, ay + 8);
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#FFD700';
+        ctx.fillText('うみべへ', ax, ay + 32);
+        ctx.restore();
+    }
+    if (currentScene === 1) {
+        // Left arrow
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        const ax = 30;
+        const ay = gy - 40;
+        ctx.fillStyle = 'rgba(255,215,0,0.3)';
+        ctx.beginPath();
+        ctx.arc(ax, ay, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFF';
+        ctx.font = '28px serif';
+        ctx.fillText('⬅️', ax, ay + 8);
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#FFD700';
+        ctx.fillText('たにへ', ax, ay + 32);
+        ctx.restore();
+    }
+}
+
+// ============================================================
+// INPUT
+// ============================================================
+const keys = {};
+let moveDir = { x: 0, y: 0 };
+let dpadActive = null;
+
+document.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    if (e.key === ' ' || e.key === 'Enter') doAction();
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+// D-Pad
+document.querySelectorAll('.dpad-btn').forEach(btn => {
+    const dir = btn.dataset.dir;
+
+    const start = () => {
+        dpadActive = dir;
+        btn.classList.add('pressed');
+        if (dir === 'action') doAction();
+    };
+    const end = () => {
+        if (dpadActive === dir) dpadActive = null;
+        btn.classList.remove('pressed');
+    };
+
+    btn.addEventListener('mousedown', e => { e.preventDefault(); start(); });
+    btn.addEventListener('mouseup', e => { e.preventDefault(); end(); });
+    btn.addEventListener('mouseleave', e => { end(); });
+    btn.addEventListener('touchstart', e => { e.preventDefault(); start(); });
+    btn.addEventListener('touchend', e => { e.preventDefault(); end(); });
+    btn.addEventListener('touchcancel', e => { end(); });
+});
+
+// Tap to move on canvas
+canvas.addEventListener('click', e => {
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    // Simple: set moomin target
+    const dx = clickX - moomin.x;
+    if (Math.abs(dx) > 20) {
+        moomin.dir = dx > 0 ? 1 : -1;
+    }
+});
+
+// ============================================================
+// GAME LOGIC
+// ============================================================
+const SPEED = 3.5;
+
+function updateMoomin() {
+    let dx = 0, dy = 0;
+    if (keys['ArrowLeft'] || keys['a'] || dpadActive === 'left') dx = -1;
+    if (keys['ArrowRight'] || keys['d'] || dpadActive === 'right') dx = 1;
+    if (keys['ArrowUp'] || keys['w'] || dpadActive === 'up') dy = -1;
+    if (keys['ArrowDown'] || keys['s'] || dpadActive === 'down') dy = 1;
+
+    if (dx !== 0 || dy !== 0) {
+        const len = Math.sqrt(dx*dx + dy*dy);
+        moomin.vx = (dx / len) * SPEED;
+        moomin.vy = (dy / len) * SPEED;
+        if (dx !== 0) moomin.dir = dx > 0 ? 1 : -1;
+        sfxStep();
+    } else {
+        moomin.vx *= 0.8;
+        moomin.vy *= 0.8;
+        if (Math.abs(moomin.vx) < 0.1) moomin.vx = 0;
+        if (Math.abs(moomin.vy) < 0.1) moomin.vy = 0;
+    }
+
+    moomin.x += moomin.vx;
+    moomin.y += moomin.vy;
+
+    // Boundaries
+    const w = vw();
+    const maxY = (vh() - getGroundY()) * 0.6;
+    moomin.y = Math.max(-maxY + 10, Math.min(moomin.y, maxY - 10));
+
+    // Scene transitions
+    if (moomin.x > w - 15 && currentScene === 0) {
+        currentScene = 1;
+        moomin.x = 40;
+        updateSceneDots();
+        sfxCollect();
+    } else if (moomin.x < 15 && currentScene === 1) {
+        currentScene = 0;
+        moomin.x = w - 40;
+        updateSceneDots();
+        sfxCollect();
+    }
+
+    moomin.x = Math.max(25, Math.min(moomin.x, w - 25));
+}
+
+function updateSceneDots() {
+    document.getElementById('dot0').classList.toggle('active', currentScene === 0);
+    document.getElementById('dot1').classList.toggle('active', currentScene === 1);
+    document.getElementById('areaLabel').textContent = currentScene === 0 ? 'ムーミン谷' : 'うみべ';
+}
+
+// Proximity & action
+let nearbyTarget = null;
+
+function checkProximity() {
+    nearbyTarget = null;
+    const w = vw();
+    const RANGE = 70;
+
+    // Check friends
+    for (const f of friends) {
+        if (f.scene !== currentScene || friendsFound.has(f.id)) continue;
+        const fx = f.x * w;
+        const dist = Math.abs(moomin.x - fx);
+        if (dist < RANGE) {
+            nearbyTarget = { type: 'friend', data: f };
+            break;
+        }
+    }
+
+    // Check items
+    if (!nearbyTarget) {
+        for (const item of items) {
+            if (item.scene !== currentScene || itemsCollected.has(item.id)) continue;
+            const ix = item.x * w;
+            const dist = Math.abs(moomin.x - ix);
+            if (dist < RANGE) {
+                nearbyTarget = { type: 'item', data: item };
+                break;
+            }
+        }
+    }
+
+    // Update action button
+    const actionIcon = document.getElementById('actionIcon');
+    const actionLabel = document.getElementById('actionLabel');
+    const actionHint = document.getElementById('actionHint');
+    const actionBtn = document.getElementById('actionBtn');
+
+    if (nearbyTarget) {
+        if (nearbyTarget.type === 'friend') {
+            actionIcon.textContent = '💬';
+            actionLabel.textContent = 'はなす';
+            actionHint.textContent = `${nearbyTarget.data.name}がちかくにいるよ！`;
+        } else {
+            actionIcon.textContent = '✋';
+            actionLabel.textContent = 'ひろう';
+            actionHint.textContent = `${nearbyTarget.data.name}をみつけた！`;
+        }
+        actionBtn.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+        actionBtn.style.animation = 'none';
+        actionBtn.style.boxShadow = '0 4px 16px rgba(255,165,0,0.6), 0 0 20px rgba(255,215,0,0.4)';
+    } else {
+        actionIcon.textContent = '🔍';
+        actionLabel.textContent = 'しらべる';
+        actionHint.textContent = '';
+        actionBtn.style.background = 'linear-gradient(135deg, #FF6B9D, #C06C84)';
+        actionBtn.style.boxShadow = '0 4px 16px rgba(255,107,157,0.5)';
+    }
+}
+
+function doAction() {
+    if (!nearbyTarget) return;
+
+    if (nearbyTarget.type === 'friend') {
+        const f = nearbyTarget.data;
+        friendsFound.add(f.id);
+        sfxFriend();
+        showDialog(f.emoji, `${f.name}にあえた！`, f.msg);
+        createParticles(moomin.x, getGroundY() - 50);
+    } else {
+        const item = nearbyTarget.data;
+        itemsCollected.add(item.id);
+        sfxCollect();
+        showDialog(item.emoji, `${item.name}をゲット！`, 'アイテムをてにいれたよ！');
+        createParticles(moomin.x, getGroundY() - 30);
+    }
+
+    updateMissionUI();
+    nearbyTarget = null;
+
+    // Check victory
+    if (friendsFound.size >= 6 && itemsCollected.size >= 8) {
+        setTimeout(() => {
+            sfxVictory();
+            showDialog('🎉', 'ぼうけんかんりょう！',
+                'すべてのなかまにあえて、アイテムもぜんぶあつめたよ！\nムーミン谷はよろこびでいっぱい！ 💕',
+                'もういちど', () => location.reload());
+        }, 1200);
+    }
+}
+
+// ============================================================
+// DIALOG
+// ============================================================
+function showDialog(emoji, title, text, btnText, btnAction) {
+    document.getElementById('dialogEmoji').textContent = emoji;
+    document.getElementById('dialogTitle').textContent = title;
+    document.getElementById('dialogText').textContent = text;
+    const btn = document.getElementById('dialogBtn');
+    btn.textContent = btnText || 'つぎへ';
+    btn.onclick = btnAction || closeDialog;
+    document.getElementById('dialogOverlay').classList.add('show');
+}
+
+function closeDialog() {
+    document.getElementById('dialogOverlay').classList.remove('show');
+}
+
+// ============================================================
+// PARTICLES
+// ============================================================
+const particles = [];
+
+function createParticles(x, y) {
+    const emojis = ['✨','⭐','💫','🌟','❤️'];
+    for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI * 2 / 12) * i;
+        const speed = 1.5 + Math.random() * 2;
+        particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 2,
+            life: 1,
+            emoji: emojis[Math.floor(Math.random() * emojis.length)],
+            size: 14 + Math.random() * 10,
         });
+    }
+}
 
-        // Initialize Moomin position
-        function initMoomin() {
-            moomin.style.left = '100px';
-            moomin.style.bottom = '200px';
-            moominPosition = { x: 100, y: 200 };
-        }
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05;
+        p.life -= 0.02;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+}
 
-        // Move Moomin
-        function moveMoomin(x, y) {
-            const bounds = moomin.parentElement.getBoundingClientRect();
-            const maxX = bounds.width / 2 - 90;
-            const maxY = bounds.height - 200;
-            
-            const newX = Math.max(50, Math.min(x, maxX));
-            const newY = Math.max(100, Math.min(y, maxY));
-            
-            moomin.style.left = newX + 'px';
-            moomin.style.bottom = newY + 'px';
-            moominPosition = { x: newX, y: newY };
-            
-            playSound(440, 0.03, 'triangle');
-            checkProximity();
-        }
+function drawParticles() {
+    for (const p of particles) {
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.font = `${p.size}px serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(p.emoji, p.x, p.y);
+        ctx.restore();
+    }
+}
 
-        // Click to move
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.message-bubble, .control-btn, .nav-hint')) return;
-            
-            const rect = moomin.parentElement.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = rect.bottom - e.clientY;
-            
-            // Adjust for current scene
-            const sceneOffset = currentScene === 1 ? 0 : rect.width / 2;
-            const adjustedX = clickX - sceneOffset;
-            
-            if (adjustedX >= 0 && adjustedX <= rect.width / 2) {
-                moveMoomin(adjustedX, clickY);
-            }
-        });
+// ============================================================
+// UTILITY
+// ============================================================
+function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
 
-        // Check proximity to interactables
-        function checkProximity() {
-            const moominRect = moomin.getBoundingClientRect();
-            const moominCenterX = moominRect.left + moominRect.width / 2;
-            const moominCenterY = moominRect.top + moominRect.height / 2;
-            
-            // Check characters
-            document.querySelectorAll('.character').forEach(char => {
-                const friendId = char.dataset.friend;
-                if (friendsFound.has(friendId)) return;
-                
-                const charRect = char.getBoundingClientRect();
-                const charCenterX = charRect.left + charRect.width / 2;
-                const charCenterY = charRect.top + charRect.height / 2;
-                
-                const distance = Math.sqrt(
-                    Math.pow(moominCenterX - charCenterX, 2) +
-                    Math.pow(moominCenterY - charCenterY, 2)
-                );
-                
-                if (distance < 100) {
-                    meetFriend(friendId, char);
-                }
-            });
-            
-            // Check items
-            document.querySelectorAll('.item').forEach(item => {
-                const itemId = item.dataset.item;
-                if (itemsCollected.has(itemId)) return;
-                
-                const itemRect = item.getBoundingClientRect();
-                const itemCenterX = itemRect.left + itemRect.width / 2;
-                const itemCenterY = itemRect.top + itemRect.height / 2;
-                
-                const distance = Math.sqrt(
-                    Math.pow(moominCenterX - itemCenterX, 2) +
-                    Math.pow(moominCenterY - itemCenterY, 2)
-                );
-                
-                if (distance < 80) {
-                    collectItem(itemId, item);
-                }
-            });
-            
-            // Check Moominhouse
-            const house = document.querySelector('[data-interaction="house"]');
-            if (house) {
-                const houseRect = house.getBoundingClientRect();
-                const houseCenterX = houseRect.left + houseRect.width / 2;
-                const houseCenterY = houseRect.top + houseRect.height / 2;
-                
-                const distance = Math.sqrt(
-                    Math.pow(moominCenterX - houseCenterX, 2) +
-                    Math.pow(moominCenterY - houseCenterY, 2)
-                );
-                
-                if (distance < 120) {
-                    visitHouse();
-                }
-            }
-        }
+// ============================================================
+// MAIN LOOP
+// ============================================================
+let lastTime = 0;
 
-        // Friend interactions
-        const friendMessages = {
-            'snorkmaiden': {
-                icon: '🎀',
-                title: 'Hello Snorkmaiden!',
-                text: 'Snorkmaiden smiles warmly. "What a beautiful day for an adventure!" she says.'
-            },
-            'snufkin': {
-                icon: '🎩',
-                title: 'Snufkin the Wanderer',
-                text: 'Snufkin tips his hat. "The best journeys are the ones with good friends," he says thoughtfully.'
-            },
-            'little-my': {
-                icon: '😈',
-                title: 'Little My!',
-                text: 'Little My giggles mischievously. "Let\'s find something fun to do!" she exclaims.'
-            },
-            'sniff': {
-                icon: '🐾',
-                title: 'Sniff appears!',
-                text: 'Sniff is excited! "Have you found any treasures? I love collecting things!" he says.'
-            },
-            'moominpappa': {
-                icon: '📖',
-                title: 'Moominpappa',
-                text: 'Moominpappa looks up from his memoirs. "Ah, adventures! They make the best stories," he says.'
-            },
-            'moominmamma': {
-                icon: '👜',
-                title: 'Moominmamma',
-                text: 'Moominmamma gives you a warm hug. "Would you like some pancakes, dear?" she asks lovingly.'
-            }
-        };
+function gameLoop(timestamp) {
+    if (!gameStarted) { requestAnimationFrame(gameLoop); return; }
 
-        function meetFriend(friendId, element) {
-            friendsFound.add(friendId);
-            element.remove();
-            
-            // Update friend panel
-            const friendIcon = document.querySelector(`[data-friend="${friendId}"]`);
-            if (friendIcon) {
-                friendIcon.classList.add('collected');
-            }
-            
-            friendCount.textContent = friendsFound.size;
-            
-            // Show message
-            const msg = friendMessages[friendId];
-            showMessage(msg.icon, msg.title, msg.text);
-            
-            playHappySound();
-            createParticles(element.getBoundingClientRect(), '✨💫⭐');
-            
-            // Check if all friends found
-            if (friendsFound.size === 6 && itemsCollected.size === 8) {
-                setTimeout(() => showVictory(), 1500);
-            }
-        }
+    const w = vw(), h = vh();
+    ctx.clearRect(0, 0, w, h);
 
-        // Item interactions
-        const itemMessages = {
-            'coffee': 'A warm cup of coffee! ☕ Perfect for a cozy moment.',
-            'pancake': 'Delicious pancakes! 🥞 Moominmamma makes the best!',
-            'jam': 'Sweet strawberry jam! 🍓 Goes perfectly with pancakes.',
-            'book': 'An adventure book! 📚 Full of exciting stories.',
-            'seashell': 'A beautiful seashell! 🐚 A treasure from the beach.',
-            'fish': 'A fresh fish! 🐟 Dinner will be wonderful tonight.',
-            'flower-crown': 'A lovely flower crown! 💐 Snorkmaiden would love this.',
-            'hat': 'A mysterious hat! 🎩 Perhaps it belongs to someone?'
-        };
+    // Draw world
+    drawSky(timestamp);
+    drawMountains();
+    drawGround(currentScene, timestamp);
 
-        function collectItem(itemId, element) {
-            itemsCollected.add(itemId);
-            element.remove();
-            
-            itemCount.textContent = itemsCollected.size;
-            
-            showMessage('🎁', 'Found an item!', itemMessages[itemId]);
-            
-            playCollectSound();
-            createParticles(element.getBoundingClientRect(), '✨🌟💫⭐');
-            
-            // Check if everything collected
-            if (friendsFound.size === 6 && itemsCollected.size === 8) {
-                setTimeout(() => showVictory(), 1500);
-            }
-        }
+    // Draw items (behind Moomin)
+    items.filter(i => i.scene === currentScene).forEach(i => drawItem(i, timestamp));
 
-        // House interaction
-        let houseVisited = false;
-        function visitHouse() {
-            if (houseVisited) return;
-            houseVisited = true;
-            
-            showMessage(
-                '🏠',
-                'Moominhouse',
-                'Welcome home! The Moominhouse is warm and cozy. Maybe your friends are waiting outside?'
-            );
-            
-            playHappySound();
-        }
+    // Draw NPCs
+    friends.filter(f => f.scene === currentScene).forEach(f => drawNPC(f, timestamp));
 
-        // Move between scenes
-        function moveToScene(sceneNum) {
-            currentScene = sceneNum;
-            const offset = sceneNum === 1 ? 0 : -50;
-            gameScene.style.transform = `translateX(${offset}%)`;
-            
-            // Reset Moomin position for new scene
-            if (sceneNum === 2) {
-                moomin.style.left = '100px';
-                moomin.style.bottom = '200px';
-            } else {
-                moomin.style.left = '100px';
-                moomin.style.bottom = '200px';
-            }
-            
-            playSound(523.25, 0.1);
-        }
+    // Draw Moomin
+    updateMoomin();
+    drawMoomin(timestamp);
 
-        // Message system
-        function showMessage(icon, title, text) {
-            messageIcon.textContent = icon;
-            messageTitle.textContent = title;
-            messageText.textContent = text;
-            messageBubble.classList.add('show');
-        }
+    // Scene arrows
+    drawSceneArrows(timestamp);
 
-        function closeMessage() {
-            messageBubble.classList.remove('show');
-        }
+    // Particles
+    updateParticles();
+    drawParticles();
 
-        // Particle effects
-        function createParticles(rect, emojis) {
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const emojiArray = emojis.split('');
-            
-            for (let i = 0; i < 15; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.textContent = emojiArray[Math.floor(Math.random() * emojiArray.length)];
-                particle.style.left = centerX + 'px';
-                particle.style.top = centerY + 'px';
-                particle.style.fontSize = (Math.random() * 20 + 20) + 'px';
-                
-                const angle = (Math.PI * 2 * i) / 15;
-                const distance = Math.random() * 80 + 40;
-                const tx = Math.cos(angle) * distance;
-                const ty = Math.sin(angle) * distance;
-                
-                particle.style.setProperty('--tx', tx + 'px');
-                particle.style.setProperty('--ty', ty + 'px');
-                
-                document.body.appendChild(particle);
-                
-                setTimeout(() => particle.remove(), 1500);
-            }
-        }
+    // Proximity check
+    checkProximity();
 
-        // Victory
-        function showVictory() {
-            showMessage(
-                '🎉',
-                'What a Wonderful Day!',
-                'You met all your friends and found all the treasures! Moominvalley is full of joy and friendship. Thank you for playing! 💕'
-            );
-            
-            playVictorySound();
-            
-            // Change button to restart
-            document.getElementById('messageButton').textContent = 'Play Again';
-            document.getElementById('messageButton').onclick = () => location.reload();
-        }
+    requestAnimationFrame(gameLoop);
+}
 
-        // Initialize game
-        function initGame() {
-            initMoomin();
-            
-            // Show welcome message
-            setTimeout(() => {
-                showMessage(
-                    '🌸',
-                    'Welcome to Moominvalley!',
-                    'Help Moomin explore the valley! Click anywhere to move, meet friends, and collect items. Visit both areas to find everyone! 🏔️'
-                );
-            }, 500);
-        }
+// ============================================================
+// START
+// ============================================================
+function startGame() {
+    const tut = document.getElementById('tutorial');
+    tut.classList.add('fade-out');
+    setTimeout(() => tut.style.display = 'none', 500);
+    gameStarted = true;
+    moomin.x = vw() * 0.3;
+    moomin.y = 0;
+    updateMissionUI();
+    // Resume audio context
+    try { getAudio().resume(); } catch(e) {}
+}
 
-        // Start game
-        window.addEventListener('load', initGame);
-    </script>
+updateMissionUI();
+requestAnimationFrame(gameLoop);
+</script>
 </body>
 </html>

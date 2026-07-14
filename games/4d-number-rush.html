@@ -530,10 +530,387 @@
             </div>
         </div>
         <button class="start-btn" onclick="startGame()">🎮 Start Adventure!</button>
+        <p style="color:rgba(255,255,255,0.6); font-size:0.9rem; margin-top:14px;">Press <kbd style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:5px;">M</kbd> anytime to mute/unmute 🔊</p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // ════════════════════════════════════════════════════════════
+        //  🔊  SOUND ENGINE  – Web Audio API, zero external files
+        // ════════════════════════════════════════════════════════════
+        const SFX = (() => {
+            let ctx;           // AudioContext (lazy – needs user gesture)
+            let masterGain;    // overall volume
+            let bgmGain;       // background music volume
+            let sfxGain;       // effects volume
+            let bgmPlaying = false;
+            let bgmOscs = [];  // active BGM oscillators
+            let bgmLFO = null;
+            let muted = false;
+
+            function ensure() {
+                if (ctx) return;
+                ctx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = ctx.createGain();
+                masterGain.gain.value = 0.6;
+                masterGain.connect(ctx.destination);
+                bgmGain = ctx.createGain();
+                bgmGain.gain.value = 0.18;
+                bgmGain.connect(masterGain);
+                sfxGain = ctx.createGain();
+                sfxGain.gain.value = 0.55;
+                sfxGain.connect(masterGain);
+            }
+
+            function now() { return ctx.currentTime; }
+
+            // ── tiny helpers ──
+            function osc(type, freq, gainVal, start, end, dest) {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = type;
+                o.frequency.value = freq;
+                g.gain.setValueAtTime(0.0001, start);
+                g.gain.linearRampToValueAtTime(gainVal, start + 0.01);
+                g.gain.exponentialRampToValueAtTime(0.0001, end);
+                o.connect(g).connect(dest || sfxGain);
+                o.start(start);
+                o.stop(end + 0.05);
+                return o;
+            }
+
+            function noise(duration, dest, vol) {
+                const sr = ctx.sampleRate;
+                const len = sr * duration;
+                const buf = ctx.createBuffer(1, len, sr);
+                const d = buf.getChannelData(0);
+                for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+                const src = ctx.createBufferSource();
+                src.buffer = buf;
+                const g = ctx.createGain();
+                g.gain.setValueAtTime(vol || 0.15, now());
+                g.gain.exponentialRampToValueAtTime(0.0001, now() + duration);
+                // bandpass for texture
+                const bp = ctx.createBiquadFilter();
+                bp.type = 'bandpass';
+                bp.frequency.value = 2000 + Math.random() * 3000;
+                bp.Q.value = 1.5;
+                src.connect(bp).connect(g).connect(dest || sfxGain);
+                src.start(now());
+                src.stop(now() + duration + 0.05);
+            }
+
+            // ── Effect: bubble pop ──
+            function pop(pitch) {
+                ensure();
+                const t = now();
+                const base = (pitch || 1) * (600 + Math.random() * 400);
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'sine';
+                o.frequency.setValueAtTime(base, t);
+                o.frequency.exponentialRampToValueAtTime(base * 0.25, t + 0.15);
+                g.gain.setValueAtTime(0.35, t);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+                o.connect(g).connect(sfxGain);
+                o.start(t); o.stop(t + 0.2);
+                // crackle
+                noise(0.08, sfxGain, 0.12);
+            }
+
+            // ── Effect: key type ──
+            function keyType() {
+                ensure();
+                const t = now();
+                osc('square', 1800 + Math.random() * 600, 0.06, t, t + 0.03);
+            }
+
+            // ── Effect: match success (ascending chime) ──
+            function matchSuccess(comboLevel) {
+                ensure();
+                const t = now();
+                const base = 523.25; // C5
+                const notes = [1, 5/4, 3/2]; // C E G
+                notes.forEach((r, i) => {
+                    osc('sine',    base * r * (1 + comboLevel * 0.05), 0.22, t + i * 0.07, t + i * 0.07 + 0.25);
+                    osc('triangle',base * r * 2 * (1 + comboLevel * 0.05), 0.08, t + i * 0.07, t + i * 0.07 + 0.18);
+                });
+            }
+
+            // ── Effect: combo milestone (fanfare) ──
+            function comboFanfare(combo) {
+                ensure();
+                const t = now();
+                const base = 440;
+                // triumphant ascending arpeggio
+                const intervals = combo >= 10 ? [1, 5/4, 3/2, 2, 5/2] : [1, 5/4, 3/2, 2];
+                intervals.forEach((r, i) => {
+                    osc('sawtooth', base * r, 0.12, t + i * 0.06, t + i * 0.06 + 0.3);
+                    osc('sine',     base * r, 0.18, t + i * 0.06, t + i * 0.06 + 0.35);
+                });
+                // sparkle
+                for (let i = 0; i < 4; i++) {
+                    osc('sine', 2000 + Math.random() * 3000, 0.05, t + Math.random() * 0.3, t + 0.15 + Math.random() * 0.2);
+                }
+            }
+
+            // ── Effect: power-up ──
+            function powerUp() {
+                ensure();
+                const t = now();
+                // rising sweep
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'sawtooth';
+                o.frequency.setValueAtTime(200, t);
+                o.frequency.exponentialRampToValueAtTime(1600, t + 0.4);
+                g.gain.setValueAtTime(0.15, t);
+                g.gain.linearRampToValueAtTime(0.2, t + 0.15);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+                o.connect(g).connect(sfxGain);
+                o.start(t); o.stop(t + 0.55);
+                // shimmer
+                for (let i = 0; i < 6; i++) {
+                    osc('sine', 1200 + i * 300, 0.06, t + 0.1 + i * 0.04, t + 0.3 + i * 0.04);
+                }
+            }
+
+            // ── Effect: random pop (lower, duller) ──
+            function randomPop() {
+                ensure();
+                pop(0.6);
+            }
+
+            // ── Effect: game start jingle ──
+            function gameStart() {
+                ensure();
+                const t = now();
+                const melody = [
+                    [523.25, 0],     // C5
+                    [659.25, 0.12],  // E5
+                    [783.99, 0.24],  // G5
+                    [1046.5, 0.38],  // C6
+                ];
+                melody.forEach(([freq, off]) => {
+                    osc('sine',     freq, 0.25, t + off, t + off + 0.28);
+                    osc('triangle', freq, 0.12, t + off, t + off + 0.32);
+                });
+                // shimmer sweep
+                const sw = ctx.createOscillator();
+                const sg = ctx.createGain();
+                sw.type = 'sine';
+                sw.frequency.setValueAtTime(800, t + 0.3);
+                sw.frequency.exponentialRampToValueAtTime(4000, t + 0.8);
+                sg.gain.setValueAtTime(0.08, t + 0.3);
+                sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+                sw.connect(sg).connect(sfxGain);
+                sw.start(t + 0.3); sw.stop(t + 1.0);
+            }
+
+            // ── Effect: game over ──
+            function gameOver() {
+                ensure();
+                const t = now();
+                // descending
+                const notes = [523.25, 440, 349.23, 261.63];
+                notes.forEach((f, i) => {
+                    osc('sine',     f, 0.2, t + i * 0.2, t + i * 0.2 + 0.35);
+                    osc('triangle', f * 0.5, 0.1, t + i * 0.2, t + i * 0.2 + 0.4);
+                });
+            }
+
+            // ── Effect: spawn bubble (subtle blip) ──
+            function spawn() {
+                ensure();
+                const t = now();
+                osc('sine', 350 + Math.random() * 150, 0.04, t, t + 0.06);
+            }
+
+            // ── Effect: streak fire ──
+            function streakFire() {
+                ensure();
+                const t = now();
+                noise(0.25, sfxGain, 0.08);
+                osc('sawtooth', 150, 0.1, t, t + 0.2);
+                osc('sine', 800, 0.06, t + 0.05, t + 0.15);
+            }
+
+            // ════════════════════════════════════════════════════
+            //  🎵  BACKGROUND MUSIC – chiptune beat engine
+            // ════════════════════════════════════════════════════
+            const BPM = 140;
+            const BEAT = 60 / BPM;       // duration of one beat
+            const BAR  = BEAT * 4;       // duration of one bar
+            let bgmTimer = null;
+            let bgmNodes = [];           // everything to stop on cleanup
+
+            // Note helper: MIDI-ish number → freq
+            function mtof(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+            // Schedule a single note
+            function schedNote(freq, start, dur, type, vol, dest) {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = type;
+                o.frequency.value = freq;
+                o.detune.value = (Math.random() - 0.5) * 6;
+                const att = Math.min(0.01, dur * 0.1);
+                g.gain.setValueAtTime(0.0001, start);
+                g.gain.linearRampToValueAtTime(vol, start + att);
+                g.gain.setValueAtTime(vol, start + dur * 0.6);
+                g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+                o.connect(g).connect(dest);
+                o.start(start);
+                o.stop(start + dur + 0.05);
+                bgmNodes.push(o);
+            }
+
+            // Schedule a drum hit (noise-based)
+            function schedDrum(start, isKick) {
+                const sr = ctx.sampleRate;
+                const len = sr * 0.12;
+                const buf = ctx.createBuffer(1, len, sr);
+                const d = buf.getChannelData(0);
+                for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+                const src = ctx.createBufferSource();
+                src.buffer = buf;
+                const g = ctx.createGain();
+                g.gain.setValueAtTime(isKick ? 0.22 : 0.12, start);
+                g.gain.exponentialRampToValueAtTime(0.0001, start + (isKick ? 0.12 : 0.06));
+                const flt = ctx.createBiquadFilter();
+                flt.type = isKick ? 'lowpass' : 'highpass';
+                flt.frequency.value = isKick ? 200 : 6000;
+                src.connect(flt).connect(g).connect(bgmGain);
+                src.start(start);
+                src.stop(start + 0.15);
+                bgmNodes.push(src);
+                // For kick: add pitched thud
+                if (isKick) {
+                    const ko = ctx.createOscillator();
+                    const kg = ctx.createGain();
+                    ko.type = 'sine';
+                    ko.frequency.setValueAtTime(150, start);
+                    ko.frequency.exponentialRampToValueAtTime(40, start + 0.1);
+                    kg.gain.setValueAtTime(0.25, start);
+                    kg.gain.exponentialRampToValueAtTime(0.0001, start + 0.12);
+                    ko.connect(kg).connect(bgmGain);
+                    ko.start(start);
+                    ko.stop(start + 0.15);
+                    bgmNodes.push(ko);
+                }
+            }
+
+            // Theme presets for the beat engine
+            const bgmPresets = {
+                // root = MIDI note, chords = arrays of MIDI offsets from root per bar
+                space:  { root: 48, scale: [0,2,4,5,7,9,11], chords: [[0,4,7],[5,9,12],[7,11,14],[3,7,10]], wave: 'square',   bassWave: 'sawtooth', filterFreq: 1200, energy: 1.0  },
+                ocean:  { root: 50, scale: [0,2,3,5,7,8,10], chords: [[0,3,7],[5,8,12],[3,7,10],[7,10,14]], wave: 'triangle', bassWave: 'sine',     filterFreq: 900,  energy: 0.8  },
+                neon:   { root: 52, scale: [0,2,4,7,9],      chords: [[0,4,7],[4,7,11],[7,11,14],[2,7,11]], wave: 'sawtooth', bassWave: 'square',   filterFreq: 1800, energy: 1.2  },
+                sunset: { root: 50, scale: [0,2,4,5,7,9,11], chords: [[0,4,7],[5,9,12],[9,12,16],[4,7,11]],wave: 'triangle', bassWave: 'triangle', filterFreq: 1000, energy: 0.9  },
+                matrix: { root: 45, scale: [0,2,3,5,7,8,11], chords: [[0,3,7],[3,7,10],[5,8,12],[0,5,7]],  wave: 'square',   bassWave: 'sawtooth', filterFreq: 700,  energy: 1.1  },
+            };
+
+            function startBGM(themeName) {
+                ensure();
+                stopBGM();
+                const P = bgmPresets[themeName] || bgmPresets.space;
+                let barIndex = 0;
+
+                // Master filter for all BGM
+                const lp = ctx.createBiquadFilter();
+                lp.type = 'lowpass';
+                lp.frequency.value = P.filterFreq;
+                lp.Q.value = 2;
+                lp.connect(bgmGain);
+
+                function scheduleBar() {
+                    const t0 = ctx.currentTime + 0.05;
+                    const chord = P.chords[barIndex % P.chords.length];
+                    barIndex++;
+
+                    // ── Drums: Kick on 1,3 · Snare on 2,4 · Hi-hat on every 8th ──
+                    for (let i = 0; i < 8; i++) {
+                        const bt = t0 + i * (BEAT / 2);
+                        if (i % 4 === 0) schedDrum(bt, true);          // kick
+                        if (i % 4 === 2) schedDrum(bt, false);         // snare
+                        // hi-hat on every 8th
+                        const hBuf = ctx.createBuffer(1, ctx.sampleRate * 0.03, ctx.sampleRate);
+                        const hD = hBuf.getChannelData(0);
+                        for (let j = 0; j < hD.length; j++) hD[j] = Math.random() * 2 - 1;
+                        const hSrc = ctx.createBufferSource();
+                        hSrc.buffer = hBuf;
+                        const hG = ctx.createGain();
+                        hG.gain.setValueAtTime(0.06 * P.energy, bt);
+                        hG.gain.exponentialRampToValueAtTime(0.0001, bt + 0.03);
+                        const hF = ctx.createBiquadFilter();
+                        hF.type = 'highpass'; hF.frequency.value = 8000;
+                        hSrc.connect(hF).connect(hG).connect(bgmGain);
+                        hSrc.start(bt); hSrc.stop(bt + 0.04);
+                        bgmNodes.push(hSrc);
+                    }
+
+                    // ── Bass line: root note rhythm ──
+                    const bassNotes = [0, 0, 7, 5]; // scale degrees pattern
+                    for (let i = 0; i < 4; i++) {
+                        const bn = P.root + P.scale[bassNotes[i] % P.scale.length] - 12;
+                        schedNote(mtof(bn), t0 + i * BEAT, BEAT * 0.8, P.bassWave, 0.13 * P.energy, lp);
+                    }
+
+                    // ── Chord stabs on beats 1 and 3 ──
+                    [0, 2].forEach(beatIdx => {
+                        chord.forEach(offset => {
+                            const n = P.root + offset;
+                            schedNote(mtof(n), t0 + beatIdx * BEAT, BEAT * 1.8, P.wave, 0.04 * P.energy, lp);
+                            // octave up shimmer
+                            schedNote(mtof(n + 12), t0 + beatIdx * BEAT, BEAT * 1.2, 'sine', 0.02 * P.energy, lp);
+                        });
+                    });
+
+                    // ── Melody arpeggio: 16th notes from chord+scale ──
+                    const arpNotes = [...chord];
+                    // extend with scale tones for variety
+                    arpNotes.push(chord[0] + 12, chord[1] + 12);
+                    for (let i = 0; i < 16; i++) {
+                        // skip some for rhythm feel
+                        if (i % 4 === 3 && Math.random() > 0.5) continue;
+                        if (Math.random() > 0.75) continue;
+                        const note = P.root + 12 + arpNotes[i % arpNotes.length];
+                        const sixteenth = BEAT / 4;
+                        schedNote(mtof(note), t0 + i * sixteenth, sixteenth * 0.7, 'square', 0.035 * P.energy, lp);
+                    }
+                }
+
+                // Schedule first bar immediately, then repeat
+                scheduleBar();
+                bgmTimer = setInterval(scheduleBar, BAR * 1000);
+                bgmPlaying = true;
+            }
+
+            function stopBGM() {
+                if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+                if (!ctx) return;
+                const t = ctx.currentTime;
+                bgmNodes.forEach(n => {
+                    try { n.stop(t + 0.05); } catch(e) {}
+                });
+                bgmNodes = [];
+                bgmPlaying = false;
+            }
+
+            // ── Toggle mute ──
+            function toggleMute() {
+                ensure();
+                muted = !muted;
+                masterGain.gain.linearRampToValueAtTime(muted ? 0 : 0.6, now() + 0.1);
+                return muted;
+            }
+
+            return { pop, keyType, matchSuccess, comboFanfare, powerUp,
+                     randomPop, gameStart, gameOver, spawn, streakFire,
+                     startBGM, stopBGM, toggleMute, ensure,
+                     get muted() { return muted; } };
+        })();
+
         // Themes configuration
         // Bubble color palettes for regular numbers
         const bubbleColorSets = [
@@ -557,7 +934,16 @@
                 particleColor: 0xffffff,
                 numberColor: '#ffffff',
                 userNumberGlow: ['#ffff00', '#ffaa00', '#ff69b4'],
-                userBubble: { bg: '#FFD700', border: '#FFA500', text: '#5A3800', shine: '#FFF8DC' }
+                userBubble: { bg: '#FFD700', border: '#FFA500', text: '#5A3800', shine: '#FFF8DC' },
+                // per-theme behaviour
+                balloonWobbleSpeed: 0.03,
+                balloonWobbleAmp: 0.015,
+                balloonSizeRange: [6, 10],     // min, max sprite scale
+                tunnelRotSpeed: 0.006,
+                starTwinkleSpeed: 0.05,
+                fogDensity: 0.015,
+                spawnSpread: { x: 35, y: 24 },
+                balloonMotion: 'float'          // float | zigzag | spiral | bounce | glitch
             },
             ocean: {
                 bgColor: 0x001133,
@@ -566,7 +952,15 @@
                 particleColor: 0x00ffff,
                 numberColor: '#00ffff',
                 userNumberGlow: ['#00ffff', '#0099ff', '#00ff99'],
-                userBubble: { bg: '#00E5FF', border: '#00B8D4', text: '#003D4D', shine: '#E0FFFF' }
+                userBubble: { bg: '#00E5FF', border: '#00B8D4', text: '#003D4D', shine: '#E0FFFF' },
+                balloonWobbleSpeed: 0.02,
+                balloonWobbleAmp: 0.025,
+                balloonSizeRange: [7, 11],
+                tunnelRotSpeed: 0.003,
+                starTwinkleSpeed: 0.03,
+                fogDensity: 0.012,
+                spawnSpread: { x: 38, y: 28 },
+                balloonMotion: 'zigzag'
             },
             neon: {
                 bgColor: 0x110033,
@@ -575,7 +969,15 @@
                 particleColor: 0xff00ff,
                 numberColor: '#ff00ff',
                 userNumberGlow: ['#ff00ff', '#ff0099', '#ffff00'],
-                userBubble: { bg: '#FF00FF', border: '#CC00CC', text: '#ffffff', shine: '#FFB3FF' }
+                userBubble: { bg: '#FF00FF', border: '#CC00CC', text: '#ffffff', shine: '#FFB3FF' },
+                balloonWobbleSpeed: 0.05,
+                balloonWobbleAmp: 0.01,
+                balloonSizeRange: [5, 9],
+                tunnelRotSpeed: 0.012,
+                starTwinkleSpeed: 0.08,
+                fogDensity: 0.018,
+                spawnSpread: { x: 32, y: 22 },
+                balloonMotion: 'glitch'
             },
             sunset: {
                 bgColor: 0x331100,
@@ -584,7 +986,15 @@
                 particleColor: 0xffaa00,
                 numberColor: '#ffaa00',
                 userNumberGlow: ['#ff6600', '#ff9900', '#ffcc00'],
-                userBubble: { bg: '#FF7043', border: '#E64A19', text: '#ffffff', shine: '#FFCCBC' }
+                userBubble: { bg: '#FF7043', border: '#E64A19', text: '#ffffff', shine: '#FFCCBC' },
+                balloonWobbleSpeed: 0.025,
+                balloonWobbleAmp: 0.02,
+                balloonSizeRange: [7, 12],
+                tunnelRotSpeed: 0.004,
+                starTwinkleSpeed: 0.04,
+                fogDensity: 0.013,
+                spawnSpread: { x: 40, y: 26 },
+                balloonMotion: 'spiral'
             },
             matrix: {
                 bgColor: 0x001100,
@@ -593,7 +1003,15 @@
                 particleColor: 0x00ff00,
                 numberColor: '#00ff00',
                 userNumberGlow: ['#00ff00', '#00aa00', '#00ff66'],
-                userBubble: { bg: '#00E676', border: '#00C853', text: '#003D1A', shine: '#B9F6CA' }
+                userBubble: { bg: '#00E676', border: '#00C853', text: '#003D1A', shine: '#B9F6CA' },
+                balloonWobbleSpeed: 0.04,
+                balloonWobbleAmp: 0.008,
+                balloonSizeRange: [5, 8],
+                tunnelRotSpeed: 0.01,
+                starTwinkleSpeed: 0.07,
+                fogDensity: 0.02,
+                spawnSpread: { x: 30, y: 20 },
+                balloonMotion: 'bounce'
             }
         };
 
@@ -688,6 +1106,7 @@
             
             // Update visuals
             scene.fog.color.setHex(currentTheme.fogColor);
+            scene.fog.density = currentTheme.fogDensity;
             renderer.setClearColor(currentTheme.bgColor);
             
             // Update tunnel colors
@@ -713,6 +1132,9 @@
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.theme === themeName);
             });
+
+            // Restart BGM with new theme if playing
+            if (gameState.isPlaying) SFX.startBGM(themeName);
         }
 
         // Get tunnel color based on theme
@@ -910,6 +1332,7 @@
             
             scene.add(sprite);
             flyingNumbers.push(sprite);
+            SFX.spawn();
         }
 
         // Create regular flying number (bubble style)
@@ -979,16 +1402,22 @@
             });
             const sprite = new THREE.Sprite(material);
             
+            const th = themes[gameState.theme];
+            const bSize = th.balloonSizeRange[0] + Math.random() * (th.balloonSizeRange[1] - th.balloonSizeRange[0]);
             sprite.position.set(
-                (Math.random() - 0.5) * 30,
-                (Math.random() - 0.5) * 20,
-                -100
+                (Math.random() - 0.5) * th.spawnSpread.x,
+                (Math.random() - 0.5) * th.spawnSpread.y,
+                -90 - Math.random() * 40
             );
-            sprite.scale.set(8, 8, 1);
+            sprite.scale.set(bSize, bSize, 1);
             sprite.userData.number = number;
-            sprite.userData.speed = gameState.baseSpeed * gameState.speed;
+            sprite.userData.speed = gameState.baseSpeed * gameState.speed * (0.7 + Math.random() * 0.6);
             sprite.userData.isUserTyped = false;
             sprite.userData.wobbleTime = Math.random() * Math.PI * 2;
+            sprite.userData.baseY = sprite.position.y;
+            sprite.userData.baseX = sprite.position.x;
+            sprite.userData.motionPhase = Math.random() * Math.PI * 2;
+            sprite.userData.bSize = bSize;
             
             scene.add(sprite);
             flyingNumbers.push(sprite);
@@ -1029,15 +1458,32 @@
             renderInput();
             
             updateUI();
+
+            // Sound: start jingle + BGM
+            SFX.gameStart();
+            SFX.startBGM(gameState.theme);
             
-            // Create initial numbers
-            for (let i = 0; i < 6; i++) {
-                setTimeout(() => createFlyingNumber(), i * 400);
+            // Create initial numbers – tons of balloons!
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => createFlyingNumber(), i * 150);
             }
             
-            // Spawn numbers periodically
-            const spawnRate = gameState.mode === 'zen' ? 4000 : 2500;
-            gameState.spawnInterval = setInterval(createFlyingNumber, spawnRate);
+            // Spawn numbers periodically – fast, in bursts of 1-3
+            const spawnRate = gameState.mode === 'zen' ? 1800 : 900;
+            gameState.spawnInterval = setInterval(() => {
+                createFlyingNumber();
+                // 60 % chance to spawn a second
+                if (Math.random() < 0.6) {
+                    setTimeout(createFlyingNumber, 100 + Math.random() * 200);
+                }
+                // 25 % chance to spawn a third
+                if (Math.random() < 0.25) {
+                    setTimeout(createFlyingNumber, 300 + Math.random() * 300);
+                }
+            }, spawnRate);
+
+            // ── Random bonus animations system ──
+            startRandomEvents();
         }
 
         // Timer for timed mode
@@ -1056,6 +1502,10 @@
             clearInterval(gameState.spawnInterval);
             if (gameState.timerInterval) clearInterval(gameState.timerInterval);
             
+            SFX.stopBGM();
+            SFX.gameOver();
+            stopRandomEvents();
+
             alert(`🎉 Game Over!\n\n🎯 Final Score: ${gameState.score}\n⭐ Correct: ${gameState.correctCount}\n💥 Max Combo: ${gameState.combo}`);
             
             // Return to start screen
@@ -1072,6 +1522,7 @@
             speedDisplay.textContent = gameState.speed.toFixed(1);
             
             if (gameState.streak >= 5) {
+                if (streakDisplay.style.display === 'none') SFX.streakFire();
                 streakDisplay.style.display = 'block';
                 streakCount.textContent = gameState.streak;
             } else {
@@ -1085,6 +1536,7 @@
                 let emoji = combo >= 10 ? '🔥🔥🔥' : combo >= 5 ? '🔥🔥' : '🔥';
                 comboDisplay.textContent = `${combo}x COMBO! ${emoji}`;
                 comboDisplay.classList.add('show');
+                SFX.comboFanfare(combo);
                 
                 setTimeout(() => {
                     comboDisplay.classList.remove('show');
@@ -1112,6 +1564,8 @@
             gameState.score -= 50;
             gameState.powerUps[type].active = true;
             gameState.powerUps[type].duration = 5000;
+
+            SFX.powerUp();
 
             switch (type) {
                 case 'slow':
@@ -1141,47 +1595,73 @@
             if (!gameState.isPlaying) return;
             
             const userValue = typedValue.trim();
-            if (userValue === '') return;
-            
-            let found = false;
-            for (let i = flyingNumbers.length - 1; i >= 0; i--) {
+
+            // Empty enter: pop a random non-user balloon
+            if (userValue === '') {
+                const candidates = flyingNumbers.filter(n => !n.userData.isUserTyped);
+                if (candidates.length === 0) return;
+
+                const target = candidates[Math.floor(Math.random() * candidates.length)];
+                const idx = flyingNumbers.indexOf(target);
+
+                gameState.score += 3;
+                gameState.combo = 0;
+                gameState.streak = 0;
+
+                SFX.randomPop();
+                flashInput('correct');
+                scene.remove(target);
+                flyingNumbers.splice(idx, 1);
+                createExplosion(target.position, target.userData.number);
+                updateUI();
+                return;
+            }
+
+            // Find the closest matching balloon (highest z = nearest to camera)
+            let closestIdx = -1;
+            let closestZ = -Infinity;
+
+            for (let i = 0; i < flyingNumbers.length; i++) {
                 const num = flyingNumbers[i];
-                if (num.userData.number.toString() === userValue) {
-                    found = true;
-                    gameState.combo++;
-                    gameState.correctCount++;
-                    gameState.streak++;
-                    
-                    let points = 10 * gameState.combo;
-                    if (gameState.powerUps.double.active) points *= 2;
-                    if (gameState.streak >= 10) points *= 1.5;
-                    
-                    gameState.score += Math.floor(points);
-                    
-                    flashInput('correct');
-                    
-                    scene.remove(num);
-                    flyingNumbers.splice(i, 1);
-                    
-                    createExplosion(num.position);
-                    
-                    setTimeout(() => {
-                        createFlyingNumberWithValue(userValue);
-                    }, 400);
-                    
-                    showCombo(gameState.combo);
-                    updateUI();
-                    
-                    setTimeout(() => {
-                        typedValue = '';
-                        renderInput();
-                    }, 250);
-                    
-                    break;
+                if (num.userData.number.toString() === userValue && num.position.z > closestZ) {
+                    closestIdx = i;
+                    closestZ = num.position.z;
                 }
             }
-            
-            if (!found && userValue.length >= 1) {
+
+            if (closestIdx !== -1) {
+                const num = flyingNumbers[closestIdx];
+                gameState.combo++;
+                gameState.correctCount++;
+                gameState.streak++;
+                
+                let points = 10 * gameState.combo;
+                if (gameState.powerUps.double.active) points *= 2;
+                if (gameState.streak >= 10) points *= 1.5;
+                
+                gameState.score += Math.floor(points);
+                
+                SFX.pop();
+                SFX.matchSuccess(gameState.combo);
+                flashInput('correct');
+                
+                scene.remove(num);
+                flyingNumbers.splice(closestIdx, 1);
+                
+                createExplosion(num.position, num.userData.number);
+                
+                setTimeout(() => {
+                    createFlyingNumberWithValue(userValue);
+                }, 400);
+                
+                showCombo(gameState.combo);
+                updateUI();
+                
+                setTimeout(() => {
+                    typedValue = '';
+                    renderInput();
+                }, 250);
+            } else if (userValue.length >= 1) {
                 const typed = parseInt(userValue);
                 if (!isNaN(typed)) {
                     createFlyingNumberWithValue(userValue);
@@ -1199,56 +1679,277 @@
             }
         }
 
-        // Create bubble-pop explosion effect
-        function createExplosion(position) {
-            const particleCount = 20;
-            const explosionParticles = [];
-            
-            // Mix of small colorful bubbles popping outward
-            for (let i = 0; i < particleCount; i++) {
-                const size = 0.15 + Math.random() * 0.25;
-                const geometry = new THREE.SphereGeometry(size, 12, 12);
-                const bubbleColor = bubbleColorSets[Math.floor(Math.random() * bubbleColorSets.length)];
-                const material = new THREE.MeshBasicMaterial({ 
-                    color: new THREE.Color(bubbleColor.bg),
-                    transparent: true,
-                    opacity: 0.9
-                });
-                const particle = new THREE.Mesh(geometry, material);
-                particle.position.copy(position);
-                
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 1.5 + Math.random() * 2;
-                const velocity = new THREE.Vector3(
-                    Math.cos(angle) * speed,
-                    Math.sin(angle) * speed,
-                    (Math.random() - 0.5) * 2
-                );
-                particle.userData.velocity = velocity;
-                particle.userData.life = 1;
-                
-                scene.add(particle);
-                explosionParticles.push(particle);
-            }
-            
-            let frame = 0;
-            const animateExplosion = () => {
-                frame++;
-                explosionParticles.forEach(p => {
-                    p.position.add(p.userData.velocity);
-                    p.userData.velocity.multiplyScalar(0.96);
-                    p.scale.multiplyScalar(0.96);
-                    p.material.opacity *= 0.97;
-                    p.userData.life -= 0.02;
-                });
-                
-                if (frame < 50) {
-                    requestAnimationFrame(animateExplosion);
+        // ── Camera shake helper ──
+        function shakeCamera(intensity, durationMs) {
+            const origX = camera.position.x;
+            const origY = camera.position.y;
+            let elapsed = 0;
+            const step = () => {
+                elapsed += 16;
+                if (elapsed < durationMs) {
+                    const decay = 1 - elapsed / durationMs;
+                    camera.position.x = origX + (Math.random() - 0.5) * intensity * decay;
+                    camera.position.y = origY + (Math.random() - 0.5) * intensity * decay;
+                    requestAnimationFrame(step);
                 } else {
-                    explosionParticles.forEach(p => scene.remove(p));
+                    camera.position.x = origX;
+                    camera.position.y = origY;
                 }
             };
-            animateExplosion();
+            step();
+        }
+
+        // ── Reusable star texture (4-point sparkle) ──
+        const _starCanvas = (() => {
+            const c = document.createElement('canvas');
+            c.width = 64; c.height = 64;
+            const ctx = c.getContext('2d');
+            const cx = 32, cy = 32;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            for (let j = 0; j < 8; j++) {
+                const a = (j / 8) * Math.PI * 2 - Math.PI / 2;
+                const r = j % 2 === 0 ? 30 : 7;
+                ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+            }
+            ctx.closePath();
+            ctx.fill();
+            // soft glow
+            ctx.globalAlpha = 0.4;
+            ctx.filter = 'blur(4px)';
+            ctx.fill();
+            return c;
+        })();
+        const _starTexture = new THREE.CanvasTexture(_starCanvas);
+
+        // ── Fancy explosion effect ──
+        function createExplosion(position, numberValue) {
+            const allParts = [];
+            const origin = position.clone();
+
+            // Camera shake
+            shakeCamera(0.35, 300);
+
+            // ── 1. Bright flash sphere ──
+            const flashGeo = new THREE.SphereGeometry(1, 16, 16);
+            const flashMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff, transparent: true, opacity: 1.0
+            });
+            const flash = new THREE.Mesh(flashGeo, flashMat);
+            flash.position.copy(origin);
+            flash.userData.type = 'flash';
+            scene.add(flash);
+            allParts.push(flash);
+
+            // ── 2. Shockwave ring ──
+            const ringGeo = new THREE.RingGeometry(0.3, 1.0, 48);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: 0xffd700, transparent: true, opacity: 0.9, side: THREE.DoubleSide
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(origin);
+            ring.lookAt(camera.position);
+            ring.userData.type = 'ring';
+            scene.add(ring);
+            allParts.push(ring);
+
+            // Second ring (white, slightly delayed feel via smaller start)
+            const ring2Mat = new THREE.MeshBasicMaterial({
+                color: 0xffffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide
+            });
+            const ring2 = new THREE.Mesh(ringGeo, ring2Mat);
+            ring2.position.copy(origin);
+            ring2.lookAt(camera.position);
+            ring2.userData.type = 'ring2';
+            scene.add(ring2);
+            allParts.push(ring2);
+
+            // ── 3. Colorful confetti with gravity ──
+            const confettiCount = 40;
+            for (let i = 0; i < confettiCount; i++) {
+                const w = 0.15 + Math.random() * 0.3;
+                const h = w * (0.4 + Math.random() * 0.8);
+                const geo = new THREE.PlaneGeometry(w, h);
+                const palette = bubbleColorSets[Math.floor(Math.random() * bubbleColorSets.length)];
+                const mat = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(palette.bg),
+                    transparent: true, opacity: 1.0, side: THREE.DoubleSide
+                });
+                const c = new THREE.Mesh(geo, mat);
+                c.position.copy(origin);
+
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const spd = 1.2 + Math.random() * 3.5;
+                c.userData.velocity = new THREE.Vector3(
+                    Math.sin(phi) * Math.cos(theta) * spd,
+                    Math.sin(phi) * Math.sin(theta) * spd + 2.0,
+                    Math.cos(phi) * spd * 0.4
+                );
+                c.userData.rotSpeed = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.4,
+                    (Math.random() - 0.5) * 0.4,
+                    (Math.random() - 0.5) * 0.4
+                );
+                c.userData.type = 'confetti';
+                scene.add(c);
+                allParts.push(c);
+            }
+
+            // ── 4. Sparkle stars ──
+            const sparkleCount = 14;
+            for (let i = 0; i < sparkleCount; i++) {
+                const mat = new THREE.SpriteMaterial({
+                    map: _starTexture, transparent: true, opacity: 0,
+                    color: new THREE.Color().setHSL(Math.random(), 1, 0.75)
+                });
+                const s = new THREE.Sprite(mat);
+                s.position.copy(origin);
+                const ang = Math.random() * Math.PI * 2;
+                const dist = 2 + Math.random() * 4;
+                s.userData.targetPos = new THREE.Vector3(
+                    origin.x + Math.cos(ang) * dist,
+                    origin.y + Math.sin(ang) * dist,
+                    origin.z + (Math.random() - 0.5) * 2
+                );
+                s.userData.delay = Math.floor(Math.random() * 8);
+                s.scale.set(0.6, 0.6, 1);
+                s.userData.type = 'sparkle';
+                scene.add(s);
+                allParts.push(s);
+            }
+
+            // ── 5. Number popup text ──
+            if (numberValue !== undefined) {
+                const pc = document.createElement('canvas');
+                pc.width = 320; pc.height = 160;
+                const pctx = pc.getContext('2d');
+                pctx.font = 'bold 90px "Comic Sans MS", "Arial Rounded MT Bold", sans-serif';
+                pctx.textAlign = 'center';
+                pctx.textBaseline = 'middle';
+                // Outline
+                pctx.strokeStyle = '#FF4500';
+                pctx.lineWidth = 8;
+                pctx.lineJoin = 'round';
+                const txt = String(numberValue);
+                pctx.strokeText(txt, 160, 80);
+                // Fill gradient gold
+                const tg = pctx.createLinearGradient(60, 20, 260, 140);
+                tg.addColorStop(0, '#FFD700');
+                tg.addColorStop(0.5, '#FFF8DC');
+                tg.addColorStop(1, '#FFA500');
+                pctx.fillStyle = tg;
+                pctx.fillText(txt, 160, 80);
+                // Inner shine
+                pctx.globalCompositeOperation = 'lighter';
+                pctx.globalAlpha = 0.3;
+                pctx.fillStyle = '#ffffff';
+                pctx.fillText(txt, 160, 78);
+
+                const pTex = new THREE.CanvasTexture(pc);
+                const pMat = new THREE.SpriteMaterial({ map: pTex, transparent: true, opacity: 0 });
+                const popup = new THREE.Sprite(pMat);
+                popup.position.set(origin.x, origin.y + 2, origin.z + 1);
+                popup.scale.set(8, 4, 1);
+                popup.userData.type = 'popup';
+                scene.add(popup);
+                allParts.push(popup);
+            }
+
+            // ── Animation loop ──
+            let frame = 0;
+            const GRAVITY = -0.07;
+            const TOTAL = 75;
+
+            const tick = () => {
+                frame++;
+                const t = frame / TOTAL;
+
+                for (const p of allParts) {
+                    switch (p.userData.type) {
+                        case 'flash': {
+                            const s = 1 + frame * 1.8;
+                            p.scale.set(s, s, s);
+                            p.material.opacity = Math.max(0, 1 - frame / 6);
+                            break;
+                        }
+                        case 'ring': {
+                            const s = 1 + frame * 0.7;
+                            p.scale.set(s, s, 1);
+                            p.material.opacity = Math.max(0, 0.9 - frame / 18);
+                            break;
+                        }
+                        case 'ring2': {
+                            const s = 1 + Math.max(0, frame - 3) * 0.55;
+                            p.scale.set(s, s, 1);
+                            p.material.opacity = Math.max(0, 0.6 - (frame - 3) / 22);
+                            break;
+                        }
+                        case 'confetti': {
+                            p.position.add(p.userData.velocity);
+                            p.userData.velocity.y += GRAVITY;
+                            p.userData.velocity.multiplyScalar(0.97);
+                            p.rotation.x += p.userData.rotSpeed.x;
+                            p.rotation.y += p.userData.rotSpeed.y;
+                            p.rotation.z += p.userData.rotSpeed.z;
+                            p.material.opacity = Math.max(0, 1 - t * 1.3);
+                            break;
+                        }
+                        case 'sparkle': {
+                            const d = p.userData.delay;
+                            if (frame > d) {
+                                const prog = Math.min(1, (frame - d) / 18);
+                                p.position.lerpVectors(origin, p.userData.targetPos, prog);
+                                const twk = Math.abs(Math.sin(frame * 0.6));
+                                const ss = (0.4 + twk * 0.8);
+                                p.scale.set(ss, ss, 1);
+                                // fade in then out
+                                p.material.opacity = prog < 0.4
+                                    ? prog / 0.4
+                                    : Math.max(0, 1 - (t - 0.25) * 2.2);
+                            }
+                            break;
+                        }
+                        case 'popup': {
+                            p.position.y += 0.14;
+                            // Bounce-in scale
+                            let ps;
+                            if (frame < 8) {
+                                ps = frame / 8;
+                            } else if (frame < 14) {
+                                ps = 1 + Math.sin((frame - 8) / 6 * Math.PI) * 0.25;
+                            } else {
+                                ps = 1;
+                            }
+                            p.scale.set(8 * ps, 4 * ps, 1);
+                            // Fade in quickly, hold, fade out
+                            if (frame < 6) {
+                                p.material.opacity = frame / 6;
+                            } else if (frame < 35) {
+                                p.material.opacity = 1;
+                            } else {
+                                p.material.opacity = Math.max(0, 1 - (frame - 35) / 30);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (frame < TOTAL) {
+                    requestAnimationFrame(tick);
+                } else {
+                    // Cleanup
+                    for (const p of allParts) {
+                        if (p.userData.type !== 'sparkle' && p.material.map) {
+                            p.material.map.dispose();
+                        }
+                        p.material.dispose();
+                        if (p.geometry) p.geometry.dispose();
+                        scene.remove(p);
+                    }
+                }
+            };
+            tick();
         }
 
         // render the typed value into liveInput div
@@ -1284,6 +1985,498 @@
             renderInput();
         }
 
+        // ══════════════════════════════════════════
+        //  🎲  RANDOM BONUS ANIMATIONS
+        // ══════════════════════════════════════════
+        let randomEventTimer = null;
+        const randomEventCleanups = [];   // running animation cleanups
+
+        function startRandomEvents() {
+            stopRandomEvents();
+            function tick() {
+                if (!gameState.isPlaying) return;
+                const events = [evtRainbowWave, evtMeteorShower, evtWarpBurst,
+                                evtDiscoPulse, evtGiantStar, evtBubbleRain,
+                                evtSpiralVortex, evtLightningBolts, evtFireworkFountain,
+                                evtDNAHelix, evtGravityFlip, evtAuroraBorealis];
+                events[Math.floor(Math.random() * events.length)]();
+                // next event in 4-10 s
+                randomEventTimer = setTimeout(tick, 4000 + Math.random() * 6000);
+            }
+            // first event after 4 s
+            randomEventTimer = setTimeout(tick, 4000);
+        }
+
+        function stopRandomEvents() {
+            if (randomEventTimer) { clearTimeout(randomEventTimer); randomEventTimer = null; }
+            randomEventCleanups.forEach(fn => fn());
+            randomEventCleanups.length = 0;
+        }
+
+        // 1 ─ Rainbow wave: tunnel rings flash through the rainbow rapidly
+        function evtRainbowWave() {
+            let f = 0;
+            const dur = 120;
+            const origColors = tunnel.map(r => r.material.color.clone());
+            const id = setInterval(() => {
+                f++;
+                tunnel.forEach((ring, i) => {
+                    const hue = ((f * 3 + i * 7) % 360) / 360;
+                    const c = new THREE.Color().setHSL(hue, 1, 0.55);
+                    ring.material.color.copy(c);
+                    ring.material.emissive.copy(c);
+                    ring.material.emissiveIntensity = 0.6;
+                });
+                if (f >= dur) {
+                    clearInterval(id);
+                    tunnel.forEach((ring, i) => {
+                        ring.material.color.copy(origColors[i]);
+                        ring.material.emissive.copy(origColors[i]);
+                        ring.material.emissiveIntensity = 0.35;
+                    });
+                }
+            }, 30);
+            const cleanup = () => { clearInterval(id); };
+            randomEventCleanups.push(cleanup);
+        }
+
+        // 2 ─ Meteor shower: fiery streaks fly past
+        function evtMeteorShower() {
+            const meteors = [];
+            const count = 12;
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const geo = new THREE.SphereGeometry(0.15, 8, 8);
+                    const mat = new THREE.MeshBasicMaterial({
+                        color: new THREE.Color().setHSL(0.05 + Math.random() * 0.1, 1, 0.6),
+                        transparent: true, opacity: 1
+                    });
+                    const m = new THREE.Mesh(geo, mat);
+                    m.position.set(
+                        (Math.random() - 0.5) * 40,
+                        10 + Math.random() * 10,
+                        -80 - Math.random() * 40
+                    );
+                    m.userData.vel = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.3,
+                        -0.8 - Math.random() * 0.5,
+                        1.5 + Math.random()
+                    );
+                    // Trail: 5 smaller spheres
+                    m.userData.trail = [];
+                    for (let t = 0; t < 5; t++) {
+                        const tMat = mat.clone();
+                        tMat.opacity = 0.5 - t * 0.08;
+                        const ts = new THREE.Mesh(geo, tMat);
+                        ts.scale.setScalar(0.7 - t * 0.1);
+                        scene.add(ts);
+                        m.userData.trail.push(ts);
+                    }
+                    scene.add(m);
+                    meteors.push(m);
+                }, i * 200);
+            }
+            let f = 0;
+            const id = setInterval(() => {
+                f++;
+                meteors.forEach(m => {
+                    m.position.add(m.userData.vel);
+                    // update trail
+                    const trailPositions = [m.position.clone()];
+                    m.userData.trail.forEach((ts, ti) => {
+                        ts.position.copy(m.position).add(
+                            m.userData.vel.clone().multiplyScalar(-(ti + 1) * 0.6)
+                        );
+                    });
+                });
+                if (f > 120) {
+                    clearInterval(id);
+                    meteors.forEach(m => {
+                        scene.remove(m);
+                        m.userData.trail.forEach(ts => scene.remove(ts));
+                    });
+                }
+            }, 25);
+            randomEventCleanups.push(() => { clearInterval(id); meteors.forEach(m => { scene.remove(m); m.userData.trail.forEach(ts => scene.remove(ts)); }); });
+        }
+
+        // 3 ─ Warp speed burst: stars streak dramatically
+        function evtWarpBurst() {
+            const origSpeed = gameState.baseSpeed;
+            const origFog = scene.fog.density;
+            let f = 0;
+            const dur = 90;
+            const id = setInterval(() => {
+                f++;
+                const t = f / dur;
+                // Ramp up then down
+                const curve = t < 0.3 ? t / 0.3 : (1 - t) / 0.7;
+                const boost = 1 + curve * 8;
+                particles.forEach(star => {
+                    star.position.z += origSpeed * boost * 3;
+                    if (star.position.z > 10) star.position.z = -200;
+                    const stretch = 1 + curve * 2;
+                    star.scale.set(0.8, stretch, 0.8);
+                });
+                scene.fog.density = origFog * (1 - curve * 0.5);
+                if (f >= dur) {
+                    clearInterval(id);
+                    scene.fog.density = origFog;
+                    particles.forEach(star => star.scale.setScalar(0.8));
+                }
+            }, 25);
+            randomEventCleanups.push(() => { clearInterval(id); scene.fog.density = origFog; });
+        }
+
+        // 4 ─ Disco pulse: tunnel rings scale-pulse to a beat
+        function evtDiscoPulse() {
+            let f = 0;
+            const dur = 80;
+            const id = setInterval(() => {
+                f++;
+                const beatPhase = (f % 10) / 10;
+                const punch = beatPhase < 0.15 ? 1.3 : 1.0;
+                tunnel.forEach((ring, i) => {
+                    const offset = (i * 0.15) % 1;
+                    const localPhase = ((f + i * 2) % 10) / 10;
+                    const localPunch = localPhase < 0.15 ? 1.25 : 1.0;
+                    ring.scale.set(localPunch, localPunch, 1);
+                    ring.material.emissiveIntensity = localPhase < 0.15 ? 0.9 : 0.35;
+                });
+                if (f >= dur) {
+                    clearInterval(id);
+                    tunnel.forEach(ring => {
+                        ring.scale.set(1, 1, 1);
+                        ring.material.emissiveIntensity = 0.35;
+                    });
+                }
+            }, 35);
+            randomEventCleanups.push(() => { clearInterval(id); });
+        }
+
+        // 5 ─ Giant spinning star
+        function evtGiantStar() {
+            const geo = new THREE.OctahedronGeometry(4, 0);
+            const mat = new THREE.MeshBasicMaterial({
+                color: 0xffd700, transparent: true, opacity: 0, wireframe: true
+            });
+            const star = new THREE.Mesh(geo, mat);
+            star.position.set(0, 0, -50);
+            scene.add(star);
+            let f = 0;
+            const dur = 150;
+            const id = setInterval(() => {
+                f++;
+                const t = f / dur;
+                star.rotation.x += 0.04;
+                star.rotation.y += 0.06;
+                star.rotation.z += 0.02;
+                star.position.z += 0.3;
+                // Scale up, hold, shrink
+                const s = t < 0.2 ? t / 0.2 : t > 0.8 ? (1 - t) / 0.2 : 1;
+                star.scale.setScalar(s * 3);
+                star.material.opacity = Math.min(0.5, s);
+                // Color cycle
+                star.material.color.setHSL((f * 0.02) % 1, 1, 0.6);
+                if (f >= dur) {
+                    clearInterval(id);
+                    scene.remove(star);
+                }
+            }, 25);
+            randomEventCleanups.push(() => { clearInterval(id); scene.remove(star); });
+        }
+
+        // 6 ─ Bubble rain: tiny colourful bubbles drift downward
+        function evtBubbleRain() {
+            const drops = [];
+            const geo = new THREE.SphereGeometry(0.25, 10, 10);
+            for (let i = 0; i < 40; i++) {
+                const palette = bubbleColorSets[Math.floor(Math.random() * bubbleColorSets.length)];
+                const mat = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(palette.bg),
+                    transparent: true, opacity: 0.7
+                });
+                const b = new THREE.Mesh(geo, mat);
+                b.position.set(
+                    (Math.random() - 0.5) * 35,
+                    15 + Math.random() * 5,
+                    -30 - Math.random() * 60
+                );
+                b.userData.vy = -0.08 - Math.random() * 0.06;
+                b.userData.vx = (Math.random() - 0.5) * 0.04;
+                b.userData.wobble = Math.random() * Math.PI * 2;
+                const s = 0.4 + Math.random() * 0.8;
+                b.scale.setScalar(s);
+                scene.add(b);
+                drops.push(b);
+            }
+            let f = 0;
+            const dur = 180;
+            const id = setInterval(() => {
+                f++;
+                drops.forEach(b => {
+                    b.position.y += b.userData.vy;
+                    b.position.x += Math.sin(b.userData.wobble + f * 0.05) * 0.02 + b.userData.vx;
+                    b.material.opacity = f > dur - 30 ? Math.max(0, b.material.opacity - 0.025) : 0.7;
+                });
+                if (f >= dur) {
+                    clearInterval(id);
+                    drops.forEach(b => scene.remove(b));
+                }
+            }, 25);
+            randomEventCleanups.push(() => { clearInterval(id); drops.forEach(b => scene.remove(b)); });
+        }
+
+        // 7 ─ Spiral Vortex: balloons get pulled into a spiral
+        function evtSpiralVortex() {
+            let f = 0;
+            const dur = 120;
+            const id = setInterval(() => {
+                f++;
+                const t = f / dur;
+                const intensity = t < 0.3 ? t / 0.3 : t > 0.7 ? (1 - t) / 0.3 : 1;
+                flyingNumbers.forEach((num, i) => {
+                    if (num.userData.isUserTyped) return;
+                    const angle = f * 0.05 + i * 0.5;
+                    num.position.x += Math.cos(angle) * 0.08 * intensity;
+                    num.position.y += Math.sin(angle) * 0.08 * intensity;
+                });
+                // Spin tunnel faster
+                tunnel.forEach(ring => {
+                    ring.rotation.z += 0.015 * intensity;
+                });
+                if (f >= dur) clearInterval(id);
+            }, 25);
+            randomEventCleanups.push(() => clearInterval(id));
+        }
+
+        // 8 ─ Lightning Bolts: electric arcs flash across the tunnel
+        function evtLightningBolts() {
+            let bolts = [];
+            const count = 8;
+            function makeBolt() {
+                const pts = [];
+                const startX = (Math.random() - 0.5) * 20;
+                const startY = 12 + Math.random() * 5;
+                const z = -20 - Math.random() * 60;
+                let x = startX, y = startY;
+                for (let i = 0; i < 10; i++) {
+                    pts.push(new THREE.Vector3(x, y, z));
+                    x += (Math.random() - 0.5) * 4;
+                    y -= 2 + Math.random() * 2;
+                }
+                const geo = new THREE.BufferGeometry().setFromPoints(pts);
+                const mat = new THREE.LineBasicMaterial({
+                    color: 0xaaddff, transparent: true, opacity: 1, linewidth: 2
+                });
+                const line = new THREE.Line(geo, mat);
+                scene.add(line);
+                // bright glow duplicate
+                const mat2 = new THREE.LineBasicMaterial({
+                    color: 0xffffff, transparent: true, opacity: 0.6, linewidth: 1
+                });
+                const line2 = new THREE.Line(geo, mat2);
+                line2.scale.set(1.05, 1.05, 1);
+                scene.add(line2);
+                bolts.push({ line, line2, life: 12 + Math.floor(Math.random() * 8) });
+            }
+            let f = 0;
+            const dur = 100;
+            const id = setInterval(() => {
+                f++;
+                if (f % 12 === 0 && bolts.length < count) makeBolt();
+                bolts.forEach(b => {
+                    b.life--;
+                    b.line.material.opacity = b.life > 3 ? 0.8 + Math.random() * 0.2 : b.life / 3;
+                    b.line2.material.opacity = b.line.material.opacity * 0.5;
+                });
+                bolts = bolts.filter(b => {
+                    if (b.life <= 0) {
+                        scene.remove(b.line); scene.remove(b.line2);
+                        b.line.geometry.dispose();
+                        return false;
+                    }
+                    return true;
+                });
+                if (f >= dur) {
+                    clearInterval(id);
+                    bolts.forEach(b => { scene.remove(b.line); scene.remove(b.line2); b.line.geometry.dispose(); });
+                }
+            }, 30);
+            randomEventCleanups.push(() => { clearInterval(id); bolts.forEach(b => { scene.remove(b.line); scene.remove(b.line2); }); });
+        }
+
+        // 9 ─ Firework Fountain: streams of sparks shoot up from bottom
+        function evtFireworkFountain() {
+            const sparks = [];
+            const geo = new THREE.SphereGeometry(0.08, 6, 6);
+            let f = 0;
+            const dur = 150;
+            const id = setInterval(() => {
+                f++;
+                // Emit 3 sparks per tick
+                if (f < dur - 40) {
+                    for (let i = 0; i < 3; i++) {
+                        const hue = Math.random();
+                        const mat = new THREE.MeshBasicMaterial({
+                            color: new THREE.Color().setHSL(hue, 1, 0.65),
+                            transparent: true, opacity: 1
+                        });
+                        const s = new THREE.Mesh(geo, mat);
+                        const srcX = (Math.random() - 0.5) * 8;
+                        s.position.set(srcX, -12, -30 - Math.random() * 40);
+                        s.userData.vel = new THREE.Vector3(
+                            (Math.random() - 0.5) * 0.3,
+                            0.5 + Math.random() * 0.5,
+                            (Math.random() - 0.5) * 0.2
+                        );
+                        s.userData.life = 40 + Math.random() * 30;
+                        scene.add(s);
+                        sparks.push(s);
+                    }
+                }
+                // Update sparks
+                for (let i = sparks.length - 1; i >= 0; i--) {
+                    const s = sparks[i];
+                    s.position.add(s.userData.vel);
+                    s.userData.vel.y -= 0.015; // gravity
+                    s.userData.life--;
+                    s.material.opacity = Math.max(0, s.userData.life / 30);
+                    if (s.userData.life <= 0) {
+                        scene.remove(s);
+                        sparks.splice(i, 1);
+                    }
+                }
+                if (f >= dur && sparks.length === 0) clearInterval(id);
+            }, 25);
+            randomEventCleanups.push(() => { clearInterval(id); sparks.forEach(s => scene.remove(s)); });
+        }
+
+        // 10 ─ DNA Helix: two intertwined ribbons of spheres
+        function evtDNAHelix() {
+            const beads = [];
+            const geo = new THREE.SphereGeometry(0.2, 8, 8);
+            const count = 60;
+            for (let i = 0; i < count; i++) {
+                const ang = i * 0.2;
+                const z = -90 + i * 1.5;
+                // strand A
+                const matA = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(0.55, 1, 0.6),
+                    transparent: true, opacity: 0
+                });
+                const a = new THREE.Mesh(geo, matA);
+                a.position.set(Math.cos(ang) * 3, Math.sin(ang) * 3, z);
+                a.userData.strand = 'A'; a.userData.idx = i;
+                scene.add(a); beads.push(a);
+                // strand B
+                const matB = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(0.0, 1, 0.6),
+                    transparent: true, opacity: 0
+                });
+                const b = new THREE.Mesh(geo, matB);
+                b.position.set(Math.cos(ang + Math.PI) * 3, Math.sin(ang + Math.PI) * 3, z);
+                b.userData.strand = 'B'; b.userData.idx = i;
+                scene.add(b); beads.push(b);
+            }
+            let f = 0;
+            const dur = 180;
+            const id = setInterval(() => {
+                f++;
+                const t = f / dur;
+                beads.forEach(bd => {
+                    const i = bd.userData.idx;
+                    const ang = i * 0.2 + f * 0.03;
+                    const offset = bd.userData.strand === 'B' ? Math.PI : 0;
+                    bd.position.x = Math.cos(ang + offset) * 3;
+                    bd.position.y = Math.sin(ang + offset) * 3;
+                    bd.position.z += 0.15;
+                    // fade in/out
+                    bd.material.opacity = t < 0.15 ? t / 0.15 : t > 0.8 ? (1 - t) / 0.2 : 0.7;
+                });
+                if (f >= dur) {
+                    clearInterval(id);
+                    beads.forEach(bd => scene.remove(bd));
+                }
+            }, 25);
+            randomEventCleanups.push(() => { clearInterval(id); beads.forEach(bd => scene.remove(bd)); });
+        }
+
+        // 11 ─ Gravity Flip: all balloons briefly float upward then settle
+        function evtGravityFlip() {
+            let f = 0;
+            const dur = 80;
+            const id = setInterval(() => {
+                f++;
+                const t = f / dur;
+                const flipForce = t < 0.3 ? 0.12 : t < 0.6 ? -0.05 : 0;
+                flyingNumbers.forEach(num => {
+                    if (num.userData.isUserTyped) return;
+                    num.position.y += flipForce;
+                    // wobble stronger during flip
+                    if (t < 0.5) num.rotation.z += (Math.random() - 0.5) * 0.04;
+                });
+                // Stars go upward too
+                if (t < 0.4) {
+                    particles.forEach(star => {
+                        star.position.y += 0.15;
+                        if (star.position.y > 50) star.position.y = -50;
+                    });
+                }
+                if (f >= dur) clearInterval(id);
+            }, 25);
+            randomEventCleanups.push(() => clearInterval(id));
+        }
+
+        // 12 ─ Aurora Borealis: shimmering curtain of light
+        function evtAuroraBorealis() {
+            const curtains = [];
+            const geo = new THREE.PlaneGeometry(50, 15, 40, 1);
+            for (let c = 0; c < 3; c++) {
+                const hue = [0.3, 0.45, 0.55][c];
+                const mat = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(hue, 0.8, 0.5),
+                    transparent: true, opacity: 0, side: THREE.DoubleSide
+                });
+                const mesh = new THREE.Mesh(geo.clone(), mat);
+                mesh.position.set(0, 8 + c * 2, -60);
+                mesh.rotation.x = -0.3;
+                mesh.userData.hue = hue;
+                mesh.userData.offset = c * 1.2;
+                scene.add(mesh);
+                curtains.push(mesh);
+            }
+            let f = 0;
+            const dur = 200;
+            const id = setInterval(() => {
+                f++;
+                const t = f / dur;
+                curtains.forEach(cur => {
+                    // Wave the vertices
+                    const pos = cur.geometry.attributes.position;
+                    for (let i = 0; i < pos.count; i++) {
+                        const x = pos.getX(i);
+                        pos.setY(i, pos.getY(i) + Math.sin(f * 0.04 + x * 0.1 + cur.userData.offset) * 0.03);
+                    }
+                    pos.needsUpdate = true;
+                    // Shimmer color
+                    cur.material.color.setHSL(
+                        cur.userData.hue + Math.sin(f * 0.02 + cur.userData.offset) * 0.08,
+                        0.8, 0.5
+                    );
+                    // Fade in/out
+                    cur.material.opacity = t < 0.15 ? (t / 0.15) * 0.35
+                                         : t > 0.8 ? ((1 - t) / 0.2) * 0.35
+                                         : 0.35;
+                });
+                if (f >= dur) {
+                    clearInterval(id);
+                    curtains.forEach(cur => { scene.remove(cur); cur.geometry.dispose(); });
+                }
+            }, 30);
+            randomEventCleanups.push(() => { clearInterval(id); curtains.forEach(cur => { scene.remove(cur); cur.geometry.dispose(); }); });
+        }
+
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
@@ -1304,11 +2497,44 @@
                         num.scale.set(10 * pulse, 10 * pulse, 1);
                         num.rotation.z = Math.sin(num.userData.pulseTime * 0.3) * 0.06;
                     }
-                    // Regular number wobble (gentle float)
+                    // Regular number motion (per-theme)
                     if (!num.userData.isUserTyped && num.userData.wobbleTime !== undefined) {
-                        num.userData.wobbleTime += 0.03;
-                        num.position.y += Math.sin(num.userData.wobbleTime) * 0.015;
-                        num.rotation.z = Math.sin(num.userData.wobbleTime * 0.7) * 0.05;
+                        const th = themes[gameState.theme];
+                        num.userData.wobbleTime += th.balloonWobbleSpeed;
+                        const wt = num.userData.wobbleTime;
+                        const mp = num.userData.motionPhase || 0;
+                        switch (th.balloonMotion) {
+                            case 'float':  // gentle sine float (space)
+                                num.position.y += Math.sin(wt) * th.balloonWobbleAmp;
+                                num.rotation.z = Math.sin(wt * 0.7) * 0.05;
+                                break;
+                            case 'zigzag': // horizontal zigzag (ocean)
+                                num.position.x += Math.sin(wt + mp) * th.balloonWobbleAmp * 1.8;
+                                num.position.y += Math.cos(wt * 0.5 + mp) * th.balloonWobbleAmp * 0.8;
+                                num.rotation.z = Math.sin(wt) * 0.08;
+                                break;
+                            case 'spiral': // circular spiral (sunset)
+                                num.position.x += Math.cos(wt + mp) * th.balloonWobbleAmp * 2;
+                                num.position.y += Math.sin(wt + mp) * th.balloonWobbleAmp * 2;
+                                num.rotation.z += 0.01;
+                                break;
+                            case 'bounce': // bouncy vertical (matrix)
+                                num.position.y += Math.abs(Math.sin(wt + mp)) * th.balloonWobbleAmp * 2.5 - th.balloonWobbleAmp;
+                                num.rotation.z = Math.sin(wt * 2) * 0.03;
+                                break;
+                            case 'glitch': // jittery random (neon)
+                                if (Math.random() < 0.15) {
+                                    num.position.x += (Math.random() - 0.5) * 0.3;
+                                    num.position.y += (Math.random() - 0.5) * 0.2;
+                                }
+                                num.rotation.z = Math.sin(wt * 3) * 0.1;
+                                // occasional scale glitch
+                                if (Math.random() < 0.02) {
+                                    const gs = (num.userData.bSize || 8) * (0.85 + Math.random() * 0.3);
+                                    num.scale.set(gs, gs, 1);
+                                }
+                                break;
+                        }
                     }
                     
                     // Remove if passed
@@ -1328,16 +2554,17 @@
                     }
                 }
                 
-                // Move tunnel
+                // Move tunnel (per-theme rotation speed)
                 const time = performance.now() * 0.001;
+                const th = themes[gameState.theme];
                 tunnel.forEach((ring, idx) => {
                     ring.position.z += gameState.baseSpeed * gameState.speed;
                     if (ring.position.z > 10) {
                         ring.position.z = -490;
                     }
-                    // Varied rotation per ring
+                    // Varied rotation per ring (theme speed)
                     const dir = idx % 2 === 0 ? 1 : -1;
-                    ring.rotation.z += 0.006 * dir;
+                    ring.rotation.z += th.tunnelRotSpeed * dir;
 
                     // Pulsing emissive glow
                     const phase = ring.userData.phaseOffset || 0;
@@ -1349,13 +2576,13 @@
                     ring.scale.set(breathe, breathe, 1);
                 });
                 
-                // Animate stars with twinkling
+                // Animate stars with twinkling (per-theme speed)
                 particles.forEach(star => {
                     star.position.z += gameState.baseSpeed * gameState.speed * 2;
                     if (star.position.z > 10) {
                         star.position.z = -200;
                     }
-                    star.userData.twinkle += 0.05;
+                    star.userData.twinkle += th.starTwinkleSpeed;
                     star.scale.setScalar(0.8 + Math.sin(star.userData.twinkle) * 0.3);
                 });
 
@@ -1401,9 +2628,18 @@
                 return;
             }
 
+            // mute toggle
+            if (e.key === 'm' || e.key === 'M') {
+                e.preventDefault();
+                const isMuted = SFX.toggleMute();
+                showPowerUpNotif(isMuted ? '🔇 Sound OFF' : '🔊 Sound ON');
+                return;
+            }
+
             // only digits
             if (e.key >= '0' && e.key <= '9') {
                 e.preventDefault();
+                SFX.keyType();
                 typedValue += e.key;
                 renderInput();
             }

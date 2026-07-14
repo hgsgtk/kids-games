@@ -73,12 +73,12 @@
             position:absolute;bottom:0;left:0;right:0;
             background:linear-gradient(180deg,#FFD54F,#FF8F00,#E65100);
             border-radius:0 0 12px 12px;
-            transition:height .5s cubic-bezier(.4,0,.2,1);
+            transition:height .15s ease-out;
         }
         .progress-bird{
             position:absolute;left:50%;transform:translateX(-50%);
             font-size:1.3rem;z-index:5;
-            transition:bottom .5s cubic-bezier(.4,0,.2,1);
+            transition:bottom .15s ease-out;
             filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));
         }
         .progress-floor-num{
@@ -120,12 +120,21 @@
         .floor-card-container{
             position:relative;z-index:10;
             display:flex;flex-direction:column;align-items:center;
-            transition:transform .4s cubic-bezier(.4,0,.2,1),opacity .4s;
         }
-        .floor-card-container.exit-up{transform:translateY(-120vh);opacity:0}
-        .floor-card-container.exit-down{transform:translateY(120vh);opacity:0}
-        .floor-card-container.enter-up{transform:translateY(120vh);opacity:0}
-        .floor-card-container.enter-down{transform:translateY(-120vh);opacity:0}
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0.2; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideInDown {
+            from { transform: translateY(-50px); opacity: 0.2; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .floor-card-container.anim-up {
+            animation: slideInUp 150ms ease-out;
+        }
+        .floor-card-container.anim-down {
+            animation: slideInDown 150ms ease-out;
+        }
 
         .floor-card{
             width:clamp(200px,50vw,320px);height:clamp(200px,50vw,320px);
@@ -821,7 +830,8 @@ ZONES.forEach((zone, zi) => {
 let currentScreen = 'title'; // title | story | game | rooftop
 let currentFloor = 1;
 let lastZoneIndex = -1;
-let isTransitioning = false;
+let lastMoveTime = 0;
+const MOVE_COOLDOWN = 120;
 let zoneBannerTimeout = null;
 
 // ═══════════════════════════════════════════
@@ -872,32 +882,15 @@ function renderFloor(n, direction) {
     if (!floorData) return;
     const zone = ZONES[floorData.zoneIndex];
     const container = document.getElementById('floorCardContainer');
-    const card = document.getElementById('floorCard');
 
-    // Animate out
+    // Instantly update content
+    updateFloorContent(n, floorData, zone);
+
+    // Trigger slide-in animation
     if (direction !== 'none') {
-        isTransitioning = true;
-        container.classList.add(direction === 'up' ? 'exit-up' : 'exit-down');
-
-        setTimeout(() => {
-            // Update content while hidden
-            updateFloorContent(n, floorData, zone);
-
-            // Prep enter
-            container.classList.remove('exit-up', 'exit-down');
-            container.classList.add(direction === 'up' ? 'enter-up' : 'enter-down');
-
-            // Force reflow
-            void container.offsetHeight;
-
-            // Animate in
-            requestAnimationFrame(() => {
-                container.classList.remove('enter-up', 'enter-down');
-                isTransitioning = false;
-            });
-        }, 350);
-    } else {
-        updateFloorContent(n, floorData, zone);
+        container.classList.remove('anim-up', 'anim-down');
+        void container.offsetHeight; // force reflow to restart animation
+        container.classList.add(direction === 'up' ? 'anim-up' : 'anim-down');
     }
 
     // Zone change?
@@ -1014,7 +1007,9 @@ function updateTsupiPosition(n) {
 //  MOVEMENT
 // ═══════════════════════════════════════════
 function moveFloor(delta) {
-    if (isTransitioning) return;
+    const now = Date.now();
+    if (now - lastMoveTime < MOVE_COOLDOWN) return;
+    lastMoveTime = now;
 
     const newFloor = currentFloor + delta;
 
@@ -1022,7 +1017,7 @@ function moveFloor(delta) {
     const flashId = delta > 0 ? 'flashUp' : 'flashDown';
     const flash = document.getElementById(flashId);
     flash.classList.add('show');
-    setTimeout(() => flash.classList.remove('show'), 200);
+    setTimeout(() => flash.classList.remove('show'), 100);
 
     if (newFloor > 100) {
         goToRooftop();
@@ -1164,6 +1159,9 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
     }
 
+    // For non-game screens, ignore held keys
+    if (currentScreen !== 'game' && e.repeat) return;
+
     switch (currentScreen) {
         case 'title':
             if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowUp') {
@@ -1178,20 +1176,19 @@ document.addEventListener('keydown', (e) => {
             break;
 
         case 'game':
-            // Dismiss milestone modal early on any key
+            // Dismiss milestone modal on any key, but don't block movement
             if (document.getElementById('milestoneModal').classList.contains('show')) {
                 document.getElementById('milestoneModal').classList.remove('show');
                 if (milestoneTimeout) { clearTimeout(milestoneTimeout); milestoneTimeout = null; }
-                break;
             }
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
                 moveFloor(1);
             } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
                 moveFloor(-1);
             } else if (e.key === ' ' || e.key === 'Enter') {
-                interactFloor();
+                if (!e.repeat) interactFloor();
             } else if (e.key === 'Escape') {
-                goToTitle();
+                if (!e.repeat) goToTitle();
             }
             break;
 
@@ -1215,31 +1212,6 @@ document.getElementById('titleScreen').addEventListener('click', () => {
 });
 document.getElementById('storyScreen').addEventListener('click', () => {
     if (currentScreen === 'story') { ensureAudio(); goToGame(); }
-});
-
-// Key repeat for holding arrow keys
-let holdInterval = null;
-let holdKey = null;
-
-document.addEventListener('keydown', (e) => {
-    if (currentScreen !== 'game') return;
-    if (e.repeat) return; // handled by interval
-
-    if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && holdKey !== 'up') {
-        holdKey = 'up';
-        holdInterval = setInterval(() => moveFloor(1), 250);
-    } else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && holdKey !== 'down') {
-        holdKey = 'down';
-        holdInterval = setInterval(() => moveFloor(-1), 250);
-    }
-});
-
-document.addEventListener('keyup', (e) => {
-    if (['ArrowUp','ArrowDown','w','W','s','S'].includes(e.key)) {
-        clearInterval(holdInterval);
-        holdInterval = null;
-        holdKey = null;
-    }
 });
 
 // ═══════════════════════════════════════════
