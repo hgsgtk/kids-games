@@ -38,14 +38,29 @@
         .hud-btn {
             background: rgba(255,255,255,0.9);
             border: none;
-            width: 44px; height: 44px;
+            height: 44px;
+            padding: 0 14px;
             border-radius: 12px;
-            font-size: 22px;
+            font-size: 16px;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             display: flex; align-items: center; justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+            font-weight: bold;
+            color: #555;
         }
         .hud-btn:active { transform: scale(0.92); }
+        .hud-btn kbd {
+            display: inline-block;
+            background: rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 11px;
+            font-family: inherit;
+            color: #888;
+        }
         /* Progress bar */
         .progress-wrap {
             background: rgba(0,0,0,0.4);
@@ -76,7 +91,7 @@
         /* Mission panel */
         .mission-panel {
             position: fixed;
-            bottom: 90px; left: 12px;
+            bottom: 70px; left: 12px;
             background: rgba(255,255,255,0.95);
             border-radius: 16px;
             padding: 14px 18px;
@@ -89,6 +104,7 @@
         .mission-panel.hidden {
             transform: translateX(-120%);
             opacity: 0;
+            pointer-events: none;
         }
         .mission-title {
             font-weight: bold;
@@ -125,69 +141,71 @@
             border-color: #28a745;
             color: white;
         }
-        /* D-pad controls */
-        .dpad {
+
+        /* Bottom controls bar */
+        .controls-bar {
             position: fixed;
-            bottom: 16px; left: 16px;
+            bottom: 0; left: 0; right: 0;
             z-index: 10;
-            display: grid;
-            grid-template-columns: 56px 56px 56px;
-            grid-template-rows: 56px 56px 56px;
-            gap: 4px;
-        }
-        .dpad-btn {
-            background: rgba(255,255,255,0.85);
-            border: none;
-            border-radius: 14px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.1s;
+            gap: 16px;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
-        .dpad-btn:active, .dpad-btn.pressed {
-            background: rgba(255,200,100,0.95);
-            transform: scale(0.93);
-        }
-        .dpad-placeholder { visibility: hidden; }
-        /* Action button */
-        .action-area {
-            position: fixed;
-            bottom: 24px; right: 16px;
-            z-index: 10;
+        .ctrl-group {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
             align-items: center;
+            gap: 6px;
         }
-        .action-btn {
-            width: 72px; height: 72px;
-            border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.5);
-            background: linear-gradient(135deg, #FF6B9D, #C06C84);
-            color: white;
-            font-size: 14px;
+        .ctrl-key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+            color: #fff;
+            font-size: 16px;
             font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(255,107,157,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            line-height: 1.1;
+            font-family: inherit;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-        .action-btn:active { transform: scale(0.9); }
-        .action-btn .action-icon { font-size: 24px; }
-        .action-btn .action-label { font-size: 10px; margin-top: 2px; }
-        .action-hint {
-            color: rgba(255,255,255,0.85);
+        .ctrl-key.wide { min-width: 70px; font-size: 12px; }
+        .ctrl-key.active {
+            background: rgba(255,215,0,0.4);
+            border-color: #FFD700;
+            box-shadow: 0 0 12px rgba(255,215,0,0.3);
+        }
+        .ctrl-label {
+            color: rgba(255,255,255,0.7);
             font-size: 11px;
-            text-align: center;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-            max-width: 100px;
+            font-weight: bold;
         }
+        .ctrl-sep {
+            width: 1px;
+            height: 28px;
+            background: rgba(255,255,255,0.15);
+            margin: 0 4px;
+        }
+        .ctrl-info {
+            color: rgba(255,255,255,0.9);
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 80px;
+        }
+        .ctrl-info .action-hint-text {
+            color: #FFD700;
+            font-size: 12px;
+        }
+
         /* Dialog */
         .dialog-overlay {
             position: fixed;
@@ -215,7 +233,7 @@
         }
         .dialog-emoji { font-size: 56px; margin-bottom: 12px; }
         .dialog h2 { color: #2E5266; font-size: 1.6rem; margin-bottom: 10px; }
-        .dialog p { color: #555; font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px; }
+        .dialog p { color: #555; font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px; white-space: pre-line; }
         .dialog-btn {
             background: linear-gradient(135deg, #FF6B9D, #C06C84);
             color: white; border: none;
@@ -224,6 +242,7 @@
             font-size: 1.05rem;
             cursor: pointer;
             font-weight: bold;
+            font-family: inherit;
             box-shadow: 0 4px 16px rgba(255,107,157,0.4);
             margin: 4px;
         }
@@ -232,10 +251,16 @@
             background: linear-gradient(135deg, #6C9BD2, #4A7FB5);
             box-shadow: 0 4px 16px rgba(74,127,181,0.4);
         }
+        .dialog-key-hint {
+            display: block;
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 10px;
+        }
         /* Scene indicator */
         .scene-indicator {
             position: fixed;
-            bottom: 10px;
+            bottom: 64px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -271,7 +296,7 @@
             background: white;
             border-radius: 28px;
             padding: 40px;
-            max-width: 380px;
+            max-width: 420px;
             width: 90%;
             text-align: center;
         }
@@ -281,19 +306,58 @@
             margin: 16px 0 8px;
         }
         .tutorial-card .tutorial-moomin { font-size: 80px; }
-        .tutorial-steps {
-            text-align: left;
-            margin: 16px 0;
+        .tutorial-keys {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .tutorial-key-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-size: 1rem;
             color: #555;
-            line-height: 2;
         }
-        .tutorial-steps li { margin-bottom: 4px; }
+        .tutorial-key-row .t-key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            min-width: 40px;
+            height: 36px;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            flex-shrink: 0;
+        }
+        .tutorial-key-row .t-key.wide { min-width: 80px; font-size: 13px; }
+        .tutorial-start-hint {
+            color: #aaa;
+            font-size: 13px;
+            margin-top: 16px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+
+        /* Key flash on bottom bar */
+        .ctrl-key.flash {
+            background: rgba(255,215,0,0.5) !important;
+            border-color: #FFD700 !important;
+            transition: none;
+        }
+
         @media (max-width: 500px) {
-            .mission-panel { max-width: 180px; font-size: 12px; bottom: 85px; }
-            .dpad { bottom: 10px; left: 10px; }
-            .dpad-btn { width: 50px; height: 50px; font-size: 20px; }
-            .action-btn { width: 64px; height: 64px; }
+            .mission-panel { max-width: 180px; font-size: 12px; bottom: 65px; }
+            .controls-bar { padding: 8px 10px; gap: 8px; }
+            .ctrl-key { min-width: 30px; height: 30px; font-size: 14px; }
+            .ctrl-key.wide { min-width: 56px; font-size: 11px; }
+            .ctrl-label { font-size: 10px; }
+            .ctrl-info { font-size: 11px; min-width: 60px; }
+            .hud-btn { height: 38px; padding: 0 10px; font-size: 14px; }
         }
     </style>
 </head>
@@ -303,9 +367,9 @@
 <!-- HUD -->
 <div class="hud">
     <div class="hud-left">
-        <button class="hud-btn" onclick="window.location.href='index.html'">🏠</button>
-        <button class="hud-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
-        <button class="hud-btn" id="missionBtn" onclick="toggleMission()">📋</button>
+        <button class="hud-btn" onclick="goHome()">🏠 <kbd>Esc</kbd></button>
+        <button class="hud-btn" id="soundBtn" onclick="toggleSound()">🔊 <kbd>S</kbd></button>
+        <button class="hud-btn" id="missionBtn" onclick="toggleMission()">📋 <kbd>M</kbd></button>
     </div>
     <div class="hud-center">
         <div class="progress-wrap">
@@ -319,31 +383,31 @@
 </div>
 
 <!-- Mission Panel -->
-<div class="mission-panel" id="missionPanel">
+<div class="mission-panel hidden" id="missionPanel">
     <div class="mission-title">🎯 きょうのミッション</div>
     <div id="missionList"></div>
 </div>
 
-<!-- D-Pad -->
-<div class="dpad">
-    <div class="dpad-placeholder"></div>
-    <button class="dpad-btn" data-dir="up">⬆️</button>
-    <div class="dpad-placeholder"></div>
-    <button class="dpad-btn" data-dir="left">⬅️</button>
-    <button class="dpad-btn" data-dir="action">🔍</button>
-    <button class="dpad-btn" data-dir="right">➡️</button>
-    <div class="dpad-placeholder"></div>
-    <button class="dpad-btn" data-dir="down">⬇️</button>
-    <div class="dpad-placeholder"></div>
-</div>
-
-<!-- Action Area -->
-<div class="action-area">
-    <button class="action-btn" id="actionBtn" onclick="doAction()">
-        <span class="action-icon" id="actionIcon">🔍</span>
-        <span class="action-label" id="actionLabel">しらべる</span>
-    </button>
-    <div class="action-hint" id="actionHint"></div>
+<!-- Bottom Controls Bar -->
+<div class="controls-bar" id="controlsBar">
+    <div class="ctrl-group">
+        <div class="ctrl-key" id="kUp">↑</div>
+    </div>
+    <div class="ctrl-group">
+        <div class="ctrl-key" id="kLeft">←</div>
+        <div class="ctrl-key" id="kDown">↓</div>
+        <div class="ctrl-key" id="kRight">→</div>
+    </div>
+    <div class="ctrl-label">いどう</div>
+    <div class="ctrl-sep"></div>
+    <div class="ctrl-group">
+        <div class="ctrl-key wide" id="kSpace">Space</div>
+    </div>
+    <div class="ctrl-label" id="spaceLabel">しらべる</div>
+    <div class="ctrl-sep"></div>
+    <div class="ctrl-info" id="ctrlInfo">
+        <span>🔍 ちかくにさがそう</span>
+    </div>
 </div>
 
 <!-- Scene Indicator -->
@@ -358,7 +422,8 @@
         <div class="dialog-emoji" id="dialogEmoji"></div>
         <h2 id="dialogTitle"></h2>
         <p id="dialogText"></p>
-        <button class="dialog-btn" id="dialogBtn" onclick="closeDialog()">つぎへ</button>
+        <button class="dialog-btn" id="dialogBtn">つぎへ</button>
+        <span class="dialog-key-hint" id="dialogKeyHint">Space / Enter でとじる</span>
     </div>
 </div>
 
@@ -367,13 +432,27 @@
     <div class="tutorial-card">
         <div class="tutorial-moomin">🏔️</div>
         <h1>ムーミン谷のぼうけん</h1>
-        <ul class="tutorial-steps">
-            <li>⬆️⬇️⬅️➡️ ボタンでムーミンをうごかそう</li>
-            <li>🔍 ちかづいたらしらべるボタンをおそう</li>
-            <li>🎯 6にんのなかまと8このアイテムをあつめよう</li>
-            <li>➡️ マップのはしでとなりのエリアへ</li>
-        </ul>
+        <div class="tutorial-keys">
+            <div class="tutorial-key-row">
+                <span class="t-key">↑</span><span class="t-key">↓</span><span class="t-key">←</span><span class="t-key">→</span>
+                <span>ムーミンを うごかす</span>
+            </div>
+            <div class="tutorial-key-row">
+                <span class="t-key wide">Space</span>
+                <span>しらべる / はなす / ひろう</span>
+            </div>
+            <div class="tutorial-key-row">
+                <span class="t-key">M</span>
+                <span>ミッションを みる</span>
+            </div>
+            <div class="tutorial-key-row">
+                <span class="t-key wide">Esc</span>
+                <span>ホームに もどる</span>
+            </div>
+        </div>
+        <p style="color:#888;font-size:14px;margin-top:8px">🎯 6にんのなかまと8このアイテムをあつめよう！</p>
         <button class="dialog-btn" onclick="startGame()">ぼうけんスタート！</button>
+        <div class="tutorial-start-hint">▼ Space / Enter でスタート ▼</div>
     </div>
 </div>
 
@@ -432,42 +511,39 @@ function sfxVictory() {
 }
 function toggleSound() {
     soundEnabled = !soundEnabled;
-    document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    document.getElementById('soundBtn').innerHTML = (soundEnabled ? '🔊' : '🔇') + ' <kbd>S</kbd>';
 }
 
 // ============================================================
 // GAME STATE
 // ============================================================
-const GROUND_Y = 0.72; // ground level as fraction of vh
+const GROUND_Y = 0.72;
 const SCENE_COUNT = 2;
 let currentScene = 0;
 let gameStarted = false;
+let dialogOpen = false;
+let dialogCloseAction = null;
 
-// Moomin state
 const moomin = {
-    x: 200, y: 0, // y will be set relative to ground
+    x: 200, y: 0,
     vx: 0, vy: 0,
-    dir: 1, // 1=right, -1=left
+    dir: 1,
     frame: 0,
     walkTimer: 0,
     size: 60,
     bobble: 0,
 };
 
-// Collections
 const friendsFound = new Set();
 const itemsCollected = new Set();
 
-// NPCs & items per scene
 const friends = [
-    // Scene 0
     { id: 'snorkmaiden', scene: 0, x: 0.45, y: 0, emoji: '🎀', name: 'スノークのおじょうさん',
       msg: '「きょうはぼうけんびよりね！いっしょにあそびましょう！」' },
     { id: 'snufkin', scene: 0, x: 0.72, y: 0, emoji: '🎩', name: 'スナフキン',
       msg: '「いちばんのたびは、いいともだちとのたびさ。」' },
     { id: 'littlemy', scene: 0, x: 0.58, y: 0, emoji: '👧', name: 'ちびのミイ',
       msg: '「なにかおもしろいことないの？あたし、たいくつなのきらいよ！」' },
-    // Scene 1
     { id: 'sniff', scene: 1, x: 0.25, y: 0, emoji: '🐾', name: 'スニフ',
       msg: '「たからもの、みつけた？ぼく、あつめるのだいすき！」' },
     { id: 'moominpappa', scene: 1, x: 0.55, y: 0, emoji: '🎩', name: 'ムーミンパパ',
@@ -477,19 +553,16 @@ const friends = [
 ];
 
 const items = [
-    // Scene 0
     { id: 'coffee', scene: 0, x: 0.18, y: -20, emoji: '☕', name: 'コーヒー' },
     { id: 'pancake', scene: 0, x: 0.22, y: -30, emoji: '🥞', name: 'パンケーキ' },
     { id: 'jam', scene: 0, x: 0.35, y: -10, emoji: '🍓', name: 'いちごジャム' },
     { id: 'book', scene: 0, x: 0.62, y: -15, emoji: '📚', name: 'ぼうけんのほん' },
-    // Scene 1
     { id: 'seashell', scene: 1, x: 0.20, y: 25, emoji: '🐚', name: 'きれいなかいがら' },
     { id: 'fish', scene: 1, x: 0.40, y: 30, emoji: '🐟', name: 'おさかな' },
     { id: 'flowercrown', scene: 1, x: 0.50, y: -10, emoji: '💐', name: 'はなのかんむり' },
     { id: 'hat', scene: 1, x: 0.65, y: -20, emoji: '🎩', name: 'ふしぎなぼうし' },
 ];
 
-// Total collectibles
 const TOTAL = friends.length + items.length;
 
 function getGroundY() { return vh() * GROUND_Y; }
@@ -497,7 +570,7 @@ function getGroundY() { return vh() * GROUND_Y; }
 // ============================================================
 // MISSIONS UI
 // ============================================================
-let missionVisible = true;
+let missionVisible = false;
 function toggleMission() {
     missionVisible = !missionVisible;
     document.getElementById('missionPanel').classList.toggle('hidden', !missionVisible);
@@ -517,7 +590,6 @@ function updateMissionUI() {
         </div>`
     ).join('');
 
-    // Progress
     const total = friendsFound.size + itemsCollected.size;
     const pct = Math.round(total / TOTAL * 100);
     document.getElementById('progressBar').style.width = pct + '%';
@@ -529,7 +601,6 @@ function updateMissionUI() {
 // ============================================================
 function drawSky(t) {
     const w = vw(), h = vh();
-    // Sky gradient
     const grad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
     grad.addColorStop(0, '#87CEEB');
     grad.addColorStop(0.6, '#B8D8E8');
@@ -554,7 +625,6 @@ function drawSky(t) {
     ctx.fill();
     ctx.restore();
 
-    // Clouds
     drawCloud(((t * 0.015) % (w + 300)) - 150, h * 0.10, 1.0);
     drawCloud(((t * 0.010 + 400) % (w + 300)) - 150, h * 0.18, 0.7);
     drawCloud(((t * 0.012 + 800) % (w + 300)) - 150, h * 0.08, 1.2);
@@ -574,14 +644,12 @@ function drawCloud(cx, cy, s) {
 
 function drawMountains() {
     const w = vw(), gy = getGroundY();
-    // Far mountains
     ctx.fillStyle = '#7A9AA8';
     drawMountain(w * 0.3, gy, 200, 180);
     ctx.fillStyle = '#6B8E99';
     drawMountain(w * 0.65, gy, 250, 220);
     ctx.fillStyle = '#8BAABC';
     drawMountain(w * 0.5, gy, 180, 150);
-    // Snow caps
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     drawSnowCap(w * 0.3, gy, 200, 180, 0.25);
     drawSnowCap(w * 0.65, gy, 250, 220, 0.25);
@@ -610,7 +678,6 @@ function drawSnowCap(cx, baseY, halfW, height, pct) {
 function drawGround(scene, t) {
     const w = vw(), h = vh(), gy = getGroundY();
     if (scene === 0) {
-        // Green valley ground
         const grd = ctx.createLinearGradient(0, gy, 0, h);
         grd.addColorStop(0, '#5DBE5D');
         grd.addColorStop(0.3, '#4CAF50');
@@ -618,7 +685,6 @@ function drawGround(scene, t) {
         ctx.fillStyle = grd;
         ctx.fillRect(0, gy, w, h - gy);
 
-        // Grass tufts
         ctx.strokeStyle = '#3D8B3D';
         ctx.lineWidth = 2;
         for (let i = 0; i < 60; i++) {
@@ -634,7 +700,6 @@ function drawGround(scene, t) {
             ctx.stroke();
         }
 
-        // Flowers
         const flowers = ['#FF6B9D','#FFD700','#FF4500','#DA70D6','#FF69B4'];
         for (let i = 0; i < 25; i++) {
             const fx = (i * 53 + 20) % w;
@@ -643,16 +708,11 @@ function drawGround(scene, t) {
             drawFlower(fx + sway, fy, flowers[i % flowers.length], 6 + (i % 3) * 2);
         }
 
-        // Draw Moominhouse
         drawMoominhouse(w * 0.12, gy);
-
-        // Trees
         drawTree(w * 0.04, gy + 10, 0.9);
         drawTree(w * 0.85, gy - 5, 1.1);
         drawTree(w * 0.92, gy + 5, 0.8);
     } else {
-        // Beach/forest scene
-        // Sandy ground
         const grd = ctx.createLinearGradient(0, gy, 0, h);
         grd.addColorStop(0, '#5DBE5D');
         grd.addColorStop(0.4, '#C2B280');
@@ -661,7 +721,6 @@ function drawGround(scene, t) {
         ctx.fillStyle = grd;
         ctx.fillRect(0, gy, w, h - gy);
 
-        // Water
         const waterY = gy + (h - gy) * 0.5;
         const wgrd = ctx.createLinearGradient(0, waterY, 0, h);
         wgrd.addColorStop(0, 'rgba(64,164,223,0.7)');
@@ -669,7 +728,6 @@ function drawGround(scene, t) {
         ctx.fillStyle = wgrd;
         ctx.fillRect(0, waterY, w, h - waterY);
 
-        // Waves
         ctx.strokeStyle = 'rgba(255,255,255,0.4)';
         ctx.lineWidth = 2;
         for (let i = 0; i < 5; i++) {
@@ -682,12 +740,10 @@ function drawGround(scene, t) {
             ctx.stroke();
         }
 
-        // Trees
         drawTree(w * 0.10, gy - 10, 1.0);
         drawTree(w * 0.35, gy - 15, 1.2);
         drawTree(w * 0.85, gy - 5, 0.9);
 
-        // Flowers on ground
         const flowers = ['#FF6B9D','#FFD700','#DA70D6'];
         for (let i = 0; i < 12; i++) {
             const fx = (i * 71 + 40) % w;
@@ -699,14 +755,12 @@ function drawGround(scene, t) {
 
 function drawFlower(x, y, color, r) {
     ctx.save();
-    // Stem
     ctx.strokeStyle = '#228B22';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x, y - r * 2.5);
     ctx.stroke();
-    // Petals
     ctx.fillStyle = color;
     for (let i = 0; i < 5; i++) {
         const a = (Math.PI * 2 / 5) * i;
@@ -714,7 +768,6 @@ function drawFlower(x, y, color, r) {
         ctx.ellipse(x + Math.cos(a) * r * 0.7, y - r * 2.5 + Math.sin(a) * r * 0.7, r * 0.5, r * 0.5, 0, 0, Math.PI * 2);
         ctx.fill();
     }
-    // Center
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
     ctx.arc(x, y - r * 2.5, r * 0.35, 0, Math.PI * 2);
@@ -724,7 +777,6 @@ function drawFlower(x, y, color, r) {
 
 function drawTree(x, baseY, s) {
     ctx.save();
-    // Trunk
     const tw = 16 * s, th = 60 * s;
     const tg = ctx.createLinearGradient(x - tw/2, baseY, x + tw/2, baseY);
     tg.addColorStop(0, '#8B4513');
@@ -733,7 +785,6 @@ function drawTree(x, baseY, s) {
     ctx.fillStyle = tg;
     roundRect(x - tw/2, baseY - th, tw, th, 5);
     ctx.fill();
-    // Foliage layers
     const colors = ['#006400','#228B22','#2E8B57'];
     for (let i = 2; i >= 0; i--) {
         ctx.fillStyle = colors[i];
@@ -750,7 +801,6 @@ function drawMoominhouse(x, groundY) {
     const bw = 120, bh = 130;
     const baseX = x, baseY = groundY;
 
-    // Body
     const bg = ctx.createLinearGradient(baseX, baseY - bh, baseX + bw, baseY);
     bg.addColorStop(0, '#5B9BD5');
     bg.addColorStop(1, '#3A7DC5');
@@ -762,7 +812,6 @@ function drawMoominhouse(x, groundY) {
     roundRect(baseX, baseY - bh, bw, bh, 8);
     ctx.stroke();
 
-    // Roof
     ctx.fillStyle = '#8B4513';
     ctx.beginPath();
     ctx.moveTo(baseX - 15, baseY - bh);
@@ -774,23 +823,19 @@ function drawMoominhouse(x, groundY) {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Chimney
     ctx.fillStyle = '#8B4513';
     ctx.fillRect(baseX + bw * 0.35, baseY - bh - 75, 20, 40);
     ctx.strokeStyle = '#654321';
     ctx.strokeRect(baseX + bw * 0.35, baseY - bh - 75, 20, 40);
 
-    // Door
     ctx.fillStyle = '#654321';
     roundRect(baseX + bw/2 - 16, baseY - 55, 32, 55, 8);
     ctx.fill();
-    // Door knob
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
     ctx.arc(baseX + bw/2 + 8, baseY - 28, 3, 0, Math.PI * 2);
     ctx.fill();
 
-    // Windows
     const winColor = '#FFE4B5';
     [[baseX + 18, baseY - bh + 25], [baseX + bw - 44, baseY - bh + 25],
      [baseX + 18, baseY - bh + 68], [baseX + bw - 44, baseY - bh + 68]].forEach(([wx, wy]) => {
@@ -799,7 +844,6 @@ function drawMoominhouse(x, groundY) {
         ctx.strokeStyle = '#654321';
         ctx.lineWidth = 2;
         ctx.strokeRect(wx, wy, 26, 30);
-        // Cross
         ctx.beginPath();
         ctx.moveTo(wx + 13, wy);
         ctx.lineTo(wx + 13, wy + 30);
@@ -811,7 +855,7 @@ function drawMoominhouse(x, groundY) {
 }
 
 // ============================================================
-// DRAWING – Moomin Character (Realistic Canvas)
+// DRAWING – Moomin Character
 // ============================================================
 function drawMoomin(t) {
     const gy = getGroundY();
@@ -820,7 +864,6 @@ function drawMoomin(t) {
     const s = moomin.size / 60;
     const dir = moomin.dir;
 
-    // Walking animation
     const isWalking = moomin.vx !== 0;
     const walkPhase = isWalking ? Math.sin(t * 0.008 * 5) : 0;
     const bobY = isWalking ? Math.abs(Math.sin(t * 0.008 * 5)) * 4 : 0;
@@ -831,169 +874,89 @@ function drawMoomin(t) {
     ctx.scale(dir * s, s);
 
     // Shadow
-    ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.beginPath();
     ctx.ellipse(0, 5 + bobY, 28, 8, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.restore();
 
     // Tail
     ctx.save();
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 3;
-    ctx.fillStyle = '#FAFAFA';
-    ctx.beginPath();
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.fillStyle = '#FAFAFA';
     const tailWag = isWalking ? Math.sin(t * 0.01 * 3) * 8 : Math.sin(t * 0.002) * 3;
+    ctx.beginPath();
     ctx.moveTo(-18, -35);
     ctx.quadraticCurveTo(-32 + tailWag, -55, -28 + tailWag, -68);
     ctx.quadraticCurveTo(-24 + tailWag, -72, -20 + tailWag, -68);
     ctx.quadraticCurveTo(-26 + tailWag, -50, -14, -35);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.restore();
 
-    // Legs (back)
+    // Legs
     const legAngle1 = walkPhase * 15;
     const legAngle2 = -walkPhase * 15;
     ctx.save();
-    ctx.fillStyle = '#FAFAFA';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2.5;
-    // Left leg (back)
-    ctx.save();
-    ctx.translate(-10, -5);
-    ctx.rotate(legAngle1 * Math.PI / 180);
-    roundRect(-6, -3, 12, 22, 6);
-    ctx.fill(); ctx.stroke();
-    // Foot
-    ctx.fillStyle = '#FAFAFA';
-    ctx.beginPath();
-    ctx.ellipse(0, 20, 10, 5, 0, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#FAFAFA'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2.5;
+    ctx.save(); ctx.translate(-10, -5); ctx.rotate(legAngle1 * Math.PI / 180);
+    roundRect(-6, -3, 12, 22, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#FAFAFA'; ctx.beginPath();
+    ctx.ellipse(0, 20, 10, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.restore();
-    // Right leg (back)
-    ctx.save();
-    ctx.translate(10, -5);
-    ctx.rotate(legAngle2 * Math.PI / 180);
-    roundRect(-6, -3, 12, 22, 6);
-    ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.translate(10, -5); ctx.rotate(legAngle2 * Math.PI / 180);
     ctx.fillStyle = '#FAFAFA';
-    ctx.beginPath();
-    ctx.ellipse(0, 20, 10, 5, 0, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
+    roundRect(-6, -3, 12, 22, 6); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, 20, 10, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.restore();
     ctx.restore();
 
     // Body
-    ctx.save();
-    ctx.fillStyle = '#FAFAFA';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(0, -38, 24, 32, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
+    ctx.save(); ctx.fillStyle = '#FAFAFA'; ctx.strokeStyle = '#333'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(0, -38, 24, 32, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke(); ctx.restore();
 
     // Arms
-    ctx.save();
-    ctx.fillStyle = '#FAFAFA';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2.5;
+    ctx.save(); ctx.fillStyle = '#FAFAFA'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2.5;
     const armSwing = isWalking ? Math.sin(t * 0.008 * 5) * 12 : Math.sin(t * 0.002) * 3;
-    // Left arm
-    ctx.save();
-    ctx.translate(-22, -45);
-    ctx.rotate((armSwing + 10) * Math.PI / 180);
-    ctx.beginPath();
-    ctx.ellipse(0, 10, 6, 14, 0, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.translate(-22, -45); ctx.rotate((armSwing + 10) * Math.PI / 180);
+    ctx.beginPath(); ctx.ellipse(0, 10, 6, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.restore();
-    // Right arm
-    ctx.save();
-    ctx.translate(22, -45);
-    ctx.rotate((-armSwing - 10) * Math.PI / 180);
-    ctx.beginPath();
-    ctx.ellipse(0, 10, 6, 14, 0, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.translate(22, -45); ctx.rotate((-armSwing - 10) * Math.PI / 180);
+    ctx.beginPath(); ctx.ellipse(0, 10, 6, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.restore();
     ctx.restore();
 
     // Head
-    ctx.save();
-    ctx.fillStyle = '#FAFAFA';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(0, -72, 20, 24, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
+    ctx.save(); ctx.fillStyle = '#FAFAFA'; ctx.strokeStyle = '#333'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(0, -72, 20, 24, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke(); ctx.restore();
 
     // Ears
-    ctx.save();
-    ctx.fillStyle = '#FAFAFA';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2.5;
-    // Left ear
-    ctx.beginPath();
-    ctx.ellipse(-14, -98, 7, 14, -0.2, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
-    // Right ear
-    ctx.beginPath();
-    ctx.ellipse(14, -98, 7, 14, 0.2, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.fillStyle = '#FAFAFA'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.ellipse(-14, -98, 7, 14, -0.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(14, -98, 7, 14, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.restore();
 
-    // Snout (muzzle)
-    ctx.save();
-    ctx.fillStyle = '#FAFAFA';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.ellipse(0, -62, 14, 11, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+    // Snout
+    ctx.save(); ctx.fillStyle = '#FAFAFA'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.ellipse(0, -62, 14, 11, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.restore();
 
-    // Nose (at tip of snout)
-    ctx.save();
-    ctx.fillStyle = '#333';
-    ctx.beginPath();
-    ctx.ellipse(0, -57, 4, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
+    // Nose
+    ctx.save(); ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.ellipse(0, -57, 4, 3.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
     // Eyes
-    ctx.save();
-    ctx.fillStyle = '#333';
-    // Left eye
-    ctx.beginPath();
-    ctx.ellipse(-9, -78, 3.5, 4.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Right eye
-    ctx.beginPath();
-    ctx.ellipse(9, -78, 3.5, 4.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // Eye highlights
+    ctx.save(); ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.ellipse(-9, -78, 3.5, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(9, -78, 3.5, 4.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#FFF';
-    ctx.beginPath();
-    ctx.ellipse(-8, -80, 1.5, 1.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(10, -80, 1.5, 1.5, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-8, -80, 1.5, 1.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(10, -80, 1.5, 1.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
-    // Mouth (slight smile)
-    ctx.save();
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(0, -60, 6, 0.2, Math.PI - 0.2);
-    ctx.stroke();
+    // Mouth
+    ctx.save(); ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, -60, 6, 0.2, Math.PI - 0.2); ctx.stroke();
     ctx.restore();
 
     ctx.restore();
@@ -1014,7 +977,6 @@ function drawNPC(f, t) {
     ctx.textAlign = 'center';
     ctx.fillText(f.emoji, x, y - 10 + bob);
 
-    // Name tag
     ctx.font = 'bold 12px sans-serif';
     const tw = ctx.measureText(f.name).width;
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
@@ -1023,7 +985,6 @@ function drawNPC(f, t) {
     ctx.fillStyle = '#FFF';
     ctx.fillText(f.name, x, y + 20 + bob);
 
-    // Glow indicator if nearby
     const dist = Math.abs(moomin.x - x);
     if (dist < 80) {
         ctx.strokeStyle = 'rgba(255,215,0,0.6)';
@@ -1045,7 +1006,6 @@ function drawItem(item, t) {
     const bob = Math.sin(t * 0.004 + item.x * 8) * 8;
 
     ctx.save();
-    // Glow circle
     ctx.fillStyle = 'rgba(255,255,100,0.15)';
     ctx.beginPath();
     ctx.arc(x, y - 10 + bob, 25, 0, Math.PI * 2);
@@ -1055,14 +1015,12 @@ function drawItem(item, t) {
     ctx.textAlign = 'center';
     ctx.fillText(item.emoji, x, y + bob);
 
-    // Sparkle
     const sparkle = Math.sin(t * 0.005 + item.x * 5) > 0.7;
     if (sparkle) {
         ctx.font = '14px serif';
         ctx.fillText('✨', x + 18, y - 20 + bob);
     }
 
-    // If nearby highlight
     const dist = Math.abs(moomin.x - x);
     if (dist < 70) {
         ctx.strokeStyle = 'rgba(255,200,0,0.7)';
@@ -1084,21 +1042,13 @@ function drawSceneArrows(t) {
     const pulse = 0.6 + Math.sin(t * 0.004) * 0.4;
 
     if (currentScene === 0) {
-        // Right arrow
         ctx.save();
         ctx.globalAlpha = pulse;
-        ctx.fillStyle = '#FFD700';
-        ctx.font = 'bold 18px sans-serif';
-        ctx.textAlign = 'center';
-        const ax = w - 30;
-        const ay = gy - 40;
-        // Arrow bg
+        const ax = w - 30, ay = gy - 40;
         ctx.fillStyle = 'rgba(255,215,0,0.3)';
-        ctx.beginPath();
-        ctx.arc(ax, ay, 28, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#FFF';
-        ctx.font = '28px serif';
+        ctx.beginPath(); ctx.arc(ax, ay, 28, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#FFF'; ctx.font = '28px serif';
+        ctx.textAlign = 'center';
         ctx.fillText('➡️', ax, ay + 8);
         ctx.font = 'bold 11px sans-serif';
         ctx.fillStyle = '#FFD700';
@@ -1106,17 +1056,13 @@ function drawSceneArrows(t) {
         ctx.restore();
     }
     if (currentScene === 1) {
-        // Left arrow
         ctx.save();
         ctx.globalAlpha = pulse;
-        const ax = 30;
-        const ay = gy - 40;
+        const ax = 30, ay = gy - 40;
         ctx.fillStyle = 'rgba(255,215,0,0.3)';
-        ctx.beginPath();
-        ctx.arc(ax, ay, 28, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#FFF';
-        ctx.font = '28px serif';
+        ctx.beginPath(); ctx.arc(ax, ay, 28, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#FFF'; ctx.font = '28px serif';
+        ctx.textAlign = 'center';
         ctx.fillText('⬅️', ax, ay + 8);
         ctx.font = 'bold 11px sans-serif';
         ctx.fillStyle = '#FFD700';
@@ -1126,50 +1072,87 @@ function drawSceneArrows(t) {
 }
 
 // ============================================================
-// INPUT
+// INPUT — Keyboard-first
 // ============================================================
 const keys = {};
-let moveDir = { x: 0, y: 0 };
-let dpadActive = null;
 
 document.addEventListener('keydown', e => {
+    // Prevent scrolling for game keys
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space',' ','Enter'].includes(e.key)) {
+        e.preventDefault();
+    }
+
     keys[e.key] = true;
-    if (e.key === ' ' || e.key === 'Enter') doAction();
-});
-document.addEventListener('keyup', e => { keys[e.key] = false; });
 
-// D-Pad
-document.querySelectorAll('.dpad-btn').forEach(btn => {
-    const dir = btn.dataset.dir;
+    // Flash the corresponding key in controls bar
+    flashKey(e.key);
 
-    const start = () => {
-        dpadActive = dir;
-        btn.classList.add('pressed');
-        if (dir === 'action') doAction();
-    };
-    const end = () => {
-        if (dpadActive === dir) dpadActive = null;
-        btn.classList.remove('pressed');
-    };
+    // --- Screen-specific handling ---
 
-    btn.addEventListener('mousedown', e => { e.preventDefault(); start(); });
-    btn.addEventListener('mouseup', e => { e.preventDefault(); end(); });
-    btn.addEventListener('mouseleave', e => { end(); });
-    btn.addEventListener('touchstart', e => { e.preventDefault(); start(); });
-    btn.addEventListener('touchend', e => { e.preventDefault(); end(); });
-    btn.addEventListener('touchcancel', e => { end(); });
-});
+    // Tutorial screen
+    if (!gameStarted && document.getElementById('tutorial').style.display !== 'none') {
+        if (e.key === ' ' || e.key === 'Enter') {
+            startGame();
+        }
+        return;
+    }
 
-// Tap to move on canvas
-canvas.addEventListener('click', e => {
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    // Simple: set moomin target
-    const dx = clickX - moomin.x;
-    if (Math.abs(dx) > 20) {
-        moomin.dir = dx > 0 ? 1 : -1;
+    // Dialog open
+    if (dialogOpen) {
+        if (e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') {
+            if (dialogCloseAction) {
+                dialogCloseAction();
+            } else {
+                closeDialog();
+            }
+        }
+        return;
+    }
+
+    // In-game keys
+    if (gameStarted && !dialogOpen) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            doAction();
+        } else if (e.key === 'm' || e.key === 'M') {
+            toggleMission();
+        } else if (e.key === 's' && !e.ctrlKey && !e.metaKey) {
+            // Only toggle sound with bare 's', not Ctrl+S
+            toggleSound();
+        } else if (e.key === 'Escape') {
+            goHome();
+        }
     }
 });
+
+document.addEventListener('keyup', e => {
+    keys[e.key] = false;
+    unflashKey(e.key);
+});
+
+// Key flash feedback on controls bar
+function flashKey(key) {
+    let el = null;
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') el = document.getElementById('kUp');
+    else if (key === 'ArrowDown' || key === 's') el = document.getElementById('kDown');
+    else if (key === 'ArrowLeft' || key === 'a' || key === 'A') el = document.getElementById('kLeft');
+    else if (key === 'ArrowRight' || key === 'd' || key === 'D') el = document.getElementById('kRight');
+    else if (key === ' ' || key === 'Enter') el = document.getElementById('kSpace');
+    if (el) el.classList.add('flash');
+}
+
+function unflashKey(key) {
+    let el = null;
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') el = document.getElementById('kUp');
+    else if (key === 'ArrowDown' || key === 's') el = document.getElementById('kDown');
+    else if (key === 'ArrowLeft' || key === 'a' || key === 'A') el = document.getElementById('kLeft');
+    else if (key === 'ArrowRight' || key === 'd' || key === 'D') el = document.getElementById('kRight');
+    else if (key === ' ' || key === 'Enter') el = document.getElementById('kSpace');
+    if (el) el.classList.remove('flash');
+}
+
+function goHome() {
+    window.location.href = 'index.html';
+}
 
 // ============================================================
 // GAME LOGIC
@@ -1177,11 +1160,13 @@ canvas.addEventListener('click', e => {
 const SPEED = 3.5;
 
 function updateMoomin() {
+    if (dialogOpen) return;
+
     let dx = 0, dy = 0;
-    if (keys['ArrowLeft'] || keys['a'] || dpadActive === 'left') dx = -1;
-    if (keys['ArrowRight'] || keys['d'] || dpadActive === 'right') dx = 1;
-    if (keys['ArrowUp'] || keys['w'] || dpadActive === 'up') dy = -1;
-    if (keys['ArrowDown'] || keys['s'] || dpadActive === 'down') dy = 1;
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) dx = -1;
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) dx = 1;
+    if (keys['ArrowUp'] || keys['w'] || keys['W']) dy = -1;
+    if (keys['ArrowDown'] || keys['s'] || keys['S']) dy = 1;
 
     if (dx !== 0 || dy !== 0) {
         const len = Math.sqrt(dx*dx + dy*dy);
@@ -1199,7 +1184,6 @@ function updateMoomin() {
     moomin.x += moomin.vx;
     moomin.y += moomin.vy;
 
-    // Boundaries
     const w = vw();
     const maxY = (vh() - getGroundY()) * 0.6;
     moomin.y = Math.max(-maxY + 10, Math.min(moomin.y, maxY - 10));
@@ -1234,7 +1218,6 @@ function checkProximity() {
     const w = vw();
     const RANGE = 70;
 
-    // Check friends
     for (const f of friends) {
         if (f.scene !== currentScene || friendsFound.has(f.id)) continue;
         const fx = f.x * w;
@@ -1245,7 +1228,6 @@ function checkProximity() {
         }
     }
 
-    // Check items
     if (!nearbyTarget) {
         for (const item of items) {
             if (item.scene !== currentScene || itemsCollected.has(item.id)) continue;
@@ -1258,36 +1240,29 @@ function checkProximity() {
         }
     }
 
-    // Update action button
-    const actionIcon = document.getElementById('actionIcon');
-    const actionLabel = document.getElementById('actionLabel');
-    const actionHint = document.getElementById('actionHint');
-    const actionBtn = document.getElementById('actionBtn');
+    // Update bottom bar info
+    const spaceLabel = document.getElementById('spaceLabel');
+    const ctrlInfo = document.getElementById('ctrlInfo');
+    const kSpace = document.getElementById('kSpace');
 
     if (nearbyTarget) {
         if (nearbyTarget.type === 'friend') {
-            actionIcon.textContent = '💬';
-            actionLabel.textContent = 'はなす';
-            actionHint.textContent = `${nearbyTarget.data.name}がちかくにいるよ！`;
+            spaceLabel.textContent = 'はなす';
+            ctrlInfo.innerHTML = `<span class="action-hint-text">💬 ${nearbyTarget.data.name}</span>`;
         } else {
-            actionIcon.textContent = '✋';
-            actionLabel.textContent = 'ひろう';
-            actionHint.textContent = `${nearbyTarget.data.name}をみつけた！`;
+            spaceLabel.textContent = 'ひろう';
+            ctrlInfo.innerHTML = `<span class="action-hint-text">✋ ${nearbyTarget.data.name}</span>`;
         }
-        actionBtn.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
-        actionBtn.style.animation = 'none';
-        actionBtn.style.boxShadow = '0 4px 16px rgba(255,165,0,0.6), 0 0 20px rgba(255,215,0,0.4)';
+        kSpace.classList.add('active');
     } else {
-        actionIcon.textContent = '🔍';
-        actionLabel.textContent = 'しらべる';
-        actionHint.textContent = '';
-        actionBtn.style.background = 'linear-gradient(135deg, #FF6B9D, #C06C84)';
-        actionBtn.style.boxShadow = '0 4px 16px rgba(255,107,157,0.5)';
+        spaceLabel.textContent = 'しらべる';
+        ctrlInfo.innerHTML = '<span>🔍 ちかくにさがそう</span>';
+        kSpace.classList.remove('active');
     }
 }
 
 function doAction() {
-    if (!nearbyTarget) return;
+    if (!nearbyTarget || dialogOpen) return;
 
     if (nearbyTarget.type === 'friend') {
         const f = nearbyTarget.data;
@@ -1312,26 +1287,32 @@ function doAction() {
             sfxVictory();
             showDialog('🎉', 'ぼうけんかんりょう！',
                 'すべてのなかまにあえて、アイテムもぜんぶあつめたよ！\nムーミン谷はよろこびでいっぱい！ 💕',
-                'もういちど', () => location.reload());
+                'もういちど あそぶ', () => location.reload(),
+                'Space でもういちど');
         }, 1200);
     }
 }
 
 // ============================================================
-// DIALOG
+// DIALOG — keyboard-dismissable
 // ============================================================
-function showDialog(emoji, title, text, btnText, btnAction) {
+function showDialog(emoji, title, text, btnText, btnAction, keyHint) {
     document.getElementById('dialogEmoji').textContent = emoji;
     document.getElementById('dialogTitle').textContent = title;
     document.getElementById('dialogText').textContent = text;
     const btn = document.getElementById('dialogBtn');
     btn.textContent = btnText || 'つぎへ';
+    dialogCloseAction = btnAction || null;
     btn.onclick = btnAction || closeDialog;
+    document.getElementById('dialogKeyHint').textContent = keyHint || 'Space / Enter でとじる';
     document.getElementById('dialogOverlay').classList.add('show');
+    dialogOpen = true;
 }
 
 function closeDialog() {
     document.getElementById('dialogOverlay').classList.remove('show');
+    dialogOpen = false;
+    dialogCloseAction = null;
 }
 
 // ============================================================
@@ -1397,37 +1378,26 @@ function roundRect(x, y, w, h, r) {
 // ============================================================
 // MAIN LOOP
 // ============================================================
-let lastTime = 0;
-
 function gameLoop(timestamp) {
     if (!gameStarted) { requestAnimationFrame(gameLoop); return; }
 
     const w = vw(), h = vh();
     ctx.clearRect(0, 0, w, h);
 
-    // Draw world
     drawSky(timestamp);
     drawMountains();
     drawGround(currentScene, timestamp);
 
-    // Draw items (behind Moomin)
     items.filter(i => i.scene === currentScene).forEach(i => drawItem(i, timestamp));
-
-    // Draw NPCs
     friends.filter(f => f.scene === currentScene).forEach(f => drawNPC(f, timestamp));
 
-    // Draw Moomin
     updateMoomin();
     drawMoomin(timestamp);
-
-    // Scene arrows
     drawSceneArrows(timestamp);
 
-    // Particles
     updateParticles();
     drawParticles();
 
-    // Proximity check
     checkProximity();
 
     requestAnimationFrame(gameLoop);
@@ -1444,9 +1414,25 @@ function startGame() {
     moomin.x = vw() * 0.3;
     moomin.y = 0;
     updateMissionUI();
-    // Resume audio context
     try { getAudio().resume(); } catch(e) {}
 }
+
+// Touch support for title/tutorial
+document.getElementById('tutorial').addEventListener('click', e => {
+    if (e.target.closest('.dialog-btn')) return; // let button handle it
+    startGame();
+});
+
+// Touch support for dialog
+document.getElementById('dialogOverlay').addEventListener('click', e => {
+    if (dialogOpen) {
+        if (dialogCloseAction) {
+            dialogCloseAction();
+        } else {
+            closeDialog();
+        }
+    }
+});
 
 updateMissionUI();
 requestAnimationFrame(gameLoop);

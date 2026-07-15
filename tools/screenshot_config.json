@@ -31,24 +31,64 @@
       "description": "4D Number Journey"
     },
     {
+      "file": "4d-number-zoom.html",
+      "wait_time": 3,
+      "description": "4D Number Zoom"
+    },
+    {
       "file": "elevator-game.html",
       "wait_time": 3,
-      "description": "Elevator Game - Kids Tower 100 (Bilingual)"
+      "description": "Elevator Game - Kids Tower 100"
+    },
+    {
+      "file": "mountain-climb-game.html",
+      "wait_time": 2,
+      "description": "Mountain Climb Number Game"
+    },
+    {
+      "file": "100-kadate-game.html",
+      "wait_time": 3,
+      "description": "100-Story House Game"
+    },
+    {
+      "file": "sora-100-kadate.html",
+      "wait_time": 3,
+      "description": "Sky 100-Story House"
     },
     {
       "file": "mochitsuki-game.html",
       "wait_time": 2,
-      "description": "Mochitsuki Game (Bilingual)"
+      "description": "Mochitsuki Game"
     },
     {
       "file": "tako-age-game.html",
       "wait_time": 3,
-      "description": "Kite Flying Number Game (Bilingual)"
+      "description": "Kite Flying Number Game"
+    },
+    {
+      "file": "medicine-game.html",
+      "wait_time": 2,
+      "description": "Medicine Game"
+    },
+    {
+      "file": "toilet-training-game.html",
+      "wait_time": 2,
+      "description": "Toilet Training Game"
     },
     {
       "file": "animal-catch-game.html",
       "wait_time": 2,
-      "description": "Animal Catch Game (Bilingual)"
+      "description": "Animal Catch Game"
+    },
+    {
+      "file": "typhoon-safe-area-game.html",
+      "wait_time": 3,
+      "description": "Typhoon Safe Area Game"
+    },
+    {
+      "file": "penguin-nendo-game.html",
+      "wait_time": 3,
+      "description": "Penguin Nendo Game"
     },
     {
       "file": "moomin-valley-adventure.html",

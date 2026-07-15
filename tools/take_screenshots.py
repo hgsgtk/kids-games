@@ -123,7 +123,7 @@ async def take_screenshot(page, game: dict, base_url: str, output_dir: str):
     output_filename = Path(filename).stem + '.png'
     output_path = os.path.join(output_dir, output_filename)
     
-    url = f"{base_url}/{filename}"
+    url = f"{base_url}/games/{filename}"
     print(f"📸 Taking screenshot: {description}")
     print(f"   URL: {url}")
     
@@ -194,7 +194,7 @@ async def main():
             sys.exit(1)
     
     # Base URL
-    base_url = f"http://localhost:{args.port}"
+    base_url = f"http://127.0.0.1:{args.port}"
     
     print(f"🎮 Kids Games Screenshot Tool")
     print(f"=" * 50)

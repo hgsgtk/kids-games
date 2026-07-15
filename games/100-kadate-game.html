@@ -572,22 +572,17 @@ function showZoneCeleb(floor){
     $('celebTitle').textContent='🎉 ゾーンクリア！ 🎉';
     $('celebEmoji').textContent=z.animal;
     $('celebDesc').textContent=`${z.name}さんのおうち (${zi*10+1}〜${floor}かい) クリア！`;
+    $('celebCountdown').textContent='';
     $('celebration').classList.add('show');
 
-    // Auto-close countdown
-    let remain=5;
-    $('celebCountdown').textContent=`${remain}びょうで じどうで とじるよ`;
-    if(celebTimer) clearInterval(celebTimer);
-    celebTimer=setInterval(()=>{
-        remain--;
-        if(remain<=0){closeCelebration();return}
-        $('celebCountdown').textContent=`${remain}びょうで じどうで とじるよ`;
-    },1000);
+    // Auto-close after 1s (like sora-100-kadate)
+    if(celebTimer) clearTimeout(celebTimer);
+    celebTimer=setTimeout(()=>closeCelebration(),1000);
 }
 
 function closeCelebration(){
     $('celebration').classList.remove('show');
-    if(celebTimer){clearInterval(celebTimer);celebTimer=null}
+    if(celebTimer){clearTimeout(celebTimer);celebTimer=null}
 }
 
 function showGameOver(){
@@ -632,6 +627,10 @@ function spawnConfetti(n){
 // ═══════════════════════════════════════════
 document.addEventListener('keydown',e=>{
     if(!gameActive||nextFloor>MAX_FLOOR)return;
+    // Dismiss celebration on any key
+    if($('celebration').classList.contains('show')){
+        closeCelebration();
+    }
     if(e.key>='0'&&e.key<='9'){
         currentInput+=e.key;showTyping(currentInput);
         const n=parseInt(currentInput);
@@ -643,10 +642,16 @@ document.addEventListener('keydown',e=>{
     }else if(e.key==='Escape'){currentInput='';hideTyping()}
 });
 
-// Tap on floor
+// Tap anywhere to dismiss celebration; tap on floor to advance
 document.addEventListener('click',e=>{
+    if(!gameActive) return;
+    // Dismiss celebration on any click
+    if($('celebration').classList.contains('show')){
+        closeCelebration();
+        return;
+    }
     const row=e.target.closest('.floor-row');
-    if(row&&gameActive){
+    if(row){
         const f=parseInt(row.dataset.floor);
         if(f===nextFloor){currentInput='';handleCorrect(f)}
     }
